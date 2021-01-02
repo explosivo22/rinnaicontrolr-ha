@@ -56,7 +56,7 @@ class RinnaiTempSensor(RinnaiDeviceEntity):
     """Water temp sensor for a Flo device"""
 
     def __init__(self, hass, device_id):
-        super().__init__(hass, 'Water Temperature', device_id)
+        super().__init__(hass, 'Rinnai Water Temperature', device_id)
         self.update()
 
     @property
