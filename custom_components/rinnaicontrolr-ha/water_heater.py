@@ -63,7 +63,7 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
 
     @property
     def name(self):
-        return self._name
+        return self.get_telemetry('device_name')
 
     @property
     def unique_id(self):

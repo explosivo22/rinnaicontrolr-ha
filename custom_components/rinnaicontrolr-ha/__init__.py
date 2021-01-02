@@ -122,7 +122,7 @@ def setup(hass, config):
     # create sensors/switches for all configured locations
     for device_id in devices:
         discovery_info = {CONF_DEVICE_ID: device_id}
-        for component in ['sensor']:
+        for component in ['sensor', 'water_heater']:
             discovery.load_platform(
                 hass, component, RINNAI_DOMAIN, discovery_info, config)
 
