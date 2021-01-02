@@ -54,7 +54,7 @@ def setup_platform(hass, config, add_sensors_callback, discovery_info=None):
     add_sensors_callback(sensors)
 
 class RinnaiTempSensor(RinnaiDeviceEntity):
-    """Water temp sensor for a Flo device"""
+    """Water temp sensor for a Rinnai device"""
 
     def __init__(self, hass, device_id, user_uuid):
         super().__init__(hass, 'Rinnai Water Temperature', device_id, user_uuid)
