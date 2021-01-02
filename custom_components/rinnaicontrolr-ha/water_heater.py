@@ -76,8 +76,6 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     def update(self):
         """Update sensor state"""
         self._current_temperature = self.get_telemetry('domestic_temperature')
-        if self._current_temperature:
-            self.update_state(state)
 
     @property 
     def current_temperature(self):
