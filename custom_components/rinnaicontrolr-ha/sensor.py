@@ -47,16 +47,17 @@ def setup_platform(hass, config, add_sensors_callback, discovery_info=None):
     # create device-based sensors for all devices at this location
     for device_details in device:
         device_id = device_details['thing_name']
+        user_uuid = device_details['user_uuid']
 
-        sensors.append( RinnaiTempSensor(hass, device_id))
+        sensors.append( RinnaiTempSensor(hass, device_id, user_uuid))
 
     add_sensors_callback(sensors)
 
 class RinnaiTempSensor(RinnaiDeviceEntity):
     """Water temp sensor for a Flo device"""
 
-    def __init__(self, hass, device_id):
-        super().__init__(hass, 'Rinnai Water Temperature', device_id)
+    def __init__(self, hass, device_id, user_uuid):
+        super().__init__(hass, 'Rinnai Water Temperature', device_id, user_uuid)
         self.update()
 
     @property

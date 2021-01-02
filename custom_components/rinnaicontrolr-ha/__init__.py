@@ -185,12 +185,14 @@ class RinnaiEntity(Entity):
 class RinnaiDeviceEntity(RinnaiEntity):
     """Base Entity class for Rinnai devices"""
 
-    def __init__(self, hass, name, device_id):
+    def __init__(self, hass, name, device_id, user_uuid):
         """Store service upon init."""
         super().__init__(hass, name)
 
         self._device_id = device_id
         self._attrs['device_id'] = device_id
+        self._user_uuid = user_uuid
+        self._attrs['user_uuid'] = user_uuid
 
     @property
     def device_state(self):
