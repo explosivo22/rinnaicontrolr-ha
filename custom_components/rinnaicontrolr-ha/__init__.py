@@ -43,7 +43,7 @@ CONFIG_SCHEMA = vol.Schema({
 async def async_setup_entry(hass, entry):
     return
 
-async def async_setup(hass, config):
+def setup(hass, config):
     """Set up the Rinnai Water Heater Control System"""
 
     conf = config.get(RINNAI_DOMAIN)
@@ -58,7 +58,7 @@ async def async_setup(hass, config):
     password = conf.get(CONF_PASSWORD)
 
     try:
-        rinnai =  await RinnaiWaterHeater(email,password)
+        rinnai =  RinnaiWaterHeater(email,password)
         if not rinnai.is_connected:
             LOG.error(f"Could not connect to Rinnai service with {email}")
             return False
@@ -81,7 +81,7 @@ async def async_setup(hass, config):
 
     # if no locations specified, auto discover ALL Rinnai locations/devices for this account
     if not devices:
-        for device in await rinnai.getDevices():
+        for device in rinnai.getDevices():
             devices.append(device['thing_name'])
             LOG.info(
                 f"Discovered Rinnai device {device['thing_name']} ({device['device_name']})")
