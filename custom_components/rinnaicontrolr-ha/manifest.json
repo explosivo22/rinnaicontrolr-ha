@@ -1,0 +1,9 @@
+{
+    "domain": "rinnai",
+    "name": "Rinnai Control-R Water Heater",
+    "documentation": "",
+    "codeowners": [ "@explosivo22" ],
+    "requirements": [ "rinnaicontrolr>=0.0.9" ],
+    "dependencies": [],
+    "config_flow": false
+}
