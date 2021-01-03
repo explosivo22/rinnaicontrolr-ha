@@ -59,7 +59,9 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         self._current_temperature = None
         self._max_temp = 140
         self._min_temp = 110
-        self.update()
+        state = self.device_state
+        if state:
+            self.update()
 
     @property
     def unique_id(self):
@@ -71,9 +73,17 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
 
     def update(self):
         """Update sensor state"""
+        if not self.device_state:
+            return
+
         self._current_temperature = self.get_telemetry('domestic_temperature')
         if self._current_temperature:
             self.update_state(self._current_temperature)
+
+    def set_temperature(self, **kwargs):
+        target_temp = kwargs.get(ATTR_TEMPERATURE)
+        if target_temp and target_temp != self._current_temperature:
+            self.rinnai_service.set_temp(device_id, user_uuid, target_temp)
 
     @property 
     def current_temperature(self):
