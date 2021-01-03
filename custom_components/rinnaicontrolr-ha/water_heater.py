@@ -60,12 +60,18 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
 
     def __init__(self, hass, device_id, user_uuid):
         super().__init__(hass, 'Rinnai Water Heater', device_id, user_uuid)
+        self.hass = hass
+        self._name = 'Rinnai Water Heater'
         self._current_temperature = None
         self._max_temp = 140
-        self._min_temp = 110
-        state = self.device_state
-        if state:
+        self._low_temp = 110
+        self._state = self.device_state
+        if self._state:
             self.update()
+
+    @property
+    def name(self):
+        return self._name
 
     @property
     def unique_id(self):
@@ -81,8 +87,9 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
             return
 
         self._current_temperature = self.get_telemetry('domestic_temperature')
-        if self._current_temperature:
-            self.update_state(self._current_temperature)
+        self._low_temp = 110
+        self._max_temp = 140
+        self.schedule_update_ha_state()
 
     async def set_rinnai_temp(self, temp):
         url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
@@ -92,10 +99,11 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
             payload="user=%s&thing=%s&attribute=set_domestic_temperature&value=%s" % (self._user_uuid, self._device_id, int(temp))
             LOG.debug(payload)
             headers = {
-                'Content-Type': 'application/x-www-form-urlencoded'
+              'User-Agent': 'okhttp/3.12.1',
+              'Content-Type': 'application/x-www-form-urlencoded'
             }
             async with aiohttp.ClientSession() as session:
-                async with session.post(url, headers= headers, params=payload) as resp:
+                async with session.post(url, headers=headers, data=payload) as resp:
                     data = await resp.json()
                     LOG.debug(data)
                     if resp.status == 200:
