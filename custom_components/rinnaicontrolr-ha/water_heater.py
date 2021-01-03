@@ -65,12 +65,6 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         if state:
             self.update()
 
-    async def async_added_to_hass(self):
-        """Register callbacks."""
-        self.hass.helpers.dispatcher.async_dispatcher_connect(
-            SIGNAL_DHW_UPDATE_BOSCH, self.update
-        )
-
     @property
     def unique_id(self):
         return f"rinnai_water_heater_{self._device_id}"
@@ -88,10 +82,25 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         if self._current_temperature:
             self.update_state(self._current_temperature)
 
-    async def set_temperature(self, **kwargs):
+    async def set_rinnai_temp(temp):
+        url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
+        
+        # check if the temp is a multiple of 5. Rinnai only takes temps this way
+        if temp % 5 == 0:
+            payload="user=%s&thing=%s&attribute=set_domestic_temperature&value=%s" % (self._user_uuid, self._device_id, temp)
+            headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+            r = await requests.post(
+                url,
+                data=payload,
+                headers=headers,
+            )
+
+    async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp and target_temp != self._current_temperature:
-            await self.rinnai_service.set_temp(device_id, user_uuid, target_temp)
+            await set_rinnai_temp(target_temp)
             self.update_state(target_temp)
 
             self.async_schedule_update_ha_state(force_refresh=True)
