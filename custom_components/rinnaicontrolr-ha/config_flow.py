@@ -4,7 +4,7 @@ import logging
 import voluptuous as vol
 
 from homeassistant import config_entries, core
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, CONF_TIMEOUT
+from homeassistant.const import CONF_USERNAME, CONF_PASSWORD, CONF_TIMEOUT
 
 from .const import RINNAI_DOMAIN  # pylint:disable=unused-import; pylint:disable=unused-import
 
@@ -12,7 +12,7 @@ LOG = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_EMAIL): str,
+        vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str
     }
 )
@@ -23,8 +23,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     """
 
     # Return info that you want to store in the config entry.
-    return {"title": data[CONF_EMAIL]}
-
+    return {"title": data[CONF_USERNAME]}
 
 class ConfigFlow(config_entries.ConfigFlow, domain=RINNAI_DOMAIN):
     """Handle a config flow for Rinnai."""
@@ -38,7 +37,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=RINNAI_DOMAIN):
         if user_input is not None:
             try:
                 info = await validate_input(self.hass, user_input)
-                await self.async_set_unique_id(user_input[CONF_EMAIL])
+                await self.async_set_unique_id(user_input[CONF_USERNAME])
                 return self.async_create_entry(title=info["title"], data=user_input)
             except Exception:  # pylint: disable=broad-except
                 LOG.exception("Unexpected exception")

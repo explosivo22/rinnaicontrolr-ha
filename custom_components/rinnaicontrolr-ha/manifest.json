@@ -5,5 +5,5 @@
     "codeowners": [ "@explosivo22" ],
     "requirements": [ "rinnaicontrolr==0.1.3" ],
     "dependencies": [],
-    "config_flow": false
+    "config_flow": true
 }
