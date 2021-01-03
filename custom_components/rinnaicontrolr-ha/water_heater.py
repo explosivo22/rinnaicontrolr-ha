@@ -89,7 +89,7 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         self._current_temperature = self.get_telemetry('domestic_temperature')
         self._low_temp = 110
         self._max_temp = 140
-        self.schedule_update_ha_state()
+        self.update_state(self._current_temperature)
 
     async def set_rinnai_temp(self, temp):
         url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
