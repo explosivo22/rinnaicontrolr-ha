@@ -8,6 +8,8 @@ import time
 import logging
 import voluptuous as vol
 
+import requests
+
 from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
 from homeassistant.helpers.entity import Entity
 from homeassistant.components.sensor import PLATFORM_SCHEMA
@@ -82,7 +84,7 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         if self._current_temperature:
             self.update_state(self._current_temperature)
 
-    async def set_rinnai_temp(temp):
+    async def set_rinnai_temp(self, temp):
         url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
         
         # check if the temp is a multiple of 5. Rinnai only takes temps this way
@@ -91,16 +93,17 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
-            r = await requests.post(
+            await requests.post(
                 url,
                 data=payload,
                 headers=headers,
             )
+            return
 
     async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp and target_temp != self._current_temperature:
-            await set_rinnai_temp(target_temp)
+            await self.set_rinnai_temp(target_temp)
             self.update_state(target_temp)
 
             self.async_schedule_update_ha_state(force_refresh=True)
