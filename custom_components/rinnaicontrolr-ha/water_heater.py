@@ -89,13 +89,15 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         
         # check if the temp is a multiple of 5. Rinnai only takes temps this way
         if temp % 5 == 0:
-            payload="user=%s&thing=%s&attribute=set_domestic_temperature&value=%s" % (self._user_uuid, self._device_id, temp)
+            payload="user=%s&thing=%s&attribute=set_domestic_temperature&value=%s" % (self._user_uuid, self._device_id, int(temp))
+            LOG.debug(payload)
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
             async with aiohttp.ClientSession() as session:
                 async with session.post(url, headers= headers, params=payload) as resp:
                     data = await resp.json()
+                    LOG.debug(data)
                     if resp.status == 200:
                         return
 
@@ -103,7 +105,8 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp and target_temp != self._current_temperature:
             await self.set_rinnai_temp(target_temp)
-            self.update_state(target_temp)
+            self._current_temperature = target_temp
+            self.update_state(self._current_temperature)
 
             self.async_schedule_update_ha_state(force_refresh=True)
 
