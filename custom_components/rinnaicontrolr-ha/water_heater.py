@@ -22,7 +22,7 @@ from homeassistant.components.water_heater import (
     ATTR_TARGET_TEMP_LOW
 )
 
-from .const import ICON_DOMESTIC_TEMP
+from .const import ICON_DOMESTIC_TEMP, SIGNAL_UPDATE_RINNAI
 
 from . import RinnaiEntity, RinnaiDeviceEntity, RINNAI_DOMAIN, RINNAI_SERVICE, CONF_DEVICE_ID
 
@@ -65,6 +65,12 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         if state:
             self.update()
 
+    async def async_added_to_hass(self):
+        """Register callbacks."""
+        self.hass.helpers.dispatcher.async_dispatcher_connect(
+            SIGNAL_DHW_UPDATE_BOSCH, self.update
+        )
+
     @property
     def unique_id(self):
         return f"rinnai_water_heater_{self._device_id}"
@@ -82,10 +88,13 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         if self._current_temperature:
             self.update_state(self._current_temperature)
 
-    def set_temperature(self, **kwargs):
+    async def set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp and target_temp != self._current_temperature:
-            self.rinnai_service.set_temp(device_id, user_uuid, target_temp)
+            await self.rinnai_service.set_temp(device_id, user_uuid, target_temp)
+            self.update_state(target_temp)
+
+            self.async_schedule_update_ha_state(force_refresh=True)
 
     @property 
     def current_temperature(self):

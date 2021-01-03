@@ -7,4 +7,6 @@ ATTRIBUTION = "Data provided by Rinnai"
 ATTR_CACHE = 'cache'
 ATTR_COORDINATOR = 'coordinator'
 
+SIGNAL_UPDATE_RINNAI = 'rinnai_temp_update'
+
 ICON_DOMESTIC_TEMP='mdi:thermometer'
