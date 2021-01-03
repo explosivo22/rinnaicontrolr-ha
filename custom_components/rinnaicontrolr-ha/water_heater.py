@@ -28,6 +28,8 @@ from . import RinnaiEntity, RinnaiDeviceEntity, RINNAI_DOMAIN, RINNAI_SERVICE, C
 
 LOG = logging.getLogger(__name__)
 
+SUPPORT_FLAGS_HEATER = SUPPORT_TARGET_TEMPERATURE
+
 def setup_platform(hass, config, add_water_heater_callback, discovery_info=None):
     rinnai = hass.data[RINNAI_SERVICE]
     if rinnai is None or not rinnai.is_connected:
@@ -96,3 +98,8 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     @property
     def max_temp(self):
         return self._max_temp
+
+    @property
+    def supported_features(self):
+        """Return the list of supported features."""
+        return SUPPORT_FLAGS_HEATER
