@@ -8,7 +8,7 @@ import time
 import logging
 import voluptuous as vol
 
-import requests
+import aiohttp
 
 from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
 from homeassistant.helpers.entity import Entity
@@ -93,12 +93,11 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
             headers = {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
-            await requests.post(
-                url,
-                data=payload,
-                headers=headers,
-            )
-            return
+            async with aiohttp.ClientSession() as session:
+                async with session.post(url, headers= headers, params=payload) as resp:
+                    data = await resp.json()
+                    if resp.status == 200:
+                        return
 
     async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
