@@ -52,7 +52,8 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
     else:
         device_id = config[CONFIG_DEVICE_ID]
 
-    water_heater = []
+    water_heaters = []
+    recirculation_water_heater = {}
 
     device = rinnai.getDevices()
 
@@ -60,12 +61,14 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
         device_id = device_details['thing_name']
         user_uuid = device_details['user_uuid']
 
-        water_heater.append( RinnaiWaterHeaterEntity(hass, device_id, user_uuid) )
+        water_heater = RinnaiWaterHeaterEntity(hass, device_id, user_uuid)
+        water_heaters.append(water_heater)
+        recirculation_water_heater[water_heater.entity_id] = water_heater
 
-    add_water_heater_callback(water_heater)
+    add_water_heater_callback(water_heaters)
 
     def service_start_recirculation(call):
-        entity = call.data[ATTR_ENTITY_ID]
+        entity = recirculation_water_heater[ call.data[ATTR_ENTITY_ID] ]
         duration = call.data[ATTR_DURATION]
         if entity:
             entity.start_recirculation(duration)
