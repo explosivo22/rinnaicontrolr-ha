@@ -3,7 +3,7 @@
     "name": "Rinnai Control-R Water Heater",
     "documentation": "https://github.com/explosivo22/rinnaicontrolr-ha/",
     "codeowners": [ "@explosivo22" ],
-    "requirements": [ "rinnaicontrolr==0.1.4" ],
+    "requirements": [ "rinnaicontrolr==0.1.5" ],
     "dependencies": [],
     "config_flow": true
 }
