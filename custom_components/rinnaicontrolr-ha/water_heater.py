@@ -12,6 +12,7 @@ import aiohttp
 
 from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
 from homeassistant.helpers.entity import Entity
+from homeassistant.helpers import entity_platform
 from homeassistant.components.sensor import PLATFORM_SCHEMA
 from homeassistant.util import dt as dt_util
 import homeassistant.helpers.config_validation as cv
