@@ -31,6 +31,9 @@ from . import RinnaiEntity, RinnaiDeviceEntity, RINNAI_DOMAIN, RINNAI_SERVICE, C
 LOG = logging.getLogger(__name__)
 
 SUPPORT_FLAGS_HEATER = SUPPORT_TARGET_TEMPERATURE
+SERVICE_RUN_START_RECIRCULATION = 'start_recirculation'
+SERVICE_RUN_START_RECIRCULATION_SCHEMA = { vol.Required(ATTR_ENTITY_ID): cv.time_period }
+SERVICE_RUN_START_RECIRCULATION_SIGNAL = f"{SERVICE_RUN_START_RECIRCULATION}_%s"
 
 def setup_platform(hass, config, add_water_heater_callback, discovery_info=None):
     rinnai = hass.data[RINNAI_SERVICE]
@@ -54,6 +57,11 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
         water_heater.append( RinnaiWaterHeaterEntity(hass, device_id, user_uuid) )
 
     add_water_heater_callback(water_heater)
+
+    def start_recirculation_handler(call):
+        entity_id = call.data[ATTR_ENTITY_ID]
+        async_dispatcher_send(hass, SERVICE_START_RECIRCULATION_SIGNAL.format(entity_id))
+    hass.services.register(RINNAI_DOMAIN, SERVICE_RUN_START_RECIRCULATION, start_recirculation_handler, SERVICE_RUN_START_RECIRCULATION_SCHEMA)
 
 class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     """Water Heater entity for a Rinnai Device"""
@@ -134,3 +142,18 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     def supported_features(self):
         """Return the list of supported features."""
         return SUPPORT_FLAGS_HEATER
+
+    def start_recirculation(self):
+        """Run a health test."""
+        self.flo_service.start_recirculation(self._device_id, self._user_uuid)
+
+    async def async_added_to_hass(self):
+        """Run when entity is about to be added to hass."""
+        super().async_added_to_hass()
+
+        # register the trigger to handle run_health_test service call
+        async_dispatcher_connect(
+            self._hass,
+            SERVICE_RUN_START_RECIRCULATION_SIGNAL.format(self.entity_id),
+            self.start_recirculation
+        )

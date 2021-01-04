@@ -1,0 +1,9 @@
+start_recirculation:
+  description: Start recirculation on the water heater if supported.
+  fields:
+    entity_id:
+      description: The water heater entity id to call service on.
+      example: 'water_heater.water_heater'
+    duration:
+      description: The time in minutes, multiples of 15
+      example: '30'

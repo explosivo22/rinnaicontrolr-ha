@@ -33,10 +33,10 @@ SERVICE_START_RECIRCULATION = 'start_recirculation'
 SERVICE_START_RECIRCULATION_SCHEMA = { vol.Required(ATTR_ENTITY_ID): cv.time_period }
 SERVICE_START_RECIRCULATION_SIGNAL = f"{SERVICE_START_RECIRCULATION}_%s"
 
-STATE_RECIRCULATION_ENABLED = 'True'
-STATE_RECIRCULATION_DISABLED = 'False'
+STATE_RECIRCULATION_ENABLED = True
+STATE_RECIRCULATION_DISABLED = False
 STATE_RECIRCULATION_DURATION = 30
-STATE_PRIORITY_STATUS = 'True'
+STATE_PRIORITY_STATUS = 'true'
 
 # pylint: disable=unused-argument
 def setup_platform(hass, config, add_switches_callback, discovery_info=None):
@@ -59,7 +59,7 @@ def setup_platform(hass, config, add_switches_callback, discovery_info=None):
     for device_details in device:
         info = device_details.get('info')
         if info.get('recirculation_capable') == "true":
-            switch = RinnaiRecirculationToggle(hass, device_details['thing_name'])
+            switch = RinnaiRecirculationToggle(hass, device_details['thing_name'], device_details['user_uuid'])
             switches.append(switch)
 
     add_switches_callback(switches)
@@ -98,13 +98,12 @@ class RinnaiRecirculationToggle(RinnaiDeviceEntity, ToggleEntity):
         if switch:
             # if target is set to turn on, then return True that the device is on (even if last known is not on)
             recirculation = switch.get('set_recirculation_enabled')
-            if recirculation:
-                if recirculation == 'true':
-                    return True
-                else:
-                    return False
+            if recirculation == "true":
+                return True
+            else:
+                return False
 
-            return None
+        return None
 
     def turn_on(self):
         self.rinnai_service.start_recirculation(self._device_id)
@@ -167,17 +166,10 @@ class RinnaiRecirculationToggle(RinnaiDeviceEntity, ToggleEntity):
 
             self.update_attributes()
 
-            # determine if the valve is open or closed
-            is_open = None
             if recirculation:
-                is_open = recirculation == 'true'
-
-            if is_open == True:
                 self.update_state(STATE_RECIRCULATION_ENABLED)
-            elif is_open == False:
-                self.update_state(STATE_RECIRCULATION_DISABLED)
             else:
-                self.update_state(None)
+                self.update_state(STATE_RECIRCULATION_DISABLED)
 
     @property
     def unique_id(self):
