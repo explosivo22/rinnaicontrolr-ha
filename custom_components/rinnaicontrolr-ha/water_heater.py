@@ -64,7 +64,7 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
     add_water_heater_callback(water_heater)
 
     def start_recirculation_handler(call):
-        entity = water_heater[ call.data[ATTR_ENTITY_ID ] ]
+        entity = call.data[ATTR_ENTITY_ID]
         duration = call.data[ATTR_DURATION]
         if entity:
             entity.start_recirculation(duration)
