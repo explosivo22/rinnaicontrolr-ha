@@ -161,7 +161,7 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         self.rinnai_service.start_recirculation(self._device_id, self._user_uuid, duration)
 
     async def async_added_to_hass(self):
-        super().asnc_added_to_hass()
+        super().async_added_to_hass()
 
         # register the trigger to handle run_health_test service call
         async_dispatcher_connect(
