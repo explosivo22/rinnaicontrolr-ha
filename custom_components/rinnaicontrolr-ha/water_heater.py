@@ -67,10 +67,9 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
     def service_start_recirculation(call):
         entity = call.data[ATTR_ENTITY_ID]
         duration = call.data[ATTR_DURATION]
-        if entity:
-            entity.start_recirculation(duration)
+        async_dispatcher_send(hass, SERVICE_START_RECIRCULATION_SIGNAL.format(entity_id))
 
-    hass.services.register(RINNAI_DOMAIN, SERVICE_START_RECIRCULATION, service_start_recirculation, SERVICE_START_RECIRCULATION)
+    hass.services.register(RINNAI_DOMAIN, SERVICE_START_RECIRCULATION, service_start_recirculation, SERVICE_START_RECIRCULATION_SCHEMA)
 
 class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     """Water Heater entity for a Rinnai Device"""
@@ -162,6 +161,8 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         self.rinnai_service.start_recirculation(self._device_id, self._user_uuid, duration)
 
     async def async_added_to_hass(self):
+        super().asnc_added_to_hass()
+
         # register the trigger to handle run_health_test service call
         async_dispatcher_connect(
             self._hass,
