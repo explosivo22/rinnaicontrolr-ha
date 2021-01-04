@@ -52,8 +52,7 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
     else:
         device_id = config[CONFIG_DEVICE_ID]
 
-    water_heaters = []
-    recirculation_water_heater = {}
+    water_heater = []
 
     device = rinnai.getDevices()
 
@@ -61,14 +60,12 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
         device_id = device_details['thing_name']
         user_uuid = device_details['user_uuid']
 
-        water_heater = RinnaiWaterHeaterEntity(hass, device_id, user_uuid)
-        water_heaters.append(water_heater)
-        recirculation_water_heater[water_heater.entity_id] = water_heater
+        water_heater.append( RinnaiWaterHeaterEntity(hass, device_id, user_uuid) )
 
-    add_water_heater_callback(water_heaters)
+    add_water_heater_callback(water_heater)
 
     def service_start_recirculation(call):
-        entity = recirculation_water_heater[ call.data[ATTR_ENTITY_ID] ]
+        entity = call.data[ATTR_ENTITY_ID]
         duration = call.data[ATTR_DURATION]
         if entity:
             entity.start_recirculation(duration)
@@ -80,7 +77,6 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
 
     def __init__(self, hass, device_id, user_uuid):
         super().__init__(hass, 'Rinnai Water Heater', device_id, user_uuid)
-        self.hass = hass
         self._name = 'Rinnai Water Heater'
         self._current_temperature = None
         self._max_temp = 140
@@ -101,12 +97,18 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     def temperature_unit(self):
         return TEMP_FAHRENHEIT
 
+    @property
+    def state_attributes(self):
+        data = {}
+        data['info'] = self.device_state.get('info')
+        return data
+
     def update(self):
         """Update sensor state"""
         if not self.device_state:
             return
 
-        self._current_temperature = self.get_telemetry('domestic_temperature')
+        self._current_temperature = self.device_state.get('info').get('domestic_temperature')
         self._low_temp = 110
         self._max_temp = 140
         self.update_state(self._current_temperature)
@@ -162,7 +164,7 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     async def async_added_to_hass(self):
         # register the trigger to handle run_health_test service call
         async_dispatcher_connect(
-            self.hass,
+            self._hass,
             SERVICE_START_RECIRCULATION_SIGNAL.format(self.entity_id),
             self.start_recirculation
         )

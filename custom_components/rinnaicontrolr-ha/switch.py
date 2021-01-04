@@ -29,10 +29,6 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend({
     vol.Required(CONF_DEVICE_ID): cv.string
 })
 
-SERVICE_START_RECIRCULATION = 'start_recirculation'
-SERVICE_START_RECIRCULATION_SCHEMA = { vol.Required(ATTR_ENTITY_ID): cv.time_period }
-SERVICE_START_RECIRCULATION_SIGNAL = f"{SERVICE_START_RECIRCULATION}_%s"
-
 STATE_RECIRCULATION_ENABLED = True
 STATE_RECIRCULATION_DISABLED = False
 STATE_RECIRCULATION_DURATION = 30
@@ -66,12 +62,6 @@ def setup_platform(hass, config, add_switches_callback, discovery_info=None):
             
     # register any exposed services
     # NOTE: would have used async_register_entity_service if this platform setup was async
-
-    def start_recirculation_handler(call):
-        entity_id = call.data[ATTR_ENTITY_ID]
-        async_dispatcher_send(hass, SERVICE_START_RCIRCULATION_SIGNAL.format(entity_id))
-    hass.services.register(RINNAI_DOMAIN, SERVICE_START_RECIRCULATION, start_recirculation_handler, SERVICE_START_RECIRCULATION_SCHEMA)
-
 class RinnaiRecirculationToggle(RinnaiDeviceEntity, ToggleEntity):
     """Rinnai switch to turn on/off recirculation."""
 
@@ -122,21 +112,6 @@ class RinnaiRecirculationToggle(RinnaiDeviceEntity, ToggleEntity):
 
         # trigger update coordinator to read latest state from service
         self.schedule_update_ha_state(force_refresh=True)
-
-    def start_recirculation(self):
-        """Run a health test."""
-        self.rinnai_service.start_recirculation_test(self._device_id)
-
-    async def async_added_to_hass(self):
-        """Run when entity is about to be added to hass."""
-        super().async_added_to_hass()
-
-        # register the trigger to handle run_health_test service call
-        async_dispatcher_connect(
-            self._hass,
-            SERVICE_START_RECIRCULATION_SIGNAL.format(self.entity_id),
-            self.start_recirculation
-        )
 
     def update_attributes(self):
         """Update various attributes about the valve"""
