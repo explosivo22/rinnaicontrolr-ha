@@ -11,10 +11,11 @@ from homeassistant.core import callback
 from homeassistant.helpers import discovery
 from homeassistant.helpers.entity import Entity
 from homeassistant.const import (
-    CONF_EMAIL, CONF_PASSWORD, CONF_NAME, CONF_SCAN_INTERVAL, ATTR_ATTRIBUTION)
+    CONF_EMAIL, CONF_PASSWORD, CONF_NAME, CONF_SCAN_INTERVAL, ATTR_ATTRIBUTION, ATTR_ENTITY_ID)
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.helpers.config_validation as cv
+from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
 from .const import RINNAI_DOMAIN, ATTRIBUTION, ATTR_CACHE, ATTR_COORDINATOR
 
@@ -29,6 +30,8 @@ NOTIFICATION_ID = 'rinnai_notification'
 CONF_DEVICES = 'devices'
 CONF_DEVICE_ID = 'device_id'
 
+ATTR_DURATION = 'duration'
+
 SCAN_INTERVAL = timedelta(seconds=300)
 
 CONFIG_SCHEMA = vol.Schema({
@@ -39,6 +42,14 @@ CONFIG_SCHEMA = vol.Schema({
         vol.Optional(CONF_SCAN_INTERVAL, default=SCAN_INTERVAL): cv.time_period
     })
 }, extra=vol.ALLOW_EXTRA)
+
+SERVICE_START_RECIRCULATION = "start_recirculation"
+START_RECIRCULATION_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_ENTITY_ID): cv.comp_entity_ids,
+        vol.Required(ATTR_DURATION): cv.positive_int,
+    }
+)
 
 async def async_setup_entry(hass, entry):
     return
@@ -103,6 +114,20 @@ def setup(hass, config):
         for device in rinnai.getDevices():
             thing_name = device['thing_name']
             cache[thing_name] = device
+
+    def service_callback(call):
+        if call.service == SERVICE_START_RECIRCULATION:
+            rinnai_start_recirculation(hass, call)
+
+    async def async_service_callback(call):
+        await hass.async_add_executor_job(service_callback, call)
+
+    hass.services.async_register(
+        RINNAI_DOMAIN,
+        SERVICE_START_RECIRCULATION,
+        async_service_callback,
+        schema=START_RECIRCULATION_SCHEMA,
+    )
 
     # create the Rinnai service update coordinator
     async def async_initialize_coordinator():
@@ -211,3 +236,25 @@ class RinnaiDeviceEntity(RinnaiEntity):
             LOG.warning(
                 f"Could not get current {field} from Rinnai telemetry: {self.device_state}")
         return value
+
+def get_entity_from_domain(hass, domains, entity_id):
+    domains = domains if isinstance(domains, list) else [domains]
+    for domain in domains:
+        component = hass.data.get(domain)
+        if component is None:
+            raise HomeAssistantError("{} component not set up".format(domain))
+        entity = component.get_entity(entity_id)
+        if entity is not None:
+            return entity
+    raise HomeAssistantError("{} not found in {}".format(entity_id, ",".join(domains)))
+
+def rinnai_start_recirculation(hass, call):
+    for entity_id in call.data["entity_id"]:
+        try:
+            duration = call.data["duration"]
+            device = get_entity_from_domain(
+                hass, [WATER_HEATER_DOMAIN], entity_id
+            )
+            device.start_recirculation(duration=duration)
+        except HomeAssistantError:
+            LOG.info("{} water heater device not found".format(entity_id))

@@ -12,8 +12,8 @@ import aiohttp
 
 from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
 from homeassistant.helpers.entity import Entity
-from homeassistant.helpers import entity_platform
 from homeassistant.components.sensor import PLATFORM_SCHEMA
+from homeassistant.components import websocket_api
 from homeassistant.util import dt as dt_util
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
@@ -22,7 +22,8 @@ from homeassistant.components.water_heater import (
     SUPPORT_TARGET_TEMPERATURE,
     WaterHeaterEntity,
     ATTR_TARGET_TEMP_HIGH,
-    ATTR_TARGET_TEMP_LOW
+    ATTR_TARGET_TEMP_LOW,
+    DOMAIN,
 )
 
 from .const import ICON_DOMESTIC_TEMP, SIGNAL_UPDATE_RINNAI
@@ -35,12 +36,13 @@ ATTR_DURATION = 'duration'
 
 SUPPORT_FLAGS_HEATER = SUPPORT_TARGET_TEMPERATURE
 
-SERVICE_START_RECIRCULATION = 'start_recirculation'
-SERVICE_START_RECIRCULATION_SCHEMA = { 
-    vol.Required(ATTR_ENTITY_ID): cv.time_period,
-    vol.Required(ATTR_DURATION): int,
-}
-SERVICE_START_RECIRCULATION_SIGNAL = f"{SERVICE_START_RECIRCULATION}_%s"
+WS_START_RECIRCULATION = 'rinnai_start_recirculation'
+WS_START_RECIRCULATION_SCHEMA = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
+    { 
+    vol.Required(ATTR_ENTITY_ID): cv.comp_entity_ids,
+    vol.Required(ATTR_DURATION): cv.positive_int,
+    }
+)
 
 def setup_platform(hass, config, add_water_heater_callback, discovery_info=None):
     rinnai = hass.data[RINNAI_SERVICE]
@@ -65,10 +67,8 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
 
     add_water_heater_callback(water_heater)
 
-    platform = entity_platform.current_platform.get()
-
-    platform.async_register_entity_service(
-        SERVICE_START_RECIRCULATION, SERVICE_START_RECIRCULATION_SCHEMA, "start_recirculation"
+    hass.components.websocket_api.async_register_command(
+        WS_START_RECIRCULATION, websocket_start_recirculation, WS_START_RECIRCULATION_SCHEMA
     )
 
 class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
@@ -156,6 +156,29 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         """Return the list of supported features."""
         return SUPPORT_FLAGS_HEATER
 
-    def start_recirculation(self, duration):
-        """Run a health test."""
+    def start_recirculation(self, duration=30):
         self.rinnai_service.start_recirculation(self._device_id, self._user_uuid, duration)
+
+    async def async_start_recirculation(self, duration):
+        return await self.hass.async_add_executor_job(self.start_recirculation, duration)
+
+    async def async_added_to_hass(self):
+        self.update_state(None)
+
+def _get_base_from_entity_id(hass, entity_id):
+    component = hass.data.get(DOMAIN)
+    if component is None:
+        raise HomeAssistantError("base component not set up")
+
+    base = component.get_entity(entity_id)
+    if base is None:
+        raise HomeAssistantError("base not found")
+
+    return base
+
+@websocket_api.async_response
+async def websocket_start_recirculation(hass, connection, msg):
+    base = _get_base_from_entity_id(hass, msg["entity_id"])
+
+    await base.async_start_recirculation(duration=msg["duration"])
+    connection.send_message(websocket_api.result_message(msg["id"], {"recirculation": "on"}))

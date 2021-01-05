@@ -6,4 +6,4 @@ start_recirculation:
       example: "water_heater.water_heater"
     duration:
       description: "The time in minutes, multiples of 15"
-      example: "30"
+      example: 30
