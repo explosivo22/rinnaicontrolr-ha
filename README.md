@@ -15,6 +15,10 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 - sensors:
     * water temperature (&deg;F)
+- water heater:
+    * water temperature (&deg;F)
+    * set operating temperature
+    * start recirculation (on capable models)
 - multiple Rinnai devices
 - ability to restrict devices (for users with multiple water heaters)
 - reduced polling of Rinnai webservice to avoid unintentional DDoS
@@ -39,15 +43,15 @@ Example configuration:
 ```yaml
 rinnai:
   email: your@email.com
-  password: your_flo_password
+  password: your_rinnai_password
 ```
 
-The following is an advanced configuration to limit sensors to a single location (if multiple houses on a single account). The location_id can be found by turning logging to DEBUG for `pyflowater` component, or installing [`pyflowater`](https://github.com/rsnodgrass/pyflowater) and running the `example-client.py` script to show all information about your Flo devices.
+The following is an advanced configuration to limit sensors to a single location (if multiple houses on a single account). The location_id can be found by turning logging to DEBUG for `rinnaicontrolr` component, or installing [`rinnaicontrolr`](https://github.com/explosivo22/rinnaicontrolr) and running the `example-client.py` script to show all information about your Rinnai devices.
 
 ```yaml
 rinnai:
   email: your@email.com
-  password: your_flo_password
+  password: your_rinnai_password
   devices:
     - d6b2822a-f2ce-44b0-bbe2-3600a095d494
 ```
