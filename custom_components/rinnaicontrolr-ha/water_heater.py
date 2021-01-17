@@ -34,8 +34,6 @@ LOG = logging.getLogger(__name__)
 
 ATTR_DURATION = 'duration'
 
-SUPPORT_FLAGS_HEATER = SUPPORT_TARGET_TEMPERATURE
-
 WS_START_RECIRCULATION = 'rinnai_start_recirculation'
 WS_START_RECIRCULATION_SCHEMA = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
     { 
@@ -63,7 +61,7 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
         device_id = device_details['thing_name']
         user_uuid = device_details['user_uuid']
 
-        water_heater.append( RinnaiWaterHeaterEntity(hass, rinnai, device_id, user_uuid) )
+        water_heater.append( RinnaiWaterHeaterEntity(hass, device_id, user_uuid) )
 
     add_water_heater_callback(water_heater)
 
@@ -74,17 +72,17 @@ def setup_platform(hass, config, add_water_heater_callback, discovery_info=None)
 class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
     """Water Heater entity for a Rinnai Device"""
 
-    def __init__(self, hass, rinnai, device_id, user_uuid):
-        super().__init__(hass, 'Rinnai Water Heater', device_id, user_uuid)
-        self._name = 'Rinnai Water Heater'
-        self._current_temperature = None
-        self._target_temperature = None
-        self._current_setpoint = None
+    def __init__(self, hass, device_id, user_uuid):
+        """Initialize the water heater."""
+        self._name = name
+        self._unique_id = self.device_state.get('info').get('thing_name')
+        self._support_features = SUPPORT_TARGET_TEMPERATURE
+        self._min_temp = 110
         self._max_temp = 140
-        self._low_temp = 110
-        self._state = self.device_state
-        if self._state:
-            self.update()
+        self._target_temperature = None
+        self._current_temperature = None
+        self._current_operation = None
+        self._state_attrs = {}
 
     @property
     def name(self):
@@ -92,7 +90,8 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
 
     @property
     def unique_id(self):
-        return f"rinnai_water_heater_{self._device_id}"
+        """Return unique ID for this device."""
+        return self._unique_id
 
     @property
     def device_info(self):
@@ -113,16 +112,49 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         data['setpoint'] = self.device_state.get('shadow').get('set_domestic_temperature')
         return data
 
+    @property
+    def device_state_attributes(self):
+        """Return the optional device state attributes."""
+        data = {"target_temp_step": 5}
+        return data
+
+    @property
+    def current_operation(self):
+        return self._current_operation
+
+    @property 
+    def current_temperature(self):
+        return self._current_temperature
+
+    @property
+    def min_temp(self):
+        return self._min_temp
+
+    @property
+    def max_temp(self):
+        return self._max_temp
+
+    @property
+    def supported_features(self):
+        """Return the list of supported features."""
+        return self._support_features
+
+    @property
+    def target_temp(self):
+        """Return the temperature we try to reach"""
+        return self._target_temperature
+
+
     def update(self):
         """Update sensor state"""
         if not self.device_state:
             return
 
         self._current_temperature = self.device_state.get('info').get('domestic_temperature')
-        self._low_temp = 110
+        self._min_temp = 110
         self._max_temp = 140
         self._target_temperature = self.device_state.get('shadow').get('set_domestic_temperature')
-        self.update_state(self._current_temperature)
+        self.update_state(self.device_state)
 
     async def set_rinnai_temp(self, temp):
         url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
@@ -150,28 +182,6 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
             self.update_state(self._current_temperature)
 
             self.async_schedule_update_ha_state(force_refresh=True)
-
-    @property 
-    def current_temperature(self):
-        return self._current_temperature
-
-    @property
-    def min_temp(self):
-        return self._min_temp
-
-    @property
-    def max_temp(self):
-        return self._max_temp
-
-    @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return SUPPORT_FLAGS_HEATER
-
-    @property
-    def target_temp(self):
-        """Return the temperature we try to reach"""
-        return self._target_temperature
 
     def start_recirculation(self, duration=30):
         self.rinnai_service.start_recirculation(self._device_id, self._user_uuid, duration)

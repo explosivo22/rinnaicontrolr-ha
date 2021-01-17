@@ -221,7 +221,7 @@ class RinnaiDeviceEntity(RinnaiEntity):
 
     @property
     def device_state(self):
-        """Get device data shared from the Flo update coordinator"""
+        """Get device data shared from the Rinnai update coordinator"""
         return self._hass.data[RINNAI_DOMAIN][ATTR_CACHE].get(self._device_id)
 
     def get_telemetry(self, field):
