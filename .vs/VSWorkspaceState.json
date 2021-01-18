@@ -4,6 +4,6 @@
     "\\custom_components",
     "\\custom_components\\rinnaicontrolr-ha"
   ],
-  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\water_heater.py",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\config_flow.py",
   "PreviewInSolutionExplorer": false
 }

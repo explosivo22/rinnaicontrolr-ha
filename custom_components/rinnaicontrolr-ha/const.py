@@ -1,6 +1,6 @@
 """Constants for Rinnai Water Heater Monitoring"""
 
-RINNAI_DOMAIN = 'rinnai'
+DOMAIN = 'rinnai'
 
 ATTRIBUTION = "Data provided by Rinnai"
 

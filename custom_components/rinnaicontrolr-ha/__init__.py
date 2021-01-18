@@ -1,27 +1,29 @@
 import logging
-import requests
 import asyncio
 import time
-import voluptuous as vol
-
-from requests.exceptions import HTTPError, ConnectTimeout
 from datetime import datetime, timedelta
 
-from homeassistant.core import callback
-from homeassistant.helpers import discovery
-from homeassistant.helpers.entity import Entity
-from homeassistant.const import (
-    CONF_EMAIL, CONF_PASSWORD, CONF_NAME, CONF_SCAN_INTERVAL, ATTR_ATTRIBUTION, ATTR_ENTITY_ID)
-from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-import homeassistant.helpers.config_validation as cv
+import async_timeout
+import voluptuous as vol
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import CONF_PASSWORD, CONF_EMAIL
+from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.update_coordinator import (
+    CoordinatorEntity,
+    DataUpdateCoordinator,
+    UpdateFailed,
+)
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
-from .const import RINNAI_DOMAIN, ATTRIBUTION, ATTR_CACHE, ATTR_COORDINATOR
+from .const import DOMAIN
 
 from rinnaicontrolr import RinnaiWaterHeater
 
-LOG = logging.getLogger(__name__)
+_LOGGER = logging.getLogger(__name__)
+
+PLATFORMS = ["water_heater"]
 
 RINNAI_SERVICE = 'rinnai_service'
 
@@ -51,8 +53,41 @@ START_RECIRCULATION_SCHEMA = vol.Schema(
     }
 )
 
-async def async_setup_entry(hass, entry):
-    return
+async def async_setup(hass: HomeAssistant, config: dict):
+    """Set up the Rinnai component"""
+    hass.data[DOMAIN] = {}
+    return True
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
+    """Set up Rinnai from config entry"""
+    user = entry.data[CONF_EMAIL]
+    password = entry.data[CONF_PASSWORD]
+    for ar in entry.data:
+        _LOGGER.debug(ar)
+
+    try:
+        hass.data[DOMAIN][entry.entry_id][RINNAI] = rinnai = RinnaiWaterHeater(
+            entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD]
+        )
+    except RequestError as err:
+        raise ConfigEntryNotReady from err
+
+    rinnai_devices = rinnai.getDevices()
+
+    hass.data[DOMAIN][entry.entry_id]["devices"] = devices = [
+        RinnaiDeviceDataUpdateCoordinator(hass, rinnai, device["thing_name"])
+        for device in rinnai_devices["info"]
+    ]
+    
+    tasks = [device.async_refresh() for device in devices]
+    await asyncio.gather(*tasks)
+
+    for component in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, component)
+        )
+    
+    return True
 
 def setup(hass, config):
     """Set up the Rinnai Water Heater Control System"""
