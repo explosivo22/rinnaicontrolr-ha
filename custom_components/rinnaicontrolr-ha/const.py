@@ -1,4 +1,7 @@
 """Constants for Rinnai Water Heater Monitoring"""
+import logging
+
+LOGGER = logging.getLogger(__package__)
 
 DOMAIN = 'rinnai'
 
