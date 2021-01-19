@@ -3,6 +3,8 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
+from rinnaicontrolr import RinnaiWaterHeater
+
 from homeassistant.helpers.typing import HomeAssistantType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
@@ -13,11 +15,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistantType, rinnai_client: API, thing_name: str
+		self, hass: HomeAssistantType, rinnai_client: RinnaiWaterHeater, thing_name: str
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
-		self.rinnai_client: API = rinnai_client
+		self.rinnai_client: RinnaiWaterHeater = rinnai_client
 		self._rinnai_thing_name: str = thing_name
 		self._manufacturer: str = "Rinnai"
 		self._device_information: Optional[Dict[str, Any]] = None
