@@ -47,7 +47,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	@property
 	def device_name(self) -> str:
-		"""Return device name"
+		"""Return device name."""
 		return f"{self.manufacturer} {self.model}"
 
 	@property
