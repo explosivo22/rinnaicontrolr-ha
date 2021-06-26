@@ -32,6 +32,7 @@ NOTIFICATION_ID = 'rinnai_notification'
 
 CONF_DEVICES = 'devices'
 CONF_DEVICE_ID = 'device_id'
+CONF_SCAN_INTERVALE = 'scan interval'
 
 ATTR_DURATION = 'duration'
 
