@@ -68,5 +68,5 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def serial_number(self) -> str:
 		"""Return the serial number for the device"""
-		reutnr self._device_information["shadow"]["heater_serial_number"]
+		return self._device_information["shadow"]["heater_serial_number"]
 

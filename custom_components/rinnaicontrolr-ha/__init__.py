@@ -48,7 +48,7 @@ START_RECIRCULATION_SCHEMA = vol.Schema(
 
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Rinnai component"""
-    hass.data[DOMAIN] = {}
+    hass.data.setdefault(DOMAIN, {})
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
