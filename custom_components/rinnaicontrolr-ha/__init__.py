@@ -39,14 +39,6 @@ SCAN_INTERVAL = timedelta(seconds=300)
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-SERVICE_START_RECIRCULATION = "start_recirculation"
-START_RECIRCULATION_SCHEMA = vol.Schema(
-    {
-        vol.Required(ATTR_ENTITY_ID): cv.comp_entity_ids,
-        vol.Required(ATTR_DURATION): cv.positive_int,
-    }
-)
-
 async def async_setup(hass: HomeAssistant, config: dict):
     """Set up the Rinnai component"""
     hass.data.setdefault(DOMAIN, {})
