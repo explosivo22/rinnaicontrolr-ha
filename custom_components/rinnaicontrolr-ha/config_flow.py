@@ -7,7 +7,7 @@ from homeassistant import config_entries, core
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import callback
 
-from .const import RINNAI_DOMAIN  # pylint:disable=unused-import; pylint:disable=unused-import
+from .const import DOMAIN  # pylint:disable=unused-import; pylint:disable=unused-import
 
 from rinnaicontrolr import RinnaiWaterHeater
 
@@ -40,7 +40,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     # Return info that you want to store in the config entry.
     return {"title": result.getDevices().get('info').get('thing_name')}
 
-class ConfigFlow(config_entries.ConfigFlow, domain=RINNAI_DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
 
     VERSION = 1

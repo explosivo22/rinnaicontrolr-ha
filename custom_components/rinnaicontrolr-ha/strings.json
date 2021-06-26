@@ -1,11 +1,11 @@
 {
+    "title": "Rinnai Control-R",
     "config": {
         "step": {
             "user": {
-                "title": "Rinnai Control-R",
                 "data": {
-                    "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "email": "Rinnai Email",
+                    "password": "Rinnai Password"
                 }
             }
         },
