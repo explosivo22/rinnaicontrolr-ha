@@ -13,13 +13,6 @@ from rinnaicontrolr import RinnaiWaterHeater
 
 _LOGGER = logging.getLogger(__name__)
 
-DATA_SCHEMA = vol.Schema(
-    {
-        vol.Required(CONF_EMAIL): str,
-        vol.Required(CONF_PASSWORD): str
-    }
-)
-
 async def validate_input(hass: core.HomeAssistant, data):
     """Validate the user input allows us to connect.
     Data has the keys from DATA_SCHEMA with values provided by the user.
@@ -46,26 +39,68 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
     CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
 
+    def __init__(self):
+        self.schema = vol.Schema(
+            {
+                vol.Required(CONF_EMAIL): str,
+                vol.Required(CONF_PASSWORD): str
+            })
+
+        self._email = None
+        self._password = None
+
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
-        errors = {}
-        if user_input is not None:
-            await self.async_set_unique_id(user_input[CONF_EMAIL])
-            self._abort_if_unique_id_configured()
-            try:
-                info = await validate_input(self.hass, user_input)
-                return self.async_create_entry(title=info["title"], data=user_input)
-            except CannotConnect:
-                print("EXCEPT")
-                errors["base"] = "cannot_connect"
-            except InvalidAuth:
-                errors["base"] = "invalid_auth"
-            except Exception:  # pylint: disable=broad-except
-                LOG.exception("Unexpected exception")
-                errors["base"] = "unknown"
 
+        if self._async_current_entries():
+            return self.async_abort(reason="already_configured")
+
+        if not user_input:
+            return self._show_form()
+
+        self._email = user_input[CONF_EMAIL]
+        self._password = user_input[CONF_PASSWORD]
+
+        return await self._async_rinnai_login()
+
+    async def _async_rinnai_login(self):
+
+        errors = {}
+
+        water_heater = RinnaiWaterHeater(self._email, self._password)
+
+        try:
+            result = await self.hass.async_add_executor_job(water_heater.auth)
+
+        except Exception as ex:
+            raise InvalidAuth from ex
+
+        if not result:
+            _LOGGER.error("Failed to authenticate with Rinnai")
+            errors = {"base": "auth_error"}
+            raise CannotConnect
+
+        if errors:
+            return self._show_form(errors=errors)
+
+        return await self._async_create_entry()
+
+    async def _async_create_entry(self):
+        """Create the config entry."""
+        config_data = {
+            CONF_EMAIL: self._username,
+            CONF_PASSWORD: self._password,
+        }
+
+        return self.async_create_entry(title=self._email, data=config_data)
+
+    @callback
+    def _show_form(self, error=None):
+        """Show the form to the user."""
         return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
+            step_id="user",
+            data_schema=self.schema,
+            error=errors if errors else {},
         )
 
 class CannotConnect(exceptions.HomeAssistantError):
