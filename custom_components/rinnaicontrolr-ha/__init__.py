@@ -15,6 +15,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
+import homeassistant.helpers.config_validation as cv
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
 from .const import DOMAIN
