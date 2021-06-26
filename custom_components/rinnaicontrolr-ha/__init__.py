@@ -37,7 +37,7 @@ ATTR_DURATION = 'duration'
 SCAN_INTERVAL = timedelta(seconds=300)
 
 CONFIG_SCHEMA = vol.Schema({
-    RINNAI_DOMAIN: vol.Schema({
+    DOMAIN: vol.Schema({
         vol.Required(CONF_EMAIL): cv.string,
         vol.Required(CONF_PASSWORD): cv.string,
         vol.Optional(CONF_DEVICES, default=[]): cv.ensure_list,
