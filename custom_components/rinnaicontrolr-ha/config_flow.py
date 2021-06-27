@@ -22,7 +22,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     water_heater = RinnaiWaterHeater(data[CONF_EMAIL], data[CONF_PASSWORD])
 
     try:
-        result = await hass.async_add_executor_job(water_heater.auth)
+        result = await hass.async_add_executor_job(water_heater.auth())
 
     except Exception as ex:
         raise InvalidAuth from ex
