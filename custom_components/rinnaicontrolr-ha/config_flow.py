@@ -19,9 +19,8 @@ async def validate_input(hass: core.HomeAssistant, data):
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
 
-    water_heater = RinnaiWaterHeater(data[CONF_EMAIL], data[CONF_PASSWORD])
-
     try:
+        water_heater = RinnaiWaterHeater(data[CONF_EMAIL], data[CONF_PASSWORD])
         result = await hass.async_add_executor_job(water_heater.auth())
 
     except Exception as ex:
