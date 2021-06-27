@@ -22,7 +22,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self.rinnai_client: RinnaiWaterHeater = rinnai_client
 		self._rinnai_thing_name: str = thing_name
 		self._manufacturer: str = "Rinnai"
-		self._device_information: Optional[Dict[str, Any]] = None
+		self._device_information: Optional[Dict[str, Any]] | None = None
 		super().__init__(
 			hass,
 			LOGGER,
@@ -70,3 +70,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		"""Return the serial number for the device"""
 		return self._device_information["shadow"]["heater_serial_number"]
 
+	async def _update_device(self, *_) -> None:
+		"""Update the device information from the API"""
+		self._device_information = rinnai_client.getDevices()
+		LOGGER.debug("Rinnai device data: %s", self._device_information)
