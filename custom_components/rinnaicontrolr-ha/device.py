@@ -63,6 +63,16 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return self._device_information["data"]["getDevice"]["model"]
 
 	@property
+	def thing_name(self) -> str:
+		"""Return model for device"""
+		return self._device_information["data"]["getDevice"]["thing_name"]
+
+	@property
+	def user_uuid(self) -> str:
+		"""Return model for device"""
+		return self._device_information["data"]["getDevice"]["user_uuid"]
+
+	@property
 	def current_temperature(self) -> float:
 		"""Return the current temperature in degrees F"""
 		return float(self._device_information["data"]["getDevice"]["info"]["domestic_temperature"])
@@ -85,8 +95,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			state = "Off"
 		return state
 
-	async def async_set_temperature(self, temperature: float):
-		await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"]["user_uuid"],self._device_information["data"]["getDevice"]["thing_name"], temperature)
+	async def async_set_temperature(self, user_uuid: str, thing_name: str, temperature: float):
+		await self.api_client.device.set_temperature(user_uuid, thing_name, temperature)
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""

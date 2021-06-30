@@ -82,7 +82,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     async def set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is not None:
-            await self._device.async_set_temperature(target_temp)
+            await self._device.async_set_temperature(self._device.user_uuid, self._device.thing_name, target_temp)
         else:
             LOGGER.error("A target temperature must be provided")
 
