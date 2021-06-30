@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import voluptuous as vol
 
-from homeassistant.components.water_heater import WaterHeaterEntity
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE
 from homeassistant.core import callback
 from homeassistant.helpers import entity_platform
 
