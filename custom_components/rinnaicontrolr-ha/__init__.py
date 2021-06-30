@@ -30,7 +30,7 @@ ATTR_DURATION = 'duration'
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Rinnai from config entry"""
-    session = async_get_getclientsession(hass)
+    session = async_get_clientsession(hass)
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
