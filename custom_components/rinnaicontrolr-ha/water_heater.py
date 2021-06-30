@@ -39,6 +39,11 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return TEMP_FAHRENHEIT
 
     @property
+    def supported_features(self):
+        """Return the list of supported features."""
+        return SUPPORT_TARGET_TEMPERATURE
+
+    @property
     def device_state_attributes(self):
         """Return the optional device state attributes."""
         data = {"target_temp_step": 5}
