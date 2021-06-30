@@ -1,7 +1,8 @@
 import logging
 import asyncio
-import time
-from datetime import datetime, timedelta
+
+from rinnaicontrolr import async_get_api
+from rinnaicontrolr.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_EMAIL
@@ -10,10 +11,8 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
-from .const import DOMAIN
+from .const import CLIENT, DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
-
-from rinnaicontrolr import RinnaiWaterHeater
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,26 +32,26 @@ SCAN_INTERVAL = timedelta(seconds=300)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Rinnai from config entry"""
+    session = async_get_getclientsession(hass)
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
     user = entry.data[CONF_EMAIL]
     password = entry.data[CONF_PASSWORD]
-    for ar in entry.data:
-        _LOGGER.debug(ar)
-
     try:
-        hass.data[DOMAIN][entry.entry_id][RINNAI] = rinnai = RinnaiWaterHeater(
-            entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD]
+        hass.data[DOMAIN][entry.entry_id][CLIENT] = client = await async_get_api(
+            entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD], session=session
         )
     except RequestError as err:
         raise ConfigEntryNotReady from err
 
-    rinnai_devices = await rinnai.getDevices()
+    user_info = await client.user.get_info()
+
+    _LOGGER.debug("Rinnai user information: %s", user_info)
 
     hass.data[DOMAIN][entry.entry_id]["devices"] = devices = [
-        RinnaiDeviceDataUpdateCoordinator(hass, rinnai, device["thing_name"])
-        for device in rinnai_devices["info"]
+        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"])
+        for device in user_info["devices"]["items"]
     ]
     
     tasks = [device.async_refresh() for device in devices]

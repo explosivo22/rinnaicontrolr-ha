@@ -24,7 +24,7 @@ class RinnaiEntity(Entity):
     ) -> None:
         """Init Rinnai entity."""
         self._attr_name = name
-        self._attr_unique_id = f"{device.get('info').get('thing_name')}_{entity_type}"
+        self._attr_unique_id = f"{device.id}_{entity_type}"
 
         self._device: RinnaiDeviceDataUpdateCoordinator = device
         self._state: Any = None
@@ -39,7 +39,7 @@ class RinnaiEntity(Entity):
             "name": self._device.device_name,
             "serial": self._device.serial_number,
         }
-
+    
     async def async_update(self):
         """Update Rinnai entity."""
         await self._device.async_request_refresh()

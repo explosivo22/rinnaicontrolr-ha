@@ -1,24 +1,15 @@
-"""
-Support for Rinnai water heater monitoring and control devices
-FUTURE:
-- convert to async
-"""
-from datetime import datetime, timedelta
-import time
-import logging
+"""Water Heater representing the water heater for the Rinnai integration"""
+from __future__ import annotations
+
 import voluptuous as vol
 
-import aiohttp
-
-from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
 from homeassistant.components.water_heater import WaterHeaterEntity
+from homeassistant.core import callback
+from homeassistant.helpers import entity_platform
 
 from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
-
-ICON_DOMESTIC_TEMP='mdi:thermometer'
-NAME_WATER_TEMPERATURE = "Water Temperature"
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai Water heater from config entry."""
@@ -27,11 +18,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     ]["devices"]
     entities = []
     for device in devices:
-        entities.extend(
-            [
-                RinnaiWaterHeater(NAME_WATER_TEMPERATURE, device),
-            ]
-        )
+        entities.append(RinnaiWaterHeater(device))
     async_add_entities(entities)
 
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
@@ -40,6 +27,12 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
         super().__init__("water_heater", "Water Heater", device)
+        self._state = self._device.last_known_state == "False"
+
+    @property
+    def icon(self):
+        """Return the icon to use for the valve."""
+        return "mdi:thermometer"
 
     @property
     def temperature_unit(self):
@@ -52,10 +45,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return data
 
     @property
-    def current_operation(self):
-        return self._current_operation
-
-    @property
     def min_temp(self):
         return 110
 
@@ -64,16 +53,21 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return 140
 
     @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return self._support_features
-
-    @property
     def target_temperature(self):
         """Return the temperature we try to reach"""
-        return self._device.get('info').get('set_domestic_temperature')
+        return self._device.target_temperature
 
     @property
     def current_temperature(self):
         """REturn the current temperature."""
-        return self._device.get('info').get('domestic_temperature')
+        return self._device.current_temperature
+
+    @callback
+    def async_update_state(self) -> None:
+        """Retrieve the latest valve state and update the state machine."""
+        self._state = self._device.last_known_state == "False"
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self):
+        """When entity is added to hass."""
+        self.async_on_remove(self._device.async_add_listener(self.async_update_state))

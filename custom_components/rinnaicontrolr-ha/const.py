@@ -4,6 +4,7 @@ import logging
 LOGGER = logging.getLogger(__package__)
 
 DOMAIN = 'rinnai'
+CLIENT = "client"
 
 ATTRIBUTION = "Data provided by Rinnai"
 

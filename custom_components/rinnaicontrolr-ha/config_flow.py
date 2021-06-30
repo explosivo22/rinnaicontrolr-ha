@@ -1,16 +1,13 @@
 """Config flow for Rinnai integration."""
-import logging
+from rinnaicontrolr import async_get_api
+from rinnaicontrolr.errors import RequestError
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .const import DOMAIN  # pylint:disable=unused-import; pylint:disable=unused-import
-
-from rinnaicontrolr import RinnaiWaterHeater
-
-_LOGGER = logging.getLogger(__name__)
+from .const import DOMAIN, LOGGER
 
 DATA_SCHEMA = vol.Schema({vol.Required("email"): str, vol.Required("password"): str})
 
@@ -19,19 +16,19 @@ async def validate_input(hass: core.HomeAssistant, data):
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
 
+    session = async_get_clientsession(hass)
     try:
-        water_heater = await hass.async_add_executor_job(RinnaiWaterHeater(data[CONF_EMAIL], data[CONF_PASSWORD]))
-        result = await hass.async_add_executor_job(water_heater.auth())
+        api = await async_get_api(
+            data[CONF_EMAIL], data[CONF_PASSWORD], session=session
+        )
+    except RequestError as request_error:
+        LOGGER.error("Error connecting to the Rinnai API: %s", request_error)
+        raise CannotConnect from request_error
 
-    except Exception as ex:
-        raise InvalidAuth from ex
-
-    if not result:
-        _LOGGER.error("Failed to authenticate with Rinnai")
-        raise CannotConnect
-
-    # Return info that you want to store in the config entry.
-    return {"title": result.getDevices().get('info').get('thing_name')}
+    user_info = await api.user.get_info()
+    first_device_name = user_info["devices"]["items"][0]["id"]
+    device_info = await api.device.get_info(first_device_name)
+    return {"title": device_info["data"]["getDevice"]["device_name"]}
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""

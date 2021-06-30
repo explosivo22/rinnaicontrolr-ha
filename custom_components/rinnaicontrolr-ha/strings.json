@@ -4,8 +4,9 @@
         "step": {
             "user": {
                 "data": {
-                    "email": "Rinnai Email",
-                    "password": "Rinnai Password"
+                    "host": "[%key:common::config_flow::data::host%]",
+                    "email": "[%key:common::config_flow::data::email%]",
+                    "password": "[%key:common::config_flow::data::password%]"
                 }
             }
         },
