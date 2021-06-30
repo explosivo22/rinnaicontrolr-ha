@@ -27,7 +27,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
         super().__init__("water_heater", "Water Heater", device)
-        self._state = self._device.last_known_state == "False"
+        self._poll = True
 
     @property
     def state(self):
@@ -71,22 +71,25 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         """REturn the current temperature."""
         return self._device.current_temperature
 
+    @property
+    def should_poll(self) -> bool:
+        """Return True if entity has to be polled for state
+
+        False if entity pushes its state to HA.
+        """
+        return self._poll
+
     async def set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is not None:
             await self._device.async_set_temperature(target_temp)
-            self.async_schedule_update_ha_state(forst_refresh=True)
         else:
             LOGGER.error("A target temperature must be provided")
 
-    @callback
-    def async_update_state(self) -> None:
-        """Retrieve the latest valve state and update the state machine."""
-        self._state = self._device.last_known_state == "False"
-        self.async_write_ha_state()
-
     async def async_update(self) -> None:
-        await super().async_update()
+        await self._device._update_device()
+        self.async_write_ha_state()
+        self._poll = True
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
