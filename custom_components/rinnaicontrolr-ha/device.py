@@ -81,7 +81,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	def last_known_state(self) -> str:
 		return self._device_information["data"]["getDevice"]["info"]["domestic_combustion"]
 
-	async def async_set_temperature(self, temperature: int):
+	async def async_set_temperature(self, temperature: float):
 		await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"]["user_uuid"],self._device_information["data"]["getDevice"]["thing_name"], temperature)
 
 	async def _update_device(self, *_) -> None:
