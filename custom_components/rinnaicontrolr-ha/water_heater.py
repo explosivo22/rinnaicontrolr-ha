@@ -30,6 +30,10 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         self._state = self._device.last_known_state == "False"
 
     @property
+    def state(self):
+        return self._device.last_known_state
+
+    @property
     def icon(self):
         """Return the icon to use for the valve."""
         return "mdi:thermometer"
@@ -71,7 +75,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is not None:
             await self._device.async_set_temperature(target_temp)
-            self.async_write_ha_state()
+            self.async_schedule_update_ha_state(forst_refresh=True)
         else:
             LOGGER.error("A target temperature must be provided")
 
@@ -80,6 +84,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         """Retrieve the latest valve state and update the state machine."""
         self._state = self._device.last_known_state == "False"
         self.async_write_ha_state()
+
+    async def async_update(self) -> None:
+        await super().async_update()
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
