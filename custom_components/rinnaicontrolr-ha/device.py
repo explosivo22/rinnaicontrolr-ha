@@ -65,12 +65,12 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def current_temperature(self) -> float:
 		"""Return the current temperature in degrees F"""
-		return float(self._device_information["data"]["getDevice"]["info"]["domestic_temperature"], 1)
+		return float(self._device_information["data"]["getDevice"]["info"]["domestic_temperature"])
 
 	@property
 	def target_temperature(self) -> float:
 		"""Return the current temperature in degrees F"""
-		return float(self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"], 1)
+		return float(self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"])
 
 	@property
 	def serial_number(self) -> str:
