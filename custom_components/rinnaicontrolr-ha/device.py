@@ -17,7 +17,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistantType, rinnai_client: API, device_id: str
+		self, hass: HomeAssistant, rinnai_client: API, device_id: str
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
