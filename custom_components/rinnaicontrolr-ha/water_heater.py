@@ -91,6 +91,12 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         self.async_write_ha_state()
         self._poll = True
 
+    @callback
+    def async_update_state(self) -> None:
+        """Retrieve the latest valve state and update the state machine."""
+        self._state = self._device.last_known_state
+        self.async_write_ha_state()
+
     async def async_added_to_hass(self):
         """When entity is added to hass."""
         self.async_on_remove(self._device.async_add_listener(self.async_update_state))
