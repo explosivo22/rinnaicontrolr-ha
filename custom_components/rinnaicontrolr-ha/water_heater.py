@@ -51,11 +51,11 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def min_temp(self):
-        return 110
+        return float(110)
 
     @property
     def max_temp(self):
-        return 140
+        return float(140)
 
     @property
     def target_temperature(self):
