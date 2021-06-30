@@ -28,8 +28,6 @@ CONF_SCAN_INTERVAL = 'scan interval'
 
 ATTR_DURATION = 'duration'
 
-SCAN_INTERVAL = timedelta(seconds=300)
-
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Rinnai from config entry"""
     session = async_get_getclientsession(hass)
