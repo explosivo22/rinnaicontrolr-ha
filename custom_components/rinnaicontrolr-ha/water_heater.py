@@ -3,11 +3,11 @@ from __future__ import annotations
 
 import voluptuous as vol
 
-from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, ATTR_TEMPERATURE
 from homeassistant.core import callback
 from homeassistant.helpers import entity_platform
 
-from .const import DOMAIN as RINNAI_DOMAIN
+from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -66,6 +66,13 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     def current_temperature(self):
         """REturn the current temperature."""
         return self._device.current_temperature
+
+    async def set_temperature(self, **kwargs):
+        target_temp = kwargs.get(ATTR_TEMPERATURE)
+        if target_temp is not None:
+            await self._device.async_set_temperature(target_temp)
+        else:
+            LOGGER.error("A target temperature must be provided")
 
     @callback
     def async_update_state(self) -> None:
