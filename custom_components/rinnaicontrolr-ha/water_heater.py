@@ -102,7 +102,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     async def async_update_state(self) -> None:
         """Retrieve the latest state and update the state machine."""
         await self._device._update_device()
-        await self.async_write_ha_state()
+        self.async_write_ha_state()
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
