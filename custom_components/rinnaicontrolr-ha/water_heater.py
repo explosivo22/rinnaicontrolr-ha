@@ -13,7 +13,7 @@ from .entity import RinnaiEntity
 
 OPERATION_LIST = [STATE_OFF, STATE_GAS]
 ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
-SERVICE_ZSTART_RECIRCULATION = "start_recirculation"
+SERVICE_START_RECIRCULATION = "start_recirculation"
 
 # The Rinnai app hardcodes recirculation durations to certain intervals;
 RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
@@ -31,9 +31,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     platform = entity_platform.async_get_current_platform()
 
     platform.async_register_entity_service(
-        SERVICE_ZSTART_RECIRCULATION,
+        SERVICE_START_RECIRCULATION,
         {
-            vol.Required(ATTR_RECIRCULATION_MINUTES, default=60): vol.In(RECIRCULATION_MINUTE_OPTIONS),
+            vol.Required(ATTR_RECIRCULATION_MINUTES, default=60): vol.In(RECIRCULATION_MINUTE_OPTIONS)
         },
         "async_start_recirculation",
     )
