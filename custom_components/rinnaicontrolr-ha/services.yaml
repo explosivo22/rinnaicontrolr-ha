@@ -1,9 +1,36 @@
 start_recirculation:
-  description: "Start recirculation on the water heater if supported."
+  name: Start Recirculation
+  description: Start recirculation on the water heater.
+  target:
+    entity:
+      integration: rinnai
+      domain: water-heater
   fields:
-    entity_id:
-      description: "The water heater entity id to call service on."
-      example: "water_heater.water_heater"
-    duration:
-      description: "The time in minutes, multiples of 15"
-      example: 30
+    recirculation_minutes:
+      name: Recirculation minutes
+      description: The time to recirculate in minutes.
+      default: true
+      selector:
+        select:
+          options:
+            - '5'
+            - '15'
+            - '30'
+            - '45'
+            - '60'
+            - '75'
+            - '90'
+            - '105'
+            - '120'
+            - '135'
+            - '150'
+            - '165'
+            - '180'
+            - '195'
+            - '210'
+            - '225'
+            - '240'
+            - '255'
+            - '270'
+            - '285'
+            - '300'
