@@ -4,7 +4,7 @@ start_recirculation:
   target:
     entity:
       integration: rinnai
-      domain: water-heater
+      domain: water_heater
   fields:
     recirculation_minutes:
       name: Recirculation minutes

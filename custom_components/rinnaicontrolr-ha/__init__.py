@@ -16,7 +16,7 @@ from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["water_heater","sensor"]
+PLATFORMS = ["water_heater"]
 
 RINNAI_SERVICE = 'rinnai_service'
 
@@ -34,8 +34,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
-    user = entry.data[CONF_EMAIL]
-    password = entry.data[CONF_PASSWORD]
     try:
         hass.data[DOMAIN][entry.entry_id][CLIENT] = client = await async_get_api(
             entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD], session=session
