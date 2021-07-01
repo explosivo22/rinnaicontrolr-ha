@@ -12,6 +12,11 @@ from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
 OPERATION_LIST = [STATE_OFF, STATE_GAS]
+ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
+SERVICE_ZSTART_RECIRCULATION = "start_recirculation"
+
+# The Rinnai app hardcodes recirculation durations to certain intervals;
+RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai Water heater from config entry."""
@@ -23,6 +28,16 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         entities.append(RinnaiWaterHeater(device))
     async_add_entities(entities)
 
+    platform = entity_platform.async_get_current_platform()
+
+    platform.async_register_entity_service(
+        SERVICE_ZSTART_RECIRCULATION,
+        {
+            vol.Required(ATTR_RECIRCULATION_MINUTES, default=60): vol.In(RECIRCULATION_MINUTE_OPTIONS),
+        },
+        "async_start_recirculation",
+    )
+
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
@@ -32,9 +47,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def state(self):
-        if self._device.last_known_state:
-            return "Running"
-        return "Off"
+        return self._device.last_known_state
 
     @property
     def current_operation(self):
@@ -95,6 +108,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
             LOGGER.debug("Updated temperature to: %s", target_temp)
         else:
             LOGGER.error("A target temperature must be provided")
+
+    async def async_start_recirculation(self, recirculation_minutes):
+        await self._device.async_start_recirculation(recirculation_minutes)
 
     async def async_update(self) -> None:
         await self._device._update_device()
