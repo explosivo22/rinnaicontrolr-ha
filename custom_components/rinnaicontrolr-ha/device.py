@@ -89,7 +89,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	@property
 	def last_known_state(self) -> bool:
-		return bool(self._device_information["data"]["getDevice"]["info"]["domestic_combustion"])
+		return bool(self._device_information["data"]["getDevice"]["info"]["domestic_combustion"].capitalize())
 
 	async def async_set_temperature(self, temperature: float):
 		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)
