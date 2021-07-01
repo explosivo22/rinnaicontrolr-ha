@@ -106,4 +106,4 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
-        await self.async_on_remove(self._device.async_add_listener(self.async_update_state))
+        self.async_on_remove(self._device.async_add_listener(self.async_update_state))
