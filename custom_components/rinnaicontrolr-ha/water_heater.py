@@ -14,6 +14,7 @@ from .entity import RinnaiEntity
 OPERATION_LIST = [STATE_OFF, STATE_GAS]
 ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
 SERVICE_START_RECIRCULATION = "start_recirculation"
+SERVICE_STOP_RECIRCULATION = "stop_recirculation"
 
 # The Rinnai app hardcodes recirculation durations to certain intervals;
 RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
@@ -38,6 +39,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         "async_start_recirculation",
     )
 
+    platform.async_register_entity_service(
+        SERVICE_STOP_RECIRCULATION, {}, "async_stop_recirculation"
+    )
+
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
@@ -51,7 +56,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def current_operation(self):
-        if self._device.last_known_state:
+        if self._device.domestic_combustion:
             return STATE_GAS
         return STATE_OFF
 
@@ -67,6 +72,10 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     @property
     def temperature_unit(self):
         return TEMP_FAHRENHEIT
+
+    @property
+    def is_on(self):
+        return self._device.domestic_combustion
 
     @property
     def supported_features(self):
@@ -111,6 +120,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     async def async_start_recirculation(self, recirculation_minutes):
         await self._device.async_start_recirculation(recirculation_minutes)
+
+    async def async_stop_recirculation(self):
+        await self._device.async_stop_recirculation()
 
     async def async_update(self) -> None:
         await self._device._update_device()

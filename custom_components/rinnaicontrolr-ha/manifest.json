@@ -4,6 +4,6 @@
     "config_flow": true,
     "documentation": "https://github.com/explosivo22/rinnaicontrolr-ha/",
     "codeowners": [ "@explosivo22" ],
-    "requirements": [ "rinnaicontrolr==0.2.1a1" ],
-    "version": "1.0.33"
+    "requirements": [ "aio-rinnaicontrolr==0.2.1.a4" ],
+    "version": "1.0.34"
 }

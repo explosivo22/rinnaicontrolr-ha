@@ -34,3 +34,10 @@ start_recirculation:
             - 270
             - 285
             - 300
+stop_recirculation:
+  name: Stop Recirculation
+  description: Stop recirculation on the water heater.
+  target:
+    entity:
+      integration: rinnai
+      domain: water_heater
