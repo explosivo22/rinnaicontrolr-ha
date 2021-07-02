@@ -2,5 +2,6 @@
     "name": "Rinnai Control-R Water Heater",
     "domains": [
         "water_heater"
-    ]
+    ],
+    "content_in_root": false
 }
