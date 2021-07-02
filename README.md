@@ -24,7 +24,7 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 #### Versions
 
-The 'master' branch of this custom component is considered unstable, alpha quality and not guaranteed to work.
+The 'main' branch of this custom component is considered unstable, alpha quality and not guaranteed to work.
 Please make sure to use one of the official release branches when installing using HACS, see [what has changed in each version](https://github.com/explosivo22/rinnaicontrolr-ha/releases).
 
 ### Step 1: Install Custom Components
