@@ -13,14 +13,11 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 ### Features
 
-- sensors:
-    * water temperature (&deg;F)
 - water heater:
     * water temperature (&deg;F)
     * set operating temperature
     * start recirculation (on capable models)
 - multiple Rinnai devices
-- ability to restrict devices (for users with multiple water heaters)
 - reduced polling of Rinnai webservice to avoid unintentional DDoS
 
 ## Installation
@@ -36,28 +33,6 @@ Make sure that [Home Assistant Community Store (HACS)](https://github.com/custom
 
 ### Step 2: Configuration
 
-**DO NOT MANUALLY CONFIGURE SENSORS/SWITCHES, ONLY CONFIGURE USING `rinnai:` AS BELOW**. Configuration flow UI is being added in version 1.0 of this integration.
+#### Configure via UI
 
-Example configuration:
-
-```yaml
-rinnai:
-  email: your@email.com
-  password: your_rinnai_password
-```
-
-The following is an advanced configuration to limit sensors to a single location (if multiple houses on a single account). The location_id can be found by turning logging to DEBUG for `rinnaicontrolr` component, or installing [`rinnaicontrolr`](https://github.com/explosivo22/rinnaicontrolr) and running the `example-client.py` script to show all information about your Rinnai devices.
-
-```yaml
-rinnai:
-  email: your@email.com
-  password: your_rinnai_password
-  devices:
-    - d6b2822a-f2ce-44b0-bbe2-3600a095d494
-```
-
-#### Alternative: Configure via UI
-
-**THE UI CONFIGURATION IS CURRENTLY DISABLED**
-
-Version 1.0 added the ability to configure credentials for Rinnai through the Home Assistant UI. Go to Configuration -> Integrations and click the + symbol to configure. Search for Rinnai and enter your username and password.
+Go to Configuration -> Integrations and click the + symbol to configure. Search for Rinnai Control-R Water Heater and enter your email and password.

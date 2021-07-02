@@ -1,116 +1,86 @@
-"""
-Support for Rinnai water heater monitoring and control devices
-FUTURE:
-- convert to async
-"""
-from datetime import datetime, timedelta
-import time
-import logging
+"""Water Heater representing the water heater for the Rinnai integration"""
+from __future__ import annotations
+
 import voluptuous as vol
 
-import aiohttp
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
+from homeassistant.core import callback
+from homeassistant.helpers import entity_platform
 
-from homeassistant.const import TEMP_FAHRENHEIT, ATTR_TEMPERATURE, CONF_SCAN_INTERVAL, ATTR_ENTITY_ID, DEVICE_CLASS_TEMPERATURE
-from homeassistant.helpers.entity import Entity
-from homeassistant.components.sensor import PLATFORM_SCHEMA
-from homeassistant.components import websocket_api
-from homeassistant.util import dt as dt_util
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.dispatcher import async_dispatcher_connect, async_dispatcher_send
-from homeassistant.components.water_heater import (
-    STATE_OFF,
-    SUPPORT_TARGET_TEMPERATURE,
-    WaterHeaterEntity,
-    ATTR_TARGET_TEMP_HIGH,
-    ATTR_TARGET_TEMP_LOW,
-    DOMAIN,
-)
+from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+from .device import RinnaiDeviceDataUpdateCoordinator
+from .entity import RinnaiEntity
 
-from .const import ICON_DOMESTIC_TEMP, SIGNAL_UPDATE_RINNAI
+OPERATION_LIST = [STATE_OFF, STATE_GAS]
+ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
+SERVICE_START_RECIRCULATION = "start_recirculation"
+SERVICE_STOP_RECIRCULATION = "stop_recirculation"
 
-from . import RinnaiEntity, RinnaiDeviceEntity, RINNAI_DOMAIN, RINNAI_SERVICE, CONF_DEVICE_ID
+# The Rinnai app hardcodes recirculation durations to certain intervals;
+RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
 
-LOG = logging.getLogger(__name__)
+async def async_setup_entry(hass, config_entry, async_add_entities):
+    """Set up the Rinnai Water heater from config entry."""
+    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
+        config_entry.entry_id
+    ]["devices"]
+    entities = []
+    for device in devices:
+        entities.append(RinnaiWaterHeater(device))
+    async_add_entities(entities)
 
-ATTR_DURATION = 'duration'
+    platform = entity_platform.async_get_current_platform()
 
-WS_START_RECIRCULATION = 'rinnai_start_recirculation'
-WS_START_RECIRCULATION_SCHEMA = websocket_api.BASE_COMMAND_MESSAGE_SCHEMA.extend(
-    { 
-    vol.Required(ATTR_ENTITY_ID): cv.comp_entity_ids,
-    vol.Required(ATTR_DURATION): cv.positive_int,
-    }
-)
-
-def setup_platform(hass, config, add_water_heater_callback, discovery_info=None):
-    rinnai = hass.data[RINNAI_SERVICE]
-    if rinnai is None or not rinnai.is_connected:
-        LOG.warning("No connection to Rinnai Service, ignoring setup of platform water heater")
-        return False
-
-    if discovery_info:
-        device_id = discovery_info[CONF_DEVICE_ID]
-    else:
-        device_id = config[CONFIG_DEVICE_ID]
-
-    water_heater = []
-
-    device = rinnai.getDevices()
-
-    for device_details in device:
-        device_id = device_details['thing_name']
-        user_uuid = device_details['user_uuid']
-
-        water_heater.append( RinnaiWaterHeaterEntity(hass, device_id, user_uuid) )
-
-    add_water_heater_callback(water_heater)
-
-    hass.components.websocket_api.async_register_command(
-        WS_START_RECIRCULATION, websocket_start_recirculation, WS_START_RECIRCULATION_SCHEMA
+    platform.async_register_entity_service(
+        SERVICE_START_RECIRCULATION,
+        {
+            vol.Required(ATTR_RECIRCULATION_MINUTES, default=60): vol.In(RECIRCULATION_MINUTE_OPTIONS)
+        },
+        "async_start_recirculation",
     )
 
-class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
+    platform.async_register_entity_service(
+        SERVICE_STOP_RECIRCULATION, {}, "async_stop_recirculation"
+    )
+
+class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
-    def __init__(self, hass, device_id, user_uuid):
+    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
-        self._name = name
-        self._unique_id = self.device_state.get('info').get('thing_name')
-        self._support_features = SUPPORT_TARGET_TEMPERATURE
-        self._min_temp = 110
-        self._max_temp = 140
-        self._target_temperature = None
-        self._current_temperature = None
-        self._current_operation = None
-        self._state_attrs = {}
+        super().__init__("water_heater", "Water Heater", device)
 
     @property
-    def name(self):
-        return self._name
+    def state(self):
+        return self._device.last_known_state
 
     @property
-    def unique_id(self):
-        """Return unique ID for this device."""
-        return self._unique_id
+    def current_operation(self):
+        if self._device.domestic_combustion:
+            return STATE_GAS
+        return STATE_OFF
 
     @property
-    def device_info(self):
-        return {
-            "manufacturer": "Rinnai",
-            "model": self.device_state.get('model'),
-            "dsn": self.device_state.get('dsn')
-        }
+    def operation_list(self):
+        return OPERATION_LIST
+
+    @property
+    def icon(self):
+        """Return the icon to use for the valve."""
+        return "mdi:thermometer"
 
     @property
     def temperature_unit(self):
         return TEMP_FAHRENHEIT
 
     @property
-    def state_attributes(self):
-        data = {}
-        data['info'] = self.device_state.get('info')
-        data['setpoint'] = self.device_state.get('shadow').get('set_domestic_temperature')
-        return data
+    def is_on(self):
+        return self._device.domestic_combustion
+
+    @property
+    def supported_features(self):
+        """Return the list of supported features."""
+        return SUPPORT_TARGET_TEMPERATURE
 
     @property
     def device_state_attributes(self):
@@ -119,93 +89,51 @@ class RinnaiWaterHeaterEntity(RinnaiDeviceEntity):
         return data
 
     @property
-    def current_operation(self):
-        return self._current_operation
-
-    @property 
-    def current_temperature(self):
-        return self._current_temperature
-
-    @property
     def min_temp(self):
-        return self._min_temp
+        return float(110)
 
     @property
     def max_temp(self):
-        return self._max_temp
+        return float(140)
 
     @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return self._support_features
-
-    @property
-    def target_temp(self):
+    def target_temperature(self):
         """Return the temperature we try to reach"""
-        return self._target_temperature
+        return self._device.target_temperature
 
+    @property
+    def current_temperature(self):
+        """REturn the current temperature."""
+        return self._device.current_temperature
 
-    def update(self):
-        """Update sensor state"""
-        if not self.device_state:
-            return
-
-        self._current_temperature = self.device_state.get('info').get('domestic_temperature')
-        self._min_temp = 110
-        self._max_temp = 140
-        self._target_temperature = self.device_state.get('shadow').get('set_domestic_temperature')
-        self.update_state(self.device_state)
-
-    async def set_rinnai_temp(self, temp):
-        url = "https://d1coipyopavzuf.cloudfront.net/api/device_shadow/input"
-        
-        # check if the temp is a multiple of 5. Rinnai only takes temps this way
-        if temp % 5 == 0:
-            payload="user=%s&thing=%s&attribute=set_domestic_temperature&value=%s" % (self._user_uuid, self._device_id, int(temp))
-            LOG.debug(payload)
-            headers = {
-              'User-Agent': 'okhttp/3.12.1',
-              'Content-Type': 'application/x-www-form-urlencoded'
-            }
-            async with aiohttp.ClientSession() as session:
-                async with session.post(url, headers=headers, data=payload) as resp:
-                    data = await resp.json()
-                    LOG.debug(data)
-                    if resp.status == 200:
-                        return
+    @property
+    def should_poll(self) -> bool:
+        return True
 
     async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
-        if target_temp and target_temp != self._current_temperature:
-            await self.set_rinnai_temp(target_temp)
-            self._current_temperature = target_temp
-            self.update_state(self._current_temperature)
+        if target_temp is not None:
+            await self._device.async_set_temperature(int(target_temp))
+            LOGGER.debug("Updated temperature to: %s", target_temp)
+        else:
+            LOGGER.error("A target temperature must be provided")
 
-            self.async_schedule_update_ha_state(force_refresh=True)
+    async def async_start_recirculation(self, recirculation_minutes):
+        await self._device.async_start_recirculation(recirculation_minutes)
 
-    def start_recirculation(self, duration=30):
-        self.rinnai_service.start_recirculation(self._device_id, self._user_uuid, duration)
+    async def async_stop_recirculation(self):
+        await self._device.async_stop_recirculation()
 
-    async def async_start_recirculation(self, duration):
-        return await self.hass.async_add_executor_job(self.start_recirculation, duration)
+    async def async_update(self) -> None:
+        await self._device._update_device()
+        self.async_write_ha_state()
+
+    @callback
+    async def async_update_state(self) -> None:
+        """Retrieve the latest state and update the state machine."""
+        await self._device._update_device()
+        self.async_write_ha_state()
 
     async def async_added_to_hass(self):
-        self.update_state(None)
-
-def _get_base_from_entity_id(hass, entity_id):
-    component = hass.data.get(DOMAIN)
-    if component is None:
-        raise HomeAssistantError("base component not set up")
-
-    base = component.get_entity(entity_id)
-    if base is None:
-        raise HomeAssistantError("base not found")
-
-    return base
-
-@websocket_api.async_response
-async def websocket_start_recirculation(hass, connection, msg):
-    base = _get_base_from_entity_id(hass, msg["entity_id"])
-
-    await base.async_start_recirculation(duration=msg["duration"])
-    connection.send_message(websocket_api.result_message(msg["id"], {"recirculation": "on"}))
+        """When entity is added to hass."""
+        self.async_on_remove(self._device.async_add_listener(self.async_update_state))

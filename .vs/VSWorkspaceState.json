@@ -2,8 +2,9 @@
   "ExpandedNodes": [
     "",
     "\\custom_components",
-    "\\custom_components\\rinnaicontrolr-ha"
+    "\\custom_components\\rinnaicontrolr-ha",
+    "\\custom_components\\rinnaicontrolr-ha\\translations"
   ],
-  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\device.py",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\services.yaml",
   "PreviewInSolutionExplorer": false
 }

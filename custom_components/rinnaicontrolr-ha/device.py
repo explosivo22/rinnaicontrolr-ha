@@ -3,9 +3,11 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
-from rinnaicontrolr import RinnaiWaterHeater
+from rinnaicontrolr.api import API
+from rinnaicontrolr.errors import RequestError
+from async_timeout import timeout
 
-from homeassistant.helpers.typing import HomeAssistantType
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
 
@@ -15,18 +17,18 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistantType, rinnai_client: RinnaiWaterHeater, thing_name: str
+		self, hass: HomeAssistant, api_client: API, device_id: str
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
-		self.rinnai_client: RinnaiWaterHeater = rinnai_client
-		self._rinnai_thing_name: str = thing_name
+		self.api_client: API = api_client
+		self._rinnai_device_id: str = device_id
 		self._manufacturer: str = "Rinnai"
-		self._device_information: Optional[Dict[str, Any]] = None
+		self._device_information: Optional[Dict[str, Any]] | None = None
 		super().__init__(
 			hass,
 			LOGGER,
-			name=f"{RINNAI_DOMAIN}-{thing_name}",
+			name=f"{RINNAI_DOMAIN}-{device_id}",
 			update_interval=timedelta(seconds=60),
 		)
 
@@ -43,7 +45,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def id(self) -> str:
 		"""Return Rinnai thing name"""
-		return self._rinnai_thing_name
+		return self._rinnai_device_id
 
 	@property
 	def device_name(self) -> str:
@@ -58,15 +60,53 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def model(self) -> str:
 		"""Return model for device"""
-		return self._device_information["info"]["model"]
+		return self._device_information["data"]["getDevice"]["model"]
 
 	@property
-	def temperature(self) -> str:
+	def thing_name(self) -> str:
+		"""Return model for device"""
+		return self._device_information["data"]["getDevice"]["thing_name"]
+
+	@property
+	def user_uuid(self) -> str:
+		"""Return model for device"""
+		return self._device_information["data"]["getDevice"]["user_uuid"]
+
+	@property
+	def current_temperature(self) -> float:
 		"""Return the current temperature in degrees F"""
-		return self._device_information["info"]["domestic_temperature"]
+		return float(self._device_information["data"]["getDevice"]["info"]["domestic_temperature"])
+
+	@property
+	def target_temperature(self) -> float:
+		"""Return the current temperature in degrees F"""
+		return float(self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"])
 
 	@property
 	def serial_number(self) -> str:
 		"""Return the serial number for the device"""
-		return self._device_information["shadow"]["heater_serial_number"]
+		return self._device_information["data"]["getDevice"]["info"]["serial_id"]
 
+	@property
+	def last_known_state(self) -> str:
+		return self._device_information["data"]["getDevice"]["activity"]["eventType"]
+
+	@property
+	def domestic_combustion(self) -> bool:
+		return (self._device_information["data"]["getDevice"]["info"]["domestic_combustion"]).capitalize()
+
+	async def async_set_temperature(self, temperature: int):
+		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)
+
+	async def async_start_recirculation(self, duration: int):
+		await self.api_client.device.start_recirculation(self.user_uuid, self.thing_name, duration)
+
+	async def async_stop_recirculation(self):
+		await self.api_client.device.stop_recirculation(self.user_uuid, self.thing_name)
+
+	async def _update_device(self, *_) -> None:
+		"""Update the device information from the API"""
+		self._device_information = await self.api_client.device.get_info(
+			self._rinnai_device_id
+		)
+		LOGGER.debug("Rinnai device data: %s", self._device_information)
