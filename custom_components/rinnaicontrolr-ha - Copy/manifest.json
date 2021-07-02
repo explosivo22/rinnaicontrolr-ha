@@ -1,0 +1,9 @@
+{
+    "domain": "rinnai",
+    "name": "Rinnai Control-R Water Heater",
+    "config_flow": true,
+    "documentation": "https://github.com/explosivo22/rinnaicontrolr-ha/",
+    "codeowners": [ "@explosivo22" ],
+    "requirements": [ "aio-rinnaicontrolr==0.2.1.a4" ],
+    "version": "1.0.34"
+}
