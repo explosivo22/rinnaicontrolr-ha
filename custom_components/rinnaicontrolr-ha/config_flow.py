@@ -1,6 +1,6 @@
 """Config flow for Rinnai integration."""
-from rinnaicontrolr import async_get_api
-from rinnaicontrolr.errors import RequestError
+from aiorinnai import async_get_api
+from aiorinnai.errors import RequestError
 import voluptuous as vol
 
 from homeassistant import config_entries, core, exceptions
