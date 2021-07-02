@@ -3,8 +3,8 @@ import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 
-from rinnaicontrolr.api import API
-from rinnaicontrolr.errors import RequestError
+from aiorinnai.api import API
+from aiorinnai.errors import RequestError
 from async_timeout import timeout
 
 from homeassistant.core import HomeAssistant

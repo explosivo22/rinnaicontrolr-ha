@@ -1,8 +1,8 @@
 import logging
 import asyncio
 
-from rinnaicontrolr import async_get_api
-from rinnaicontrolr.errors import RequestError
+from aiorinnai import async_get_api
+from aiorinnai.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_EMAIL
@@ -18,15 +18,6 @@ _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["water_heater"]
 
-RINNAI_SERVICE = 'rinnai_service'
-
-NOTIFICATION_ID = 'rinnai_notification'
-
-CONF_DEVICES = 'devices'
-CONF_DEVICE_ID = 'device_id'
-CONF_SCAN_INTERVAL = 'scan interval'
-
-ATTR_DURATION = 'duration'
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Rinnai from config entry"""
