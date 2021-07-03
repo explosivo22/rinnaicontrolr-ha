@@ -67,7 +67,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     @property
     def icon(self):
         """Return the icon to use for the valve."""
-        return "mdi:thermometer"
+        return "mdi:water-boiler"
 
     @property
     def temperature_unit(self):
