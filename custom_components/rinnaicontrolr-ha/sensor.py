@@ -11,17 +11,6 @@ from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
-WATER_ICON = "mdi:water"
-GAUGE_ICON = "mdi:gauge"
-NAME_DAILY_USAGE = "Today's Water Usage"
-NAME_CURRENT_SYSTEM_MODE = "Current System Mode"
-NAME_FLOW_RATE = "Water Flow Rate"
-NAME_WATER_TEMPERATURE = "Water Temperature"
-NAME_AIR_TEMPERATURE = "Temperature"
-NAME_WATER_PRESSURE = "Water Pressure"
-NAME_HUMIDITY = "Humidity"
-NAME_BATTERY = "Battery"
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai sensors from config entry."""
