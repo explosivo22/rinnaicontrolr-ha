@@ -100,6 +100,14 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	def is_recirculating(self) -> bool:
 		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["recirculation_enabled"]))
 
+	@property
+	def outlet_temperature(self) -> float:
+		return float(self._device_information["data"]["getDevice"]["info"]["m02_outlet_temperature"])
+
+	@property
+	def inlet_temperature(self) -> float:
+		return float(self._device_information["data"]["getDevice"]["info"]["m08_inlet_temperature"])
+
 	async def async_set_temperature(self, temperature: int):
 		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)
 
