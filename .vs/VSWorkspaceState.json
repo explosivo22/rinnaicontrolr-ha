@@ -2,9 +2,8 @@
   "ExpandedNodes": [
     "",
     "\\custom_components",
-    "\\custom_components\\rinnaicontrolr-ha",
-    "\\custom_components\\rinnaicontrolr-ha\\translations"
+    "\\custom_components\\rinnaicontrolr-ha"
   ],
-  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\services.yaml",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\sensor.py",
   "PreviewInSolutionExplorer": false
 }

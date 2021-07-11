@@ -2,6 +2,7 @@
 import asyncio
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
+from distutils.util import strtobool
 
 from aiorinnai.api import API
 from aiorinnai.errors import RequestError
@@ -92,8 +93,20 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return self._device_information["data"]["getDevice"]["activity"]["eventType"]
 
 	@property
-	def domestic_combustion(self) -> bool:
-		return (self._device_information["data"]["getDevice"]["info"]["domestic_combustion"]).capitalize()
+	def is_heating(self) -> bool:
+		return strtobool(str(self._device_information["data"]["getDevice"]["info"]["domestic_combustion"]))
+
+	@property
+	def is_recirculating(self) -> bool:
+		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["recirculation_enabled"]))
+
+	@property
+	def outlet_temperature(self) -> float:
+		return float(self._device_information["data"]["getDevice"]["info"]["m02_outlet_temperature"])
+
+	@property
+	def inlet_temperature(self) -> float:
+		return float(self._device_information["data"]["getDevice"]["info"]["m08_inlet_temperature"])
 
 	async def async_set_temperature(self, temperature: int):
 		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import voluptuous as vol
+from distutils.util import strtobool
 
 from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
 from homeassistant.core import callback

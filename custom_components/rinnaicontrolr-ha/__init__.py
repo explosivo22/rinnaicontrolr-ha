@@ -16,7 +16,7 @@ from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = ["water_heater"]
+PLATFORMS = ["water_heater","binary_sensor", "sensor"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
