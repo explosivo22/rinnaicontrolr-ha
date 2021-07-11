@@ -4,6 +4,6 @@
     "\\custom_components",
     "\\custom_components\\rinnaicontrolr-ha"
   ],
-  "SelectedNode": "\\hacs.json",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\sensor.py",
   "PreviewInSolutionExplorer": false
 }
