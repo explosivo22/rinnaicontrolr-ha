@@ -9,6 +9,10 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 ## IMPORTANT NOTES
 
+* **THIS LIBRARY ONLY WORKS IF YOU HAVE MIGRATED TO THE RINNAI 2.0 APP.  THIS WILL REQUIRE A FIRMWARE UPDATE TO YOUR CONTROL-R MODULE.**
+* [IOS](https://apps.apple.com/us/app/rinnai-control-r-2-0/id1180734911?app=itunes&ign-mpt=uo%3D4)
+* [Android](https://play.google.com/store/apps/details?id=com.controlr)
+
 * **RINNAI DOESN'T PROVIDE ANY OFFICIALLY SUPPORTED API, THUS THEIR CHANGES MAY BREAK HASS INTEGRATIONS AT ANY TIME.**
 
 ### Features
