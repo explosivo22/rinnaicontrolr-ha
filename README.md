@@ -13,7 +13,6 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 * [IOS](https://apps.apple.com/us/app/rinnai-control-r-2-0/id1180734911?app=itunes&ign-mpt=uo%3D4)
 * [Android](https://play.google.com/store/apps/details?id=com.controlr)
 
-
 ## IMPORTANT NOTES
 
 * **RINNAI DOESN'T PROVIDE ANY OFFICIALLY SUPPORTED API, THUS THEIR CHANGES MAY BREAK HASS INTEGRATIONS AT ANY TIME.**
