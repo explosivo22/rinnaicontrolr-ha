@@ -1,5 +1,6 @@
 """Water Heater representing the water heater for the Rinnai integration"""
 from __future__ import annotations
+from datetime import timedelta
 
 import voluptuous as vol
 from distutils.util import strtobool
@@ -12,12 +13,16 @@ from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
+# Set scan interval to every two minutes to prevent overloading
+# the rinnai api
+SCAN_INTERVAL = timedelta(minutes=2)
+
 OPERATION_LIST = [STATE_OFF, STATE_GAS]
 ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
 SERVICE_START_RECIRCULATION = "start_recirculation"
 SERVICE_STOP_RECIRCULATION = "stop_recirculation"
 
-# The Rinnai app hardcodes recirculation durations to certain intervals;
+# The Rinnai app hardcodes recirculation durations to certain intervals
 RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
