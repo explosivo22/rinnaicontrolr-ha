@@ -16,7 +16,7 @@ from .entity import RinnaiEntity
 #send to many requests to rinnai and overload
 #the water heater since this is a more demanding
 #task on the water heater
-SCAN_INTERVAL = timedelta(hour=1)
+SCAN_INTERVAL = timedelta(hours=1)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
