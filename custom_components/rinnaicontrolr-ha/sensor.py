@@ -1,5 +1,6 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
+from datetime import timedelta
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
@@ -10,6 +11,12 @@ from homeassistant.const import (
 from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
+
+#update the sensors every one hour so we don't
+#send to many requests to rinnai and overload
+#the water heater since this is a more demanding
+#task on the water heater
+SCAN_INTERVAL = timedelta(hour=1)
 
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -44,6 +51,10 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
         if self._device.outlet_temperature is None:
             return None
         return round(self._device.outlet_temperature, 1)
+
+    async def async_update(self):
+        """Get the latest data for the sensor"""
+        self._device._do_maintenance_retrieval()
 
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
