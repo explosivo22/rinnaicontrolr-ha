@@ -123,3 +123,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			self._rinnai_device_id
 		)
 		LOGGER.debug("Rinnai device data: %s", self._device_information)
+
+	async def _do_maintenance_retrieval(self, *_) -> None:
+		await self.api_client.device.do_maintenance_retrieval(
+			self._device_information["data"]["getDevice"]["thing_name"]
+		)
