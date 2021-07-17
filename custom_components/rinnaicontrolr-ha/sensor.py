@@ -7,6 +7,7 @@ from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     TEMP_FAHRENHEIT,
 )
+from homeassistant.util import Throttle
 
 from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -49,6 +50,7 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
     def should_poll(self) -> None:
         return True
 
+    @Throttle(timedelta(hours=1))
     async def async_update(self):
         """Get the latest data for the sensor"""
         self._device._do_maintenance_retrieval()
