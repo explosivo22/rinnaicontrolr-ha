@@ -40,6 +40,10 @@ class RinnaiIsRecirculatingBinarySensor(RinnaiEntity, BinarySensorEntity):
         """Return true if the Rinnai device is recirculating water."""
         return self._device.is_recirculating
 
+    @property
+    def should_poll(self):
+        return True
+
 class RinnaiIsHeatingBinarySensor(RinnaiEntity, BinarySensorEntity):
     """Binary sensor that reports if water is detected (for leak detectors)."""
 
@@ -58,3 +62,7 @@ class RinnaiIsHeatingBinarySensor(RinnaiEntity, BinarySensorEntity):
     def is_on(self):
         """Return true if the Rinnai device is recirculating water."""
         return self._device.is_heating
+
+    @property
+    def should_poll(self):
+        return True
