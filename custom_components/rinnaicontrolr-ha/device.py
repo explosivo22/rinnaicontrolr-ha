@@ -58,6 +58,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return f"{self.manufacturer} {self.model}"
 
 	@property
+	def should_poll(self):
+		return True
+
+	@property
 	def manufacturer(self) -> str:
 		"""Return manufacturer for device"""
 		return self._manufacturer
