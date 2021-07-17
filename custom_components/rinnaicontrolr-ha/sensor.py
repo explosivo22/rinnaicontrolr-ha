@@ -47,10 +47,6 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.outlet_temperature, 1)
 
-    @property
-    def should_poll(self):
-        return True
-
     @Throttle(timedelta(hours=1))
     async def async_update(self):
         """Get the latest data for the sensor"""
@@ -73,7 +69,3 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
         if self._device.inlet_temperature is None:
             return None
         return round(self._device.inlet_temperature, 1)
-
-    @property
-    def should_poll(self):
-        return True
