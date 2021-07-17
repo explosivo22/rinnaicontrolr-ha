@@ -48,7 +48,7 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
         return round(self._device.outlet_temperature, 1)
 
     @property
-    def should_poll(self) -> None:
+    def should_poll(self):
         return True
 
     @Throttle(timedelta(hours=1))
@@ -75,5 +75,5 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
         return round(self._device.inlet_temperature, 1)
 
     @property
-    def should_poll(self) -> None:
+    def should_poll(self):
         return True
