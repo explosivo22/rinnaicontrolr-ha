@@ -12,12 +12,6 @@ from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
-#update the sensors every one hour so we don't
-#send to many requests to rinnai and overload
-#the water heater since this is a more demanding
-#task on the water heater
-SCAN_INTERVAL = timedelta(hours=1)
-
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai sensors from config entry."""
@@ -51,6 +45,9 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
         if self._device.outlet_temperature is None:
             return None
         return round(self._device.outlet_temperature, 1)
+
+    def should_poll(self) -> None:
+        return True
 
     async def async_update(self):
         """Get the latest data for the sensor"""

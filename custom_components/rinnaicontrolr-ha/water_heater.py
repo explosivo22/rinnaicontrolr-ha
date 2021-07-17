@@ -1,6 +1,5 @@
 """Water Heater representing the water heater for the Rinnai integration"""
 from __future__ import annotations
-from datetime import timedelta
 
 import voluptuous as vol
 from distutils.util import strtobool
@@ -12,10 +11,6 @@ from homeassistant.helpers import entity_platform
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
-
-# Set scan interval to every two minutes to prevent overloading
-# the rinnai api
-SCAN_INTERVAL = timedelta(minutes=2)
 
 OPERATION_LIST = [STATE_OFF, STATE_GAS]
 ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"

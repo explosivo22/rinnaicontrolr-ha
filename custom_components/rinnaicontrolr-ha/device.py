@@ -14,6 +14,10 @@ import homeassistant.util.dt as dt_util
 
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
 
+# Set scan interval to every two minutes to prevent overloading
+# the rinnai api
+SCAN_INTERVAL = timedelta(minutes=5)
+
 class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
@@ -30,7 +34,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			hass,
 			LOGGER,
 			name=f"{RINNAI_DOMAIN}-{device_id}",
-			update_interval=timedelta(seconds=60),
+			update_interval=SCAN_INTERVAL,
 		)
 
 	async def _async_update_data(self):
@@ -128,3 +132,4 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		await self.api_client.device.do_maintenance_retrieval(
 			self._device_information["data"]["getDevice"]["thing_name"]
 		)
+		LOGGER.debug("Rinnai maintenance retrieval started")

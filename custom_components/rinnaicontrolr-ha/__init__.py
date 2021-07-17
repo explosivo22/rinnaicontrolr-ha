@@ -1,5 +1,6 @@
 import logging
 import asyncio
+from datetime import timedelta
 
 from aiorinnai import async_get_api
 from aiorinnai.errors import RequestError
