@@ -107,10 +107,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         """REturn the current temperature."""
         return self._device.current_temperature
 
-    @property
-    def should_poll(self) -> bool:
-        return True
-
     async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is not None:
