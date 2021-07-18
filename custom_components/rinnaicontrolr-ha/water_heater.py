@@ -117,9 +117,11 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     async def async_start_recirculation(self, recirculation_minutes):
         await self._device.async_start_recirculation(recirculation_minutes)
+        self.async_write_ha_state()
 
     async def async_stop_recirculation(self):
         await self._device.async_stop_recirculation()
+        self.async_write_ha_state()
 
     async def async_update(self) -> None:
         await self._device._update_device()
