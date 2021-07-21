@@ -4,7 +4,7 @@ from __future__ import annotations
 import voluptuous as vol
 from distutils.util import strtobool
 
-from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, TEMP_CELCIUS, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, TEMP_CELSIUS, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
 from homeassistant.core import callback
 from homeassistant.helpers import entity_platform
 
@@ -73,8 +73,8 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def temperature_unit(self):
-        if self.options[CONF_UNIT] == "celcius":
-            return TEMP_TEMP_CELCIUS
+        if self.options[CONF_UNIT] == "celsius":
+            return TEMP_TEMP_CELSIUS
         return TEMP_FAHRENHEIT
 
     @property
