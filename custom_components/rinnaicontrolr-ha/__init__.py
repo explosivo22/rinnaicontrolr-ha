@@ -12,7 +12,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
-from .const import CLIENT, DOMAIN
+from .const import CLIENT, DOMAIN, CONF_UNIT, DEFAULT_UNIT
 from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +41,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"])
         for device in user_info["devices"]["items"]
     ]
+
+    if not entry.options:
+        await async_update_options(hass, entry)
     
     tasks = [device.async_refresh() for device in devices]
     await asyncio.gather(*tasks)
@@ -48,6 +51,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     
     return True
+
+async def async_update_options(hass, config_entry):
+    options = {CONF_UNIT: config_entry.data.get(CONF_UNIT, DEFAULT_UNIT)}
+    hass.config_entries.async_update_entry(config_entry, options=options)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
