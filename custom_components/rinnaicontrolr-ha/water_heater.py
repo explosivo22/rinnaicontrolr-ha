@@ -4,11 +4,11 @@ from __future__ import annotations
 import voluptuous as vol
 from distutils.util import strtobool
 
-from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, TEMP_CELCIUS, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
 from homeassistant.core import callback
 from homeassistant.helpers import entity_platform
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, CONF_UNIT
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -27,7 +27,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     ]["devices"]
     entities = []
     for device in devices:
-        entities.append(RinnaiWaterHeater(device))
+        entities.append(RinnaiWaterHeater(device, config_entry.options))
     async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
@@ -47,9 +47,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
-    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
+    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator, options) -> None:
         """Initialize the water heater."""
         super().__init__("water_heater", "Water Heater", device)
+        self.options = options
 
     @property
     def state(self):
@@ -72,6 +73,8 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def temperature_unit(self):
+        if self.options[CONF_UNIT] == "celcius":
+            return TEMP_TEMP_CELCIUS
         return TEMP_FAHRENHEIT
 
     @property
