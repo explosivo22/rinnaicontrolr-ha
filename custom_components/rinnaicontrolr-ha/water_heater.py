@@ -53,7 +53,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def state(self):
-        return self._device.last_known_state
+        return self.current_operation
 
     @property
     def current_operation(self):
