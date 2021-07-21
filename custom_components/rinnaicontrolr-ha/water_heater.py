@@ -57,7 +57,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def current_operation(self):
-        if self._device.domestic_combustion:
+        if self._device.is_heating:
             return STATE_GAS
         return STATE_OFF
 
@@ -75,19 +75,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return TEMP_FAHRENHEIT
 
     @property
-    def is_on(self):
-        return self._device.domestic_combustion
-
-    @property
     def supported_features(self):
         """Return the list of supported features."""
         return SUPPORT_TARGET_TEMPERATURE
-
-    @property
-    def device_state_attributes(self):
-        """Return the optional device state attributes."""
-        data = {"target_temp_step": 5}
-        return data
 
     @property
     def min_temp(self):
@@ -103,9 +93,26 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return self._device.target_temperature
 
     @property
+    def outlet_temperature(self):
+        return round(self._device.outlet_temperature, 1)
+
+    @property
+    def inlet_temperature(self):
+        return round(self._device.inlet_temperature, 1)
+
+    @property
     def current_temperature(self):
         """REturn the current temperature."""
         return self._device.current_temperature
+
+    @property
+    def device_state_attributes(self) -> dict:
+        """Return the optional device state attributes."""
+        return {
+            "target_temp_step": 5,
+            "outlet_temperature": self.outlet_temperature,
+            "inlet_temperature": self.inlet_temperature
+        }
 
     async def async_set_temperature(self, **kwargs):
         target_temp = kwargs.get(ATTR_TEMPERATURE)
