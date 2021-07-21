@@ -30,7 +30,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			hass,
 			LOGGER,
 			name=f"{RINNAI_DOMAIN}-{device_id}",
-			update_interval=timedelta(seconds=300),
+			update_interval=timedelta(seconds=120),
 		)
 
 	async def _async_update_data(self):
@@ -130,6 +130,6 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	async def _do_maintenance_retrieval(self, *_) -> None:
 		await self.api_client.device.do_maintenance_retrieval(
-			self._device_information["data"]["getDevice"]["thing_name"]
+			self.user_uuid, self.thing
 		)
 		LOGGER.debug("Rinnai maintenance retrieval started")
