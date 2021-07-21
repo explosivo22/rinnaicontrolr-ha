@@ -112,6 +112,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	def inlet_temperature(self) -> float:
 		return float(self._device_information["data"]["getDevice"]["info"]["m08_inlet_temperature"])
 
+	@property
+	def vacation_mode_on(self) -> bool:
+		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["schedule_holiday"]))
+
 	async def async_set_temperature(self, temperature: int):
 		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)
 
