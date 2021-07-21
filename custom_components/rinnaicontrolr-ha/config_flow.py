@@ -6,6 +6,7 @@ import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.core import callback
 
 from .const import DOMAIN, LOGGER, CONF_UNITS, CONF_UNIT, DEFAULT_UNIT
 
