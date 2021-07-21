@@ -93,6 +93,10 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return self._device.target_temperature
 
     @property
+    def is_away_mode_on(self):
+        return self._device.vacation_mode_on
+
+    @property
     def outlet_temperature(self):
         return round(self._device.outlet_temperature, 1)
 
