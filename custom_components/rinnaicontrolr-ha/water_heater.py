@@ -57,10 +57,18 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return self.current_operation
 
     @property
+    def is_on(self):
+        return self._device.is_heating
+
+    @property
     def current_operation(self):
-        if self._device.is_heating:
-            return STATE_GAS
-        return STATE_OFF
+        """Return current operation"""
+        _current_op = STATE_OFF
+        if self.is_on:
+            _current_op = STATE_GAS
+        
+        return _current_op
+
 
     @property
     def operation_list(self):
