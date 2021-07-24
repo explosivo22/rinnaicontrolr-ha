@@ -30,7 +30,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			hass,
 			LOGGER,
 			name=f"{RINNAI_DOMAIN}-{device_id}",
-			update_interval=timedelta(seconds=120),
+			update_interval=timedelta(seconds=60),
 		)
 
 	async def _async_update_data(self):
