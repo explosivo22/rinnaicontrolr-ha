@@ -117,13 +117,13 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["schedule_holiday"]))
 
 	async def async_set_temperature(self, temperature: int):
-		await self.api_client.device.set_temperature(self.user_uuid, self.thing_name, temperature)
+		await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"], temperature)
 
 	async def async_start_recirculation(self, duration: int):
-		await self.api_client.device.start_recirculation(self.user_uuid, self.thing_name, duration)
+		await self.api_client.device.start_recirculation(self._device_information["data"]["getDevice"], duration)
 
 	async def async_stop_recirculation(self):
-		await self.api_client.device.stop_recirculation(self.user_uuid, self.thing_name)
+		await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
