@@ -22,9 +22,17 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 - water heater:
     * water temperature (&deg;F)
     * set operating temperature
-    * start recirculation (on capable models)
+    * start recirculation (on capable models)(via [service](#special-rinnai-services))
 - multiple Rinnai devices
 - reduced polling of Rinnai webservice to avoid unintentional DDoS
+
+## Special Rinnai Services
+The Integration adds specific *Rinnai* services. Below is a list of the *Rinnai* specific services:
+
+Service | Parameters | Description
+:------------ | :------------ | :-------------
+`rinnai.start_recirculation` | `entity_id` - Name of entity to start recirculation on.<br>`recirculation_minutes` - How long to run recirculation | Start recirculation for the amount of time specified
+`rinnai.stop_recirculation` | `entity_id` - Name of entity to stop recirculation on. | Stop recirculation on the specified entity
 
 ## Installation
 
