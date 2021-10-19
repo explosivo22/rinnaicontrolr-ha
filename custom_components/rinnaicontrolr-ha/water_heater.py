@@ -47,32 +47,21 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
+    _attr_operation_list = OPERATION_LIST
+    _attr_supported_features = SUPPORT_TARGET_TEMPERATURE
+
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator, options) -> None:
         """Initialize the water heater."""
         super().__init__("water_heater", "Water Heater", device)
         self.options = options
 
     @property
-    def state(self):
-        return self.current_operation
-
-    @property
-    def is_on(self):
-        return self._device.is_heating
-
-    @property
     def current_operation(self):
         """Return current operation"""
-        _current_op = STATE_OFF
-        if self.is_on:
-            _current_op = STATE_GAS
-        
-        return _current_op
-
-
-    @property
-    def operation_list(self):
-        return OPERATION_LIST
+        if self._device.is_heating:
+            return STATE_GAS
+        else:
+            return STATE_OFF
 
     @property
     def icon(self):
@@ -84,11 +73,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         if self.options[CONF_UNIT] == "celsius":
             return TEMP_TEMP_CELSIUS
         return TEMP_FAHRENHEIT
-
-    @property
-    def supported_features(self):
-        """Return the list of supported features."""
-        return SUPPORT_TARGET_TEMPERATURE
 
     @property
     def min_temp(self):
