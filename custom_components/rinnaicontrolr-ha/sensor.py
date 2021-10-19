@@ -1,11 +1,13 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
+from datetime import timedelta
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     TEMP_FAHRENHEIT,
 )
+from homeassistant.util import Throttle
 
 from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -44,6 +46,11 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
         if self._device.outlet_temperature is None:
             return None
         return round(self._device.outlet_temperature, 1)
+
+    @Throttle(timedelta(hours=2))
+    async def async_update(self):
+        """Get the latest data for the sensor"""
+        self._device._do_maintenance_retrieval()
 
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
