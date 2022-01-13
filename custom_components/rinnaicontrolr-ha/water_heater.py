@@ -109,7 +109,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return self._device.current_temperature
 
     @property
-    def device_state_attributes(self) -> dict:
+    def extra_state_attributes(self) -> dict:
         """Return the optional device state attributes."""
         return {
             "target_temp_step": 5,
