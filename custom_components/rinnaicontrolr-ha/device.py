@@ -11,8 +11,11 @@ from async_timeout import timeout
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 import homeassistant.util.dt as dt_util
+from homeassistant.util import Throttle
 
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+
+MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=10)
 
 class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
@@ -125,15 +128,15 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	async def async_stop_recirculation(self):
 		await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
 
+	@Throttle(MIN_TIME_BETWEEN_UPDATES)
+	async def async_do_maintenance_retrieval(self):
+		await self.api_client.device.do_maintenance_retrieval(self._device_information["data"]["getDevice"])
+		LOGGER.debug("Rinnai Maintenance Retrieval Started")
+
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
 		self._device_information = await self.api_client.device.get_info(
 			self._rinnai_device_id
 		)
+		await self.async_do_maintenance_retrieval()
 		LOGGER.debug("Rinnai device data: %s", self._device_information)
-
-	async def _do_maintenance_retrieval(self, *_) -> None:
-		await self.api_client.device.do_maintenance_retrieval(
-			self.user_uuid, self.thing
-		)
-		LOGGER.debug("Rinnai maintenance retrieval started")

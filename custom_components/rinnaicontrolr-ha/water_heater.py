@@ -56,9 +56,13 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         self.options = options
 
     @property
+    def is_on(self):
+        return self._device.is_heating
+
+    @property
     def current_operation(self):
         """Return current operation"""
-        if self._device.is_heating:
+        if self.is_on:
             return STATE_GAS
         else:
             return STATE_OFF
@@ -129,16 +133,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         await self._device.async_stop_recirculation()
         self.async_write_ha_state()
 
-    async def async_update(self) -> None:
-        await self._device._update_device()
-        self.async_write_ha_state()
-
-    @callback
-    async def async_update_state(self) -> None:
-        """Retrieve the latest state and update the state machine."""
-        await self._device._update_device()
-        self.async_write_ha_state()
-
     async def async_added_to_hass(self):
         """When entity is added to hass."""
-        self.async_on_remove(self._device.async_add_listener(self.async_update_state))
+        await super().async_added_to_hass()
