@@ -54,11 +54,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def device_name(self) -> str:
 		"""Return device name."""
-		return f"{self.manufacturer} {self.model}"
-
-	@property
-	def should_poll(self):
-		return True
+		return self._device_information["data"]["getDevice"]["device_name"]
 
 	@property
 	def manufacturer(self) -> str:
@@ -69,6 +65,12 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	def model(self) -> str:
 		"""Return model for device"""
 		return self._device_information["data"]["getDevice"]["model"]
+
+	@property
+	def firmware_version(self) -> str:
+		"""Return the serial number for the device"""
+		return self._device_information["data"]["getDevice"]["firmware"]
+
 
 	@property
 	def thing_name(self) -> str:
@@ -88,9 +90,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def target_temperature(self) -> float:
 		"""Return the current temperature in degrees F"""
-		if self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"] is not None:
-			return float(self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"])
-		return float(self._device_information["data"]["getDevice"]["info"]["domestic_temperature"])
+		if self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["shadow"]["set_domestic_temperature"])
 
 	@property
 	def serial_number(self) -> str:

@@ -6,10 +6,11 @@ from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     TEMP_FAHRENHEIT,
+    TEMP_CELSIUS,
 )
 from homeassistant.util import Throttle
 
-from .const import DOMAIN as RINNAI_DOMAIN
+from .const import DOMAIN as RINNAI_DOMAIN, CONF_UNIT
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -23,8 +24,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device in devices:
         entities.extend(
             [
-                RinnaiOutletTemperatureSensor(device),
-                RinnaiInletTemperatureSensor(device),
+                RinnaiOutletTemperatureSensor(device, config_entry.options),
+                RinnaiInletTemperatureSensor(device, config_entry.options),
             ]
         )
     async_add_entities(entities)
@@ -33,12 +34,18 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     _attr_device_class = DEVICE_CLASS_TEMPERATURE
-    _attr_unit_of_measurement = TEMP_FAHRENHEIT
 
-    def __init__(self, device):
+    def __init__(self, device, options):
         """Initialize the temperature sensor."""
-        super().__init__("outlet_temperature", "Outlet Temperature", device)
+        super().__init__("outlet_temperature", f"{device.device_name} Outlet Temperature", device)
         self._state: float = None
+        self.options = options
+
+    @property
+    def unit_of_measurement(self) -> str | None:
+        if self.options[CONF_UNIT] == "celsius":
+            return TEMP_CELSIUS
+        return TEMP_FAHRENHEIT
 
     @property
     def state(self) -> float | None:
@@ -56,12 +63,18 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     _attr_device_class = DEVICE_CLASS_TEMPERATURE
-    _attr_unit_of_measurement = TEMP_FAHRENHEIT
 
-    def __init__(self, device):
+    def __init__(self, device, options):
         """Initialize the temperature sensor."""
-        super().__init__("inlet_temperature", "Inlet Temperature", device)
+        super().__init__("inlet_temperature", f"{device.device_name} Inlet Temperature", device)
         self._state: float = None
+        self.options = options
+
+    @property
+    def unit_of_measurement(self) -> str | None:
+        if self.options[CONF_UNIT] == "celsius":
+            return TEMP_CELSIUS
+        return TEMP_FAHRENHEIT
 
     @property
     def state(self) -> float | None:
