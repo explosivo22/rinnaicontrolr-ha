@@ -47,11 +47,6 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.outlet_temperature, 1)
 
-    @Throttle(timedelta(hours=2))
-    async def async_update(self):
-        """Get the latest data for the sensor"""
-        self._device._do_maintenance_retrieval()
-
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
