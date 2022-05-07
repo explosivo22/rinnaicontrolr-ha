@@ -52,7 +52,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator, options) -> None:
         """Initialize the water heater."""
-        super().__init__("water_heater", "Water Heater", device)
+        super().__init__("water_heater", f"{device.device_name} Water Heater", device)
         self.options = options
 
     @property
@@ -75,7 +75,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     @property
     def temperature_unit(self):
         if self.options[CONF_UNIT] == "celsius":
-            return TEMP_TEMP_CELSIUS
+            return TEMP_CELSIUS
         return TEMP_FAHRENHEIT
 
     @property

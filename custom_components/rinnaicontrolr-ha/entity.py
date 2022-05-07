@@ -13,7 +13,7 @@ class RinnaiEntity(Entity):
     """A base class for Rinnai entities."""
 
     _attr_force_update = False
-    _attr_should_poll = False
+    _attr_should_poll = True
     
     def __init__(
         self,
@@ -32,13 +32,14 @@ class RinnaiEntity(Entity):
     @property
     def device_info(self) -> DeviceInfo:
         """Return a device description for device registry."""
-        return{
-            "identifiers": {(RINNAI_DOMAIN, self._device.id)},
-            "manufacturer": self._device.manufacturer,
-            "model": self._device.model,
-            "name": self._device.device_name,
-            "serial": self._device.serial_number,
-        }
+        return DeviceInfo(
+            identifiers={(RINNAI_DOMAIN, self._device.id)},
+            manufacturer=self._device.manufacturer,
+            model=self._device.model,
+            name=self._device.device_name,
+            serial=self._device.serial_number,
+            sw_version=self._device.firmware_version,
+        )
     
     async def async_update(self):
         """Update Rinnai entity."""
