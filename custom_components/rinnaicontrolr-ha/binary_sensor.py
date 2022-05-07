@@ -26,7 +26,7 @@ class RinnaiIsRecirculatingBinarySensor(RinnaiEntity, BinarySensorEntity):
 
     def __init__(self, device):
         """Initialize the binary sensors."""
-        super().__init__("recirculation", f"{device.device_name} Water Heater Recirculation", device)
+        super().__init__("water_heater_recirculation", "Water Heater Recirculation", device)
         
     @property
     def icon(self):
