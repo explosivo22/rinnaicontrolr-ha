@@ -6,7 +6,12 @@ from aiorinnai import async_get_api
 from aiorinnai.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD, CONF_EMAIL
+from homeassistant.const import (
+    CONF_PASSWORD, 
+    CONF_EMAIL,
+    MAJOR_VERSION,
+    MINOR_VERSION,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -18,6 +23,13 @@ from .device import RinnaiDeviceDataUpdateCoordinator
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["water_heater","binary_sensor", "sensor"]
+
+def is_min_ha_version(min_ha_major_ver: int, min_ha_minor_ver: int) -> bool:
+    """Check if HA version at least a specific version."""
+    return (
+        MAJOR_VERSION > min_ha_major_ver or
+        (MAJOR_VERSION == min_ha_major_ver and MINOR_VERSION >= min_ha_minor_ver)
+    )
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -48,7 +60,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     tasks = [device.async_refresh() for device in devices]
     await asyncio.gather(*tasks)
 
-    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    if is_min_ha_version(2022,8):
+        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    else:
+        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     
     return True
 
