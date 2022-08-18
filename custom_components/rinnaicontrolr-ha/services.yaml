@@ -3,7 +3,6 @@ start_recirculation:
   description: Start recirculation on the water heater.
   target:
     entity:
-      integration: rinnai
       domain: water_heater
   fields:
     recirculation_minutes:
@@ -39,5 +38,4 @@ stop_recirculation:
   description: Stop recirculation on the water heater.
   target:
     entity:
-      integration: rinnai
       domain: water_heater
