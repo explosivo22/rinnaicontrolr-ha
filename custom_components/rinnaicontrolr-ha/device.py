@@ -15,7 +15,7 @@ from homeassistant.util import Throttle
 
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
 
-MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=10)
+MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=5)
 
 class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
@@ -121,6 +121,55 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def vacation_mode_on(self) -> bool:
 		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["schedule_holiday"]))
+
+	@property
+	def water_flow_rate(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if int(self._device_information["data"]["getDevice"]["info"]["m01_water_flow_rate_raw"]) is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m01_water_flow_rate_raw"])
+
+	@property
+	def combustion_cycles(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["m04_combustion_cycles"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m04_combustion_cycles"])
+
+	@property
+	def operation_hours(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["operation_hours"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["operation_hours"])
+
+	@property
+	def pump_hours(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["m19_pump_hours"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m19_pump_hours"])
+
+	@property
+	def fan_current(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["m09_fan_current"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m09_fan_current"])
+
+	@property
+	def fan_frequency(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["m05_fan_frequency"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m05_fan_frequency"])
+
+	@property
+	def pump_cycles(self) -> float:
+		"""Return the current temperature in degrees F"""
+		if self._device_information["data"]["getDevice"]["info"]["m20_pump_cycles"] is None:
+			return None
+		return float(self._device_information["data"]["getDevice"]["info"]["m20_pump_cycles"])
 
 	async def async_set_temperature(self, temperature: int):
 		await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"], temperature)
