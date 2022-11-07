@@ -1,5 +1,6 @@
 """Rinnai device object"""
 import asyncio
+from cmath import log
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from distutils.util import strtobool
@@ -196,6 +197,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._device_information = await self.api_client.device.get_info(
 			self._rinnai_device_id
 		)
+
+		LOGGER.debug("Test: %s", self.options.get(CONF_MAINT_INTERVAL_ENABLED))
+
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
 			await self.async_do_maintenance_retrieval()
-			LOGGER.debug("Rinnai device data: %s", self._device_information)
+		
+		LOGGER.debug("Rinnai device data: %s", self._device_information)
