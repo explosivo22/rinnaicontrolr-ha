@@ -17,7 +17,14 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
-from .const import CLIENT, DOMAIN, CONF_UNIT, DEFAULT_UNIT
+from .const import (
+    CLIENT,
+    DOMAIN,
+    CONF_UNIT,
+    DEFAULT_UNIT,
+    CONF_MAINT_INTERVAL_ENABLED,
+    DEFAULT_MAINT_INTERVAL_ENABLED,
+)
 from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -50,7 +57,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Rinnai user information: %s", user_info)
 
     hass.data[DOMAIN][entry.entry_id]["devices"] = devices = [
-        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"])
+        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"], entry.options)
         for device in user_info["devices"]["items"]
     ]
 
@@ -68,7 +75,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     return True
 
 async def async_update_options(hass, config_entry):
-    options = {CONF_UNIT: config_entry.data.get(CONF_UNIT, DEFAULT_UNIT)}
+    options = {
+        CONF_UNIT: config_entry.data.get(CONF_UNIT, DEFAULT_UNIT),
+        CONF_MAINT_INTERVAL_ENABLED: config_entry.data.get(CONF_MAINT_INTERVAL_ENABLED,DEFAULT_MAINT_INTERVAL_ENABLED)
+    }
     hass.config_entries.async_update_entry(config_entry, options=options)
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):

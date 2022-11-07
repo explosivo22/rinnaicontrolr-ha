@@ -13,7 +13,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 import homeassistant.util.dt as dt_util
 from homeassistant.util import Throttle
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+from .const import (
+	CONF_MAINT_INTERVAL_ENABLED,
+	DEFAULT_MAINT_INTERVAL_ENABLED,
+	DOMAIN as RINNAI_DOMAIN,
+	LOGGER,
+)
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=5)
 
@@ -21,7 +26,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistant, api_client: API, device_id: str
+		self, hass: HomeAssistant, api_client: API, device_id: str, options
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
@@ -35,6 +40,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			name=f"{RINNAI_DOMAIN}-{device_id}",
 			update_interval=timedelta(seconds=60),
 		)
+		self.options = options
 
 	async def _async_update_data(self):
 		"""Update data via library"""
@@ -190,5 +196,6 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._device_information = await self.api_client.device.get_info(
 			self._rinnai_device_id
 		)
-		await self.async_do_maintenance_retrieval()
-		LOGGER.debug("Rinnai device data: %s", self._device_information)
+		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
+			await self.async_do_maintenance_retrieval()
+			LOGGER.debug("Rinnai device data: %s", self._device_information)

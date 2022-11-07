@@ -22,9 +22,10 @@
     "options": {
         "step": {
             "init": {
-                "data": {
-                    "units": "Unit of Temperature"
-                },
+              "data": {
+                "units": "Unit of Temperature",
+                "maint_interval_enabled":  "Enable scheduled maintenance retrieval (Every 5 min)"
+              },
                 "description": "Configure rinnai options"
             }
         }

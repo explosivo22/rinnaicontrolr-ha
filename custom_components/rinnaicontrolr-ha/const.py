@@ -11,6 +11,9 @@ ATTRIBUTION = "Data provided by Rinnai"
 DEFAULT_UNIT = "fahrenheit"
 CONF_UNIT = "units"
 
+CONF_MAINT_INTERVAL_ENABLED = "maint_interval_enabled"
+DEFAULT_MAINT_INTERVAL_ENABLED = True
+
 CONF_UNITS = ["celsius", "fahrenheit"]
 
 ATTR_CACHE = 'cache'
