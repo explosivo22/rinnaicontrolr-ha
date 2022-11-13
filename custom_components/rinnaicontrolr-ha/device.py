@@ -35,13 +35,13 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._rinnai_device_id: str = device_id
 		self._manufacturer: str = "Rinnai"
 		self._device_information: Optional[Dict[str, Any]] | None = None
+		self.options = options
 		super().__init__(
 			hass,
 			LOGGER,
 			name=f"{RINNAI_DOMAIN}-{device_id}",
 			update_interval=timedelta(seconds=60),
 		)
-		self.options = options
 
 	async def _async_update_data(self):
 		"""Update data via library"""
@@ -198,9 +198,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			self._rinnai_device_id
 		)
 
-		LOGGER.debug("Test: %s", self.options.get(CONF_MAINT_INTERVAL_ENABLED))
-
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
 			await self.async_do_maintenance_retrieval()
+		else:
+			LOGGER.debug("Skipping Maintenance retrieval since disabled inside of configuration")
 		
 		LOGGER.debug("Rinnai device data: %s", self._device_information)

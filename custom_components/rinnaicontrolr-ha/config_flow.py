@@ -52,7 +52,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
             try:
                 info = await validate_input(self.hass, user_input)
-                return self.async_create_entry(title=info["title"], data=user_input)
+                return self.async_create_entry(
+                    title=info["title"],
+                    data=user_input,
+                    options={
+                        CONF_UNITS: DEFAULT_UNIT,
+                        CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
+                    },
+                )
             except CannotConnect:
                 errors["base"] = "cannot_connect"
 
