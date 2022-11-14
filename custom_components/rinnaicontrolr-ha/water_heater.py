@@ -35,7 +35,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     platform.async_register_entity_service(
         SERVICE_START_RECIRCULATION,
         {
-            vol.Required(ATTR_RECIRCULATION_MINUTES, default=60): vol.In(RECIRCULATION_MINUTE_OPTIONS)
+            vol.Required(ATTR_RECIRCULATION_MINUTES, default=5): vol.In(RECIRCULATION_MINUTE_OPTIONS)
         },
         "async_start_recirculation",
     )
@@ -125,7 +125,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         else:
             LOGGER.error("A target temperature must be provided")
 
-    async def async_start_recirculation(self, recirculation_minutes):
+    async def async_start_recirculation(self, recirculation_minutes = 5):
         await self._device.async_start_recirculation(recirculation_minutes)
         self.async_write_ha_state()
 

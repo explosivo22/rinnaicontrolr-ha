@@ -5,6 +5,6 @@
     "\\custom_components\\rinnaicontrolr-ha",
     "\\custom_components\\rinnaicontrolr-ha\\translations"
   ],
-  "SelectedNode": "\\LICENSE",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\const.py",
   "PreviewInSolutionExplorer": false
 }

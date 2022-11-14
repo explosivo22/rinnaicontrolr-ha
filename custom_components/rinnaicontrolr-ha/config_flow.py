@@ -8,7 +8,15 @@ from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.core import callback
 
-from .const import DOMAIN, LOGGER, CONF_UNITS, CONF_UNIT, DEFAULT_UNIT
+from .const import (
+    DOMAIN,
+    LOGGER,
+    CONF_UNITS,
+    CONF_UNIT,
+    DEFAULT_UNIT,
+    CONF_MAINT_INTERVAL_ENABLED,
+    DEFAULT_MAINT_INTERVAL_ENABLED,
+)
 
 DATA_SCHEMA = vol.Schema({vol.Required("email"): str, vol.Required("password"): str})
 
@@ -44,7 +52,14 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self._abort_if_unique_id_configured()
             try:
                 info = await validate_input(self.hass, user_input)
-                return self.async_create_entry(title=info["title"], data=user_input)
+                return self.async_create_entry(
+                    title=info["title"],
+                    data=user_input,
+                    options={
+                        CONF_UNITS: DEFAULT_UNIT,
+                        CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
+                    },
+                )
             except CannotConnect:
                 errors["base"] = "cannot_connect"
 
@@ -66,14 +81,22 @@ class OptionsFlow(config_entries.OptionsFlow):
     async def async_step_init(self, user_input=None):
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
-        options = {
-            vol.Optional(
-                CONF_UNIT,
-                default=self.config_entry.options.get(CONF_UNIT, DEFAULT_UNIT),
-            ): vol.In(CONF_UNITS)
-        }
 
-        return self.async_show_form(step_id="init", data_schema=vol.Schema(options))
+        return self.async_show_form(
+            step_id="init", 
+            data_schema=vol.Schema(
+                {
+                    vol.Optional(
+                        CONF_UNIT,
+                        default=self.config_entry.options.get(CONF_UNIT, DEFAULT_UNIT),
+                    ) : vol.In(CONF_UNITS),
+                    vol.Optional(
+                        CONF_MAINT_INTERVAL_ENABLED,
+                        default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
+                    ) : bool,
+                }
+            ),
+        )
 
 class CannotConnect(exceptions.HomeAssistantError):
     """Error to indicate we cannot connect."""

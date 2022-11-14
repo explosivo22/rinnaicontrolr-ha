@@ -1,5 +1,6 @@
 """Rinnai device object"""
 import asyncio
+from cmath import log
 from datetime import datetime, timedelta
 from typing import Any, Dict, Optional
 from distutils.util import strtobool
@@ -13,7 +14,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 import homeassistant.util.dt as dt_util
 from homeassistant.util import Throttle
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+from .const import (
+	CONF_MAINT_INTERVAL_ENABLED,
+	DEFAULT_MAINT_INTERVAL_ENABLED,
+	DOMAIN as RINNAI_DOMAIN,
+	LOGGER,
+)
 
 MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=5)
 
@@ -21,7 +27,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistant, api_client: API, device_id: str
+		self, hass: HomeAssistant, api_client: API, device_id: str, options
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
@@ -29,6 +35,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._rinnai_device_id: str = device_id
 		self._manufacturer: str = "Rinnai"
 		self._device_information: Optional[Dict[str, Any]] | None = None
+		self.options = options
 		super().__init__(
 			hass,
 			LOGGER,
@@ -190,5 +197,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._device_information = await self.api_client.device.get_info(
 			self._rinnai_device_id
 		)
-		await self.async_do_maintenance_retrieval()
+
+		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
+			await self.async_do_maintenance_retrieval()
+		else:
+			LOGGER.debug("Skipping Maintenance retrieval since disabled inside of configuration")
+		
 		LOGGER.debug("Rinnai device data: %s", self._device_information)
