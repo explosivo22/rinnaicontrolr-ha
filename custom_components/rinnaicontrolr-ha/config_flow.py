@@ -56,7 +56,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=info["title"],
                     data=user_input,
                     options={
-                        CONF_UNITS: DEFAULT_UNIT,
+                        CONF_UNIT: DEFAULT_UNIT,
                         CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
                     },
                 )
