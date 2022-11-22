@@ -1,16 +1,13 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
-from datetime import timedelta
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
-    TEMP_FAHRENHEIT,
-    TEMP_CELSIUS,
     ELECTRIC_CURRENT_MILLIAMPERE,
     FREQUENCY_HERTZ,
+    UnitOfTemperature
 )
-from homeassistant.util import Throttle
 
 from homeassistant.components.sensor import (
     SensorStateClass,
@@ -63,13 +60,21 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
         self.options = options
 
     @property
-    def unit_of_measurement(self) -> str | None:
-        if self.options[CONF_UNIT] == "celsius":
-            return TEMP_CELSIUS
-        return TEMP_FAHRENHEIT
+    def device_class(self):
+        """Return the device class of the sensor."""
+        return SensorDeviceClass.TEMPERATURE
 
     @property
-    def state(self) -> float | None:
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return UnitOfTemperature.FAHRENHEIT
+
+    @property
+    def native_value(self):
         """Return the current temperature."""
         if self._device.outlet_temperature is None:
             return None
@@ -87,13 +92,21 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
         self.options = options
 
     @property
-    def unit_of_measurement(self) -> str | None:
-        if self.options[CONF_UNIT] == "celsius":
-            return TEMP_CELSIUS
-        return TEMP_FAHRENHEIT
+    def device_class(self):
+        """Return the device class of the sensor."""
+        return SensorDeviceClass.TEMPERATURE
 
     @property
-    def state(self) -> float | None:
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return UnitOfTemperature.FAHRENHEIT
+
+    @property
+    def native_value(self):
         """Return the current temperature."""
         if self._device.inlet_temperature is None:
             return None
@@ -112,7 +125,7 @@ class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.water_flow_rate is None:
             return None
@@ -131,7 +144,7 @@ class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.combustion_cycles is None:
             return None
@@ -150,7 +163,7 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_vavlue(self):
         """Return the current temperature."""
         if self._device.operation_hours is None:
             return None
@@ -169,7 +182,7 @@ class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.pump_hours is None:
             return None
@@ -188,7 +201,7 @@ class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.pump_cycles is None:
             return None
@@ -207,7 +220,7 @@ class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.fan_current is None:
             return None
@@ -226,7 +239,7 @@ class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def state(self) -> float | None:
+    def native_value(self):
         """Return the current temperature."""
         if self._device.fan_frequency is None:
             return None
