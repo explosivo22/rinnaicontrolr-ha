@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import voluptuous as vol
-from distutils.util import strtobool
 
-from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, TEMP_FAHRENHEIT, TEMP_CELSIUS, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
-from homeassistant.core import callback
+from homeassistant.components.water_heater import WaterHeaterEntity, SUPPORT_TARGET_TEMPERATURE, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF
 from homeassistant.helpers import entity_platform
+from homeassistant.util.unit_system import METRIC_SYSTEM
+from homeassistant.const import (
+    UnitOfTemperature,
+)
 
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, CONF_UNIT
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -27,7 +29,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     ]["devices"]
     entities = []
     for device in devices:
-        entities.append(RinnaiWaterHeater(device, config_entry.options))
+        entities.append(RinnaiWaterHeater(device))
     async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
@@ -50,10 +52,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     _attr_operation_list = OPERATION_LIST
     _attr_supported_features = SUPPORT_TARGET_TEMPERATURE
 
-    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator, options) -> None:
+    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
         super().__init__("water_heater", f"{device.device_name} Water Heater", device)
-        self.options = options
 
     @property
     def is_on(self):
@@ -74,9 +75,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def temperature_unit(self):
-        if self.options[CONF_UNIT] == "celsius":
-            return TEMP_CELSIUS
-        return TEMP_FAHRENHEIT
+        if self.hass.config.units is METRIC_SYSTEM:
+            return UnitOfTemperature.CELCIUS
+        return UnitOfTemperature.FAHRENHEIT
 
     @property
     def min_temp(self):
