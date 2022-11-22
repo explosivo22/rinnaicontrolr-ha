@@ -11,9 +11,6 @@ from homeassistant.core import callback
 from .const import (
     DOMAIN,
     LOGGER,
-    CONF_UNITS,
-    CONF_UNIT,
-    DEFAULT_UNIT,
     CONF_MAINT_INTERVAL_ENABLED,
     DEFAULT_MAINT_INTERVAL_ENABLED,
 )
@@ -56,7 +53,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     title=info["title"],
                     data=user_input,
                     options={
-                        CONF_UNIT: DEFAULT_UNIT,
                         CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
                     },
                 )
@@ -86,10 +82,6 @@ class OptionsFlow(config_entries.OptionsFlow):
             step_id="init", 
             data_schema=vol.Schema(
                 {
-                    vol.Optional(
-                        CONF_UNIT,
-                        default=self.config_entry.options.get(CONF_UNIT, DEFAULT_UNIT),
-                    ) : vol.In(CONF_UNITS),
                     vol.Optional(
                         CONF_MAINT_INTERVAL_ENABLED,
                         default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),

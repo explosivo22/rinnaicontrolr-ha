@@ -24,3 +24,6 @@ SIGNAL_UPDATE_RINNAI = 'rinnai_temp_update'
 ICON_DOMESTIC_TEMP='mdi:thermometer'
 ICON_RECIRCULATION='mdi:sync'
 ICON_RECIRCULATION_DISABLED='mdi:octagon-outline'
+
+CONF_UNIT_SYSTEM_IMPERIAL = "imperial"
+CONF_UNIT_SYSTEM_METRIC = "metric"
