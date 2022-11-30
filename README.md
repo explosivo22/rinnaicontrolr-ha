@@ -41,12 +41,14 @@ Service | Parameters | Description
 The 'master' branch of this custom component is considered unstable, alpha quality and not guaranteed to work.
 Please make sure to use one of the official release branches when installing using HACS, see [what has changed in each version](https://github.com/explosivo22/rinnaicontrolr-ha/releases).
 
-### Step 1: Install Custom Components
+### Install Custom Components
 
-Make sure that [Home Assistant Community Store (HACS)](https://github.com/custom-components/hacs) is setup, then add the "Integration" repository: `explosivo22/rinnaicontrolr-ha`.
-
-### Step 2: Configuration
-
-#### Configure via UI
-
-Go to Configuration -> Integrations and click the + symbol to configure. Search for Rinnai Control-R Water Heater and enter your email and password.
+1) Make sure that [Home Assistant Community Store (HACS)](https://github.com/custom-components/hacs) is setup.
+2) Go to integrations in HACS
+3) click the 3 dots in the top right corner and choose `custom repositories`
+4) paste the following into the repository input field `https://github.com/explosivo22/rinnaicontrolr-ha` and choose category of `Integration`
+5) click add and restart HA to let the integration load
+6) Recommended to clear the cache and reload first before adding the integration.
+7) Go to settings and choose `Devices & Services`.
+8) Click `Add Integration` and search for `Rinnai Control-R Water Heater`
+9) Configure the integration.
