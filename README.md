@@ -7,6 +7,19 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 [![License](https://img.shields.io/github/license/explosivo22/rinnaicontrolr-ha?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
+## KNOWN ISSUES
+
+* **Rinnai currently has a known bug that will cause recirculation to only run for 5 minutes.**
+* **OFFICIAL RESPONSE**
+> Thank you for contacting Rinnai.
+>
+> If you are referring to the on demand timers listed in the Control-R 2.0 app, then yes, that is a known issue and I apologize for the inconvenience. I have been told that there's a large update planned for the app and these should issues should be addressed. For now, if you need the unit to run longer than 5 minutes, I would suggest creating a schedule, even if it's just for a short period like an hour.
+>
+> If you have any other questions or concerns, feel free to reach out to us again.
+>
+> Nicholas Valencia
+> Customer Care Agent
+
 ## WARNING
 
 * **THIS LIBRARY ONLY WORKS IF YOU HAVE MIGRATED TO THE RINNAI 2.0 APP.  THIS WILL REQUIRE A FIRMWARE UPDATE TO YOUR CONTROL-R MODULE.**
