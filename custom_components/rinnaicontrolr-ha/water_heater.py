@@ -76,7 +76,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     @property
     def temperature_unit(self):
         if self.hass.config.units is METRIC_SYSTEM:
-            return UnitOfTemperature.CELCIUS
+            return UnitOfTemperature.CELSIUS
         return UnitOfTemperature.FAHRENHEIT
 
     @property
