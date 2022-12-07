@@ -75,8 +75,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		
 	@property
 	def firmware_version(self) -> str:
-	    """Return the serial number for the device"""
-	    return self._device_information["data"]["getDevice"]["firmware"]
+		"""Return the serial number for the device"""
+		return self._device_information["data"]["getDevice"]["firmware"]
 
 	@property
 	def thing_name(self) -> str:
