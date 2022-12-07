@@ -187,6 +187,18 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	async def async_stop_recirculation(self):
 		await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
 
+	async def async_enable_vacation_mode(self):
+		await self.api_client.device.enable_vacation_mode(self._device_information["data"]["getDevice"])
+
+	async def async_disable_vacation_mode(self):
+		await self.api_client.device.disable_vacation_mode(self._device_information["data"]["getDevice"])
+
+	async def async_turn_off(self):
+		await self.api_client.device.turn_off(self._device_information["data"]["getDevice"])
+
+	async def async_turn_on(self):
+		await self.api_client.device.turn_on(self._device_information["data"]["getDevice"])
+
 	@Throttle(MIN_TIME_BETWEEN_UPDATES)
 	async def async_do_maintenance_retrieval(self):
 		await self.api_client.device.do_maintenance_retrieval(self._device_information["data"]["getDevice"])
