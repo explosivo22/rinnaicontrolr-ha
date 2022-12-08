@@ -114,6 +114,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return strtobool(str(self._device_information["data"]["getDevice"]["info"]["domestic_combustion"]))
 
 	@property
+	def is_on(self) -> bool:
+		return self._device_information["data"]["getDevice"]["shadow"]["set_operation_enabled"]
+
+	@property
 	def is_recirculating(self) -> bool:
 		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["recirculation_enabled"]))
 
