@@ -14,7 +14,9 @@ from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, CONF_UNIT
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
-OPERATION_LIST = [STATE_OFF, STATE_GAS, STATE_ON]
+STATE_IDLE = "idle"
+
+OPERATION_LIST = [STATE_OFF, STATE_ON]
 ATTR_RECIRCULATION_MINUTES = "recirculation_minutes"
 SERVICE_START_RECIRCULATION = "start_recirculation"
 SERVICE_STOP_RECIRCULATION = "stop_recirculation"
@@ -57,14 +59,12 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         super().__init__("water_heater", f"{device.device_name} Water Heater", device)
 
     @property
-    def is_on(self):
-        return self._device.is_heating
-
-    @property
     def current_operation(self):
         """Return current operation"""
-        if self.is_on:
+        if self._device.is_heating:
             return STATE_GAS
+        elif self._device.is_on:
+            return STATE_IDLE
         else:
             return STATE_OFF
 
