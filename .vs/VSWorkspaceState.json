@@ -1,7 +1,9 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\custom_components",
+    "\\custom_components\\rinnaicontrolr-ha"
   ],
-  "SelectedNode": "\\C:\\Users\\bbarbour\\Source\\Repos\\explosivo22\\rinnaicontrolr-ha",
+  "SelectedNode": "\\custom_components\\rinnaicontrolr-ha\\__init__.py",
   "PreviewInSolutionExplorer": false
 }

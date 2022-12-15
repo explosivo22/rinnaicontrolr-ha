@@ -1,14 +1,9 @@
 import logging
 import asyncio
-from datetime import timedelta
-
-from aiorinnai import async_get_api
-from aiorinnai.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_PASSWORD, 
-    CONF_EMAIL,
+    CONF_HOST, 
     MAJOR_VERSION,
     MINOR_VERSION,
 )
@@ -25,6 +20,8 @@ from .const import (
     CONF_MAINT_INTERVAL_ENABLED,
     DEFAULT_MAINT_INTERVAL_ENABLED,
 )
+
+from .rinnai import WaterHeater
 from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
