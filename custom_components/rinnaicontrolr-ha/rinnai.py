@@ -21,7 +21,7 @@ class WaterHeater(object):
         sleep(1) #sleep here just to make sure we have time to connect
         self.s.recv(32)
     
-    def get_status(self):
+    def get_status(self) -> dict:
         self.init_connect()
         LOGGER.debug("connected to socket")
 
@@ -44,21 +44,27 @@ class WaterHeater(object):
         status = data.decode('UTF-8').split()
         json_data = ""
         try:
-            json_data = {"water_flow_rate": int(status[1] or None), "outlet_temperature": int(status[5]), "combustion_hours_raw": int(status[9] or None),"combustion_cycles": int(status[13] or None),
-                     "fan_frequency": int(status[17] or None), "inlet_temperature": int(status[29]), "fan_current": int(status[33] or None),
-                     "pump_hours": int(status[68] or None), "pump_cycles": int(status[72] or None), "exhaust_temperature": int(status[76] or None),
-                     "domestic_combustion": bool(status[95]), "domestic_temperature": int(status[99]), "recirculation_capable": bool(status[103] or None),
-                     "recirculation_duration": int(status[106] or None), "operation_enabled": bool(status[163]), "priority_status": bool(status[166]),
-                     "recirculation_enabled": bool(status[169]), "set_domestic_temperature": int(status[175] or None), "schedule_enabled": bool(status[189] or None),
-                     "schedule_holiday": bool(status[192] or None), "firmware_version": status[206]}
-            LOGGER.debug(type(json_data))
+            json_data = ('{"water_flow_rate": %s, "outlet_temperature": %s, "combustion_hours_raw": %s,"combustion_cycles": %s,'
+                     '"fan_frequency": %s, "inlet_temperature": %s, "fan_current": %s,'
+                     '"pump_hours": %s, "pump_cycles": %s, "exhaust_temperature": %s,'
+                     '"domestic_combustion": %s, "domestic_temperature": %s, "recirculation_capable": %s,'
+                     '"recirculation_duration": %s, "operation_enabled": %s, "priority_status": %s,'
+                     '"recirculation_enabled": %s, "set_domestic_temperature": %s, "schedule_enabled": %s,'
+                     '"schedule_holiday": %s, "firmware_version": "%s"}') % (int(status[1]),int(status[5]),int(status[9]),int(status[13]),int(status[17]),
+                                                                                    int(status[29]),int(status[33]),int(status[68]),int(status[72]),int(status[76]),
+                                                                                    status[96],int(status[99]),status[103],int(status[106]),status[163],
+                                                                                    status[166],status[169],int(status[175]),status[191],status[194],
+                                                                                    status[206].strip("'"))
+
+            LOGGER.debug(json.loads(json_data))
+            LOGGER.debug(type(json.loads(json_data)))
         except IndexError as msg:
             LOGGER.debug(msg)
             raise IndexError(msg)
         
         self.s.close()
         
-        return str(json_data)
+        return json.loads(json_data)
 
     def set_temperature(self, temp: int):
         self.connect()
