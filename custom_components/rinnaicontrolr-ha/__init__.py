@@ -3,7 +3,8 @@ import asyncio
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_HOST, 
+    CONF_PASSWORD, 
+    CONF_EMAIL,
     MAJOR_VERSION,
     MINOR_VERSION,
 )
@@ -21,7 +22,6 @@ from .const import (
     DEFAULT_MAINT_INTERVAL_ENABLED,
 )
 
-from .rinnai import WaterHeater
 from .device import RinnaiDeviceDataUpdateCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -54,7 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _LOGGER.debug("Rinnai user information: %s", user_info)
 
     hass.data[DOMAIN][entry.entry_id]["devices"] = devices = [
-        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"], entry.options)
+        RinnaiDeviceDataUpdateCoordinator(hass, device["info"]["local_ip"],device["info"]["serial_id"],device["device_name"],device["model"], entry.options)
         for device in user_info["devices"]["items"]
     ]
 
