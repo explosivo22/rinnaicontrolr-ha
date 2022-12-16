@@ -1,6 +1,9 @@
 import logging
 import asyncio
 
+from aiorinnai import async_get_api
+from aiorinnai.errors import RequestError
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     CONF_PASSWORD, 

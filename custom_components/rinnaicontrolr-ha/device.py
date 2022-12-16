@@ -26,11 +26,12 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
+		self.host = host
 		self.waterHeater = WaterHeater(host)
 		self.serial = serial
 		self.name = name
-		self.model = model
-		self.manufacturer: str = "Rinnai"
+		self.device_model = model
+		self.device_manufacturer: str = "Rinnai"
 		self.info = None
 		self.options = options
 		super().__init__(
@@ -58,12 +59,12 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def manufacturer(self) -> str:
 		"""Return manufacturer for device"""
-		return self.manufacturer
+		return self.device_manufacturer
 
 	@property
 	def model(self) -> str:
 		"""Return model for device"""
-		return self.model
+		return self.device_model
 		
 	@property
 	def firmware_version(self) -> str:
@@ -183,10 +184,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
+		LOGGER.debug(self.host)
 		self.info = await self.hass.async_add_executor_job(
 			self.waterHeater.get_status()
 		)
-
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
 			await self.async_do_maintenance_retrieval()
 		else:
