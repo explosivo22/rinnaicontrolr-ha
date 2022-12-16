@@ -13,8 +13,7 @@ class WaterHeater(object):
 
     def connect(self):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect((self.host, PORT))
-        self.s.timeout(5)
+        self.s.create_connection((self.host, PORT), 5)
         sleep(1) #sleep here just to make sure we have time to connect
         self.s.recv(32)
 
@@ -42,15 +41,15 @@ class WaterHeater(object):
         status = data.decode('UTF-8').split()
         json_data = ""
         try:
-            json_data = {"water_flow_rate": int(status[1]), "outlet_temperature": int(status[5]), "combustion_hours_raw": int(status[9]),"combustion_cycles": int(status[13]),
-                     "fan_frequency": int(status[17]), "inlet_temperature": int(status[29]), "fan_current": int(status[33]),
-                     "pump_hours": int(status[68]), "pump_cycles": int(status[72]), "exhaust_temperature": int(status[76]),
-                     "domestic_combustion": bool(status[95]), "domestic_temperature": int(status[99]), "recirculation_capable": bool(status[103]),
-                     "recirculation_duration": int(status[106]), "operation_enabled": bool(status[163]), "priority_status": bool(status[166]),
-                     "recirculation_enabled": bool(status[169]), "set_domestic_temperature": int(status[175]), "schedule_enabled": bool(status[189]),
-                     "schedule_holiday": bool(status[192]), "firmware_version": status[206]}
+            json_data = {"water_flow_rate": int(status[1] or None), "outlet_temperature": int(status[5]), "combustion_hours_raw": int(status[9] or None),"combustion_cycles": int(status[13] or None),
+                     "fan_frequency": int(status[17] or None), "inlet_temperature": int(status[29]), "fan_current": int(status[33] or None),
+                     "pump_hours": int(status[68] or None), "pump_cycles": int(status[72] or None), "exhaust_temperature": int(status[76] or None),
+                     "domestic_combustion": bool(status[95]), "domestic_temperature": int(status[99]), "recirculation_capable": bool(status[103] or None),
+                     "recirculation_duration": int(status[106] or None), "operation_enabled": bool(status[163]), "priority_status": bool(status[166]),
+                     "recirculation_enabled": bool(status[169]), "set_domestic_temperature": int(status[175] or None), "schedule_enabled": bool(status[189] or None),
+                     "schedule_holiday": bool(status[192] or None), "firmware_version": status[206]}
         except IndexError as msg:
-            json_data = None
+            raise IndexError(msg)
         
         self.s.close()
         
@@ -152,6 +151,21 @@ class WaterHeater(object):
 
         try:
             self.s.sendall(bytes('set operation_enabled false' + '\n', 'UTF-8'))
+            sleep(1) #sleep here to make sure our send has time to get there
+        except socket.error as msg:
+            print("Socket Error: %s" % msg)
+
+        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+
+        self.s.close()
+        
+        return request
+
+    def do_maintenance_retrieval(self):
+        self.connect()
+
+        try:
+            self.s.sendall(bytes('maintenance' + '\n', 'UTF-8'))
             sleep(1) #sleep here to make sure our send has time to get there
         except socket.error as msg:
             print("Socket Error: %s" % msg)
