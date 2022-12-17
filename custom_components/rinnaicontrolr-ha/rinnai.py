@@ -13,7 +13,7 @@ class WaterHeater(object):
     def __init__(self, host: str) -> None:
         self.host = host
 
-    def init_connect(self):
+    def connect(self):
         LOGGER.debug("connecting to socket with host: %s" % self.host)
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.s.connect((self.host, PORT))
@@ -22,7 +22,7 @@ class WaterHeater(object):
         self.s.recv(32)
     
     def get_status(self) -> dict:
-        self.init_connect()
+        self.connect()
         LOGGER.debug("connected to socket")
 
         data = b''
@@ -50,14 +50,12 @@ class WaterHeater(object):
                      '"domestic_combustion": %s, "domestic_temperature": %s, "recirculation_capable": %s,'
                      '"recirculation_duration": %s, "operation_enabled": %s, "priority_status": %s,'
                      '"recirculation_enabled": %s, "set_domestic_temperature": %s, "schedule_enabled": %s,'
-                     '"schedule_holiday": %s, "firmware_version": "%s"}') % (int(status[1]),int(status[5]),int(status[9]),int(status[13]),int(status[17]),
-                                                                                    int(status[29]),int(status[33]),int(status[68]),int(status[72]),int(status[76]),
-                                                                                    status[96],int(status[99]),status[103],int(status[106]),status[163],
-                                                                                    status[166],status[169],int(status[175]),status[191],status[194],
+                     '"schedule_holiday": %s, "firmware_version": "%s"}') % (int(status[1] or None),int(status[5] or None),int(status[9] or None),int(status[13] or None),int(status[17] or None),
+                                                                                    int(status[29] or None),int(status[33] or None),int(status[68] or None),int(status[72] or None),int(status[76]or None),
+                                                                                    status[96],int(status[99] or None),status[103],int(status[106] or None),status[163],
+                                                                                    status[166],status[169],int(status[175] or None),status[191],status[194],
                                                                                     status[206].strip("'"))
 
-            LOGGER.debug(json.loads(json_data))
-            LOGGER.debug(type(json.loads(json_data)))
         except IndexError as msg:
             LOGGER.debug(msg)
             raise IndexError(msg)
@@ -176,7 +174,7 @@ class WaterHeater(object):
         self.connect()
 
         try:
-            self.s.sendall(bytes('maintenance' + '\n', 'UTF-8'))
+            self.s.sendall(bytes('set do_maintenance_retrieval true' + '\n', 'UTF-8'))
             sleep(1) #sleep here to make sure our send has time to get there
         except socket.error as msg:
             print("Socket Error: %s" % msg)
@@ -184,5 +182,8 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set \'do_maintenance_retrieval\' to true\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')

@@ -24,7 +24,7 @@ class RinnaiEntity(Entity):
     ) -> None:
         """Init Rinnai entity."""
         self._attr_name = name
-        self._attr_unique_id = f"{device.id}_{entity_type}"
+        self._attr_unique_id = f"{device.serial_number}_{entity_type}"
 
         self._device: RinnaiDeviceDataUpdateCoordinator = device
         self._state: Any = None
@@ -33,7 +33,7 @@ class RinnaiEntity(Entity):
     def device_info(self) -> DeviceInfo:
         """Return a device description for device registry."""
         return DeviceInfo(
-            identifiers={(RINNAI_DOMAIN, self._device.id)},
+            identifiers={(RINNAI_DOMAIN, self._device.serial_number)},
             manufacturer=self._device.manufacturer,
             model=self._device.model,
             name=self._device.device_name,

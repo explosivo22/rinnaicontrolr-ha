@@ -22,13 +22,13 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistant, host: str, serial: str, name: str, model: str, options
+		self, hass: HomeAssistant, host: str, serial: str, cloud_name: str, model: str, options
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
 		self.waterHeater = WaterHeater(host)
 		self.serial = serial
-		self.name = name
+		self.cloud_name = cloud_name
 		self.device_model = model
 		self.device_manufacturer: str = "Rinnai"
 		self._device_info: Optional[Dict[str, Any]] | None = None
@@ -36,7 +36,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		super().__init__(
 			hass,
 			LOGGER,
-			name=RINNAI_DOMAIN,
+			name=f"{RINNAI_DOMAIN}-{serial}",
 			update_interval=timedelta(seconds=10),
 		)
 
@@ -53,7 +53,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def device_name(self) -> str:
 		"""Return device name."""
-		return self.name
+		return self.cloud_name
 
 	@property
 	def manufacturer(self) -> str:
@@ -178,15 +178,14 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	@Throttle(MIN_TIME_BETWEEN_UPDATES)
 	async def async_do_maintenance_retrieval(self):
-		await self.hass.async_add_executor_job(self.waterHeater.do_maintenance_retrieval())
+		await self.hass.async_add_executor_job(self.waterHeater.do_maintenance_retrieval)
 		LOGGER.debug("Rinnai Maintenance Retrieval Started")
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
 		self._device_info = await self.hass.async_add_executor_job(
-			self.waterHeater.get_status()
+			self.waterHeater.get_status
 		)
-		LOGGER.debug(type(self._device_info))
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
 			await self.async_do_maintenance_retrieval()
 		else:
