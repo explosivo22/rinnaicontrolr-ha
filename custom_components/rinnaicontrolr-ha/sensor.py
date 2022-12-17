@@ -39,7 +39,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 RinnaiInletTemperatureSensor(device, config_entry.options),
                 RinnaiWaterFlowRateSensor(device),
                 RinnaiCombustionCyclesSensor(device),
-                RinnaiOperationHoursSensor(device),
+                RinnaiCombustionHoursSensor(device),
                 RinnaiPumpHoursSensor(device),
                 RinnaiPumpCyclesSensor(device),
                 RinnaiFanCurrentSensor(device),
@@ -150,7 +150,7 @@ class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.combustion_cycles, 1)
 
-class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
+class RinnaiCombustionHoursSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     _attr_icon = OPERATION_ICON
@@ -159,15 +159,15 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
-        super().__init__("operation_hours", f"{device.device_name} Operation Hours x100", device)
+        super().__init__("combustion_hours", f"{device.device_name} Combustion Hours x100", device)
         self._state: float = None
 
     @property
     def native_vavlue(self):
         """Return the current temperature."""
-        if self._device.operation_hours is None:
+        if self._device.combustion_hours is None:
             return None
-        return round(self._device.operation_hours, 1)
+        return round(self._device.combustion_hours, 1)
 
 class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""

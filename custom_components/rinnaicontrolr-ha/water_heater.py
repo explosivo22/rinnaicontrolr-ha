@@ -152,11 +152,9 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     async def async_start_recirculation(self, recirculation_minutes = 5):
         await self._device.async_start_recirculation(recirculation_minutes)
-        self.async_write_ha_state()
 
     async def async_stop_recirculation(self):
         await self._device.async_stop_recirculation()
-        self.async_write_ha_state()
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""

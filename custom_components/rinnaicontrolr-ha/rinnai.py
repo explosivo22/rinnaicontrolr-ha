@@ -76,24 +76,33 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        return request
+
+        if request == f"#? set 'set_domestic_temperature' to {temp} ({hex(temp)})\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def start_recirculation(self, duration: int):
         self.connect()
 
         try:
-            self.s.sendall(bytes('set set_priority_status true' + '\n', 'UTF-8'))
             self.s.sendall(bytes('set recirculation_duration ' + str(duration) + '\n', 'UTF-8'))
+            self.s.recv(BUFF_SIZE).decode('UTF-8')
+            sleep(1)
             self.s.sendall(bytes('set set_recirculation_enabled true' + '\n', 'UTF-8'))
             sleep(1) #sleep here to make sure our send has time to get there
         except socket.error as msg:
             print("Socket Error: %s" % msg)
 
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+        LOGGER.debug(request)
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'set_recirculation_enabled' to true\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def stop_recirculation(self):
         self.connect()
@@ -107,8 +116,11 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'set_recirculation_enabled' to false\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def vacation_mode_on(self):
         self.connect()
@@ -122,8 +134,11 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'schedule_holiday' to true\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def vacation_mode_off(self):
         self.connect()
@@ -137,14 +152,17 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'schedule_holiday' to false\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def turn_off(self):
         self.connect()
 
         try:
-            self.s.sendall(bytes('set operation_enabled false' + '\n', 'UTF-8'))
+            self.s.sendall(bytes('set set_operation_enabled false' + '\n', 'UTF-8'))
             sleep(1) #sleep here to make sure our send has time to get there
         except socket.error as msg:
             print("Socket Error: %s" % msg)
@@ -152,14 +170,17 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'set_operation_enabled' to false\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def turn_on(self):
         self.connect()
 
         try:
-            self.s.sendall(bytes('set operation_enabled false' + '\n', 'UTF-8'))
+            self.s.sendall(bytes('set set_operation_enabled true' + '\n', 'UTF-8'))
             sleep(1) #sleep here to make sure our send has time to get there
         except socket.error as msg:
             print("Socket Error: %s" % msg)
@@ -167,8 +188,11 @@ class WaterHeater(object):
         request = self.s.recv(BUFF_SIZE).decode('UTF-8')
 
         self.s.close()
-        
-        return request
+
+        if request == "#? set 'set_operation_enabled' to true\n":
+            return json.loads('{"success": true}')
+        else:
+            return json.loads('{"success": false}')
 
     def do_maintenance_retrieval(self):
         self.connect()
