@@ -131,6 +131,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
 	@property
 	def vacation_mode_on(self) -> bool:
+		if self._device_information["data"]["getDevice"]["shadow"]["schedule_holiday"] is None:
+			return None
 		return strtobool(str(self._device_information["data"]["getDevice"]["shadow"]["schedule_holiday"]))
 
 	@property

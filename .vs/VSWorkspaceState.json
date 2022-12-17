@@ -1,7 +1,10 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\custom_components",
+    "\\custom_components\\rinnaicontrolr-ha",
+    "\\custom_components\\rinnaicontrolr-ha\\translations"
   ],
-  "SelectedNode": "\\C:\\Users\\bbarbour\\Source\\Repos\\explosivo22\\rinnaicontrolr-ha",
+  "SelectedNode": "\\README.md",
   "PreviewInSolutionExplorer": false
 }

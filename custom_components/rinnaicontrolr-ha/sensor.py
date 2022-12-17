@@ -163,7 +163,7 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def native_vavlue(self):
+    def native_value(self):
         """Return the current temperature."""
         if self._device.operation_hours is None:
             return None
