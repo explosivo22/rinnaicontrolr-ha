@@ -160,18 +160,9 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return SensorDeviceClass.DURATION
-
-    @property
     def state_class(self):
         """Return the state class of the sensor."""
         return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfTime.HOURS
 
     @property
     def native_value(self):
@@ -191,19 +182,9 @@ class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
         self._state: float = None
 
     @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return SensorDeviceClass.DURATION
-
-    @property
     def state_class(self):
         """Return the state class of the sensor."""
         return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfTime.HOURS
-
 
     @property
     def native_value(self):
