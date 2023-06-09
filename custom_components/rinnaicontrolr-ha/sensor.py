@@ -1,17 +1,18 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     ELECTRIC_CURRENT_MILLIAMPERE,
     FREQUENCY_HERTZ,
-    UnitOfTemperature
+    UnitOfTemperature,
+    UnitOfTime
 )
 
 from homeassistant.components.sensor import (
     SensorStateClass,
-    SensorDeviceClass
+    SensorDeviceClass,
+    SensorEntity
 )
 
 from .const import DOMAIN as RINNAI_DOMAIN, CONF_UNIT
@@ -111,7 +112,7 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
         return round(self._device.inlet_temperature, 1)
 
 class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the water flow rate."""
 
     _attr_icon = GAUGE_ICON
     _attr_native_unit_of_measurement = "gpm"
@@ -130,7 +131,7 @@ class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
         return round(self._device.water_flow_rate * 0.1, 1)
 
 class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the combustion cycles."""
 
     _attr_icon = COMBUSTION_ICON
     _attr_native_unit_of_measurement = "cycles"
@@ -149,16 +150,19 @@ class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
         return round(self._device.combustion_cycles, 1)
 
 class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the operation hours."""
 
     _attr_icon = OPERATION_ICON
-    _attr_device_class = SensorDeviceClass.DURATION
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("operation_hours", f"{device.device_name} Operation Hours x100", device)
         self._state: float = None
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
 
     @property
     def native_value(self):
@@ -168,16 +172,19 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
         return round(self._device.operation_hours, 1)
 
 class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the pump hours."""
 
     _attr_icon = PUMP_ICON
-    _attr_device_class = SensorDeviceClass.DURATION
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("pump_hours", f"{device.device_name} Pump Hours x100", device)
         self._state: float = None
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
 
     @property
     def native_value(self):
@@ -187,7 +194,7 @@ class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
         return round(self._device.pump_hours, 1)
 
 class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the pump cycles."""
 
     _attr_icon = PUMP_CYCLES_ICON
     _attr_native_unit_of_measurement = "cycles"
@@ -206,7 +213,7 @@ class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
         return round(self._device.pump_cycles, 1)
 
 class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the fan current."""
 
     _attr_icon = FAN_CURRENT_ICON
     _attr_native_unit_of_measurement = ELECTRIC_CURRENT_MILLIAMPERE
@@ -225,7 +232,7 @@ class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
         return round(self._device.fan_current, 1)
 
 class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+    """Monitors the fan frequency"""
 
     _attr_icon = FAN_FREQUENCY_ICON
     _attr_native_unit_of_measurement = FREQUENCY_HERTZ
