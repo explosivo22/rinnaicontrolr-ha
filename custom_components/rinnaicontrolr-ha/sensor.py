@@ -35,8 +35,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for device in devices:
         entities.extend(
             [
-                RinnaiOutletTemperatureSensor(device, config_entry.options),
-                RinnaiInletTemperatureSensor(device, config_entry.options),
+                RinnaiOutletTemperatureSensor(device),
+                RinnaiInletTemperatureSensor(device),
                 RinnaiWaterFlowRateSensor(device),
                 RinnaiCombustionCyclesSensor(device),
                 RinnaiCombustionHoursSensor(device),
@@ -53,11 +53,10 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
 
     _attr_device_class = DEVICE_CLASS_TEMPERATURE
 
-    def __init__(self, device, options):
+    def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("outlet_temperature", f"{device.device_name} Outlet Temperature", device)
         self._state: float = None
-        self.options = options
 
     @property
     def device_class(self):
@@ -85,11 +84,10 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
 
     _attr_device_class = DEVICE_CLASS_TEMPERATURE
 
-    def __init__(self, device, options):
+    def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("inlet_temperature", f"{device.device_name} Inlet Temperature", device)
         self._state: float = None
-        self.options = options
 
     @property
     def device_class(self):
