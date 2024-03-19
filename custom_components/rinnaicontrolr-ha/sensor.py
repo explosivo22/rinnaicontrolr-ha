@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 from homeassistant.const import (
-    DEVICE_CLASS_TEMPERATURE,
-    ELECTRIC_CURRENT_MILLIAMPERE,
-    FREQUENCY_HERTZ,
     UnitOfTemperature,
-    UnitOfTime
+    UnitOfElectricCurrent,
+    UnitOfFrequency,
 )
 
 from homeassistant.components.sensor import (
@@ -52,8 +50,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
-    _attr_device_class = DEVICE_CLASS_TEMPERATURE
-
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("outlet_temperature", f"{device.device_name} Outlet Temperature", device)
@@ -82,8 +78,6 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
 
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
-
-    _attr_device_class = DEVICE_CLASS_TEMPERATURE
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
@@ -216,13 +210,21 @@ class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
     """Monitors the fan current."""
 
     _attr_icon = FAN_CURRENT_ICON
-    _attr_native_unit_of_measurement = ELECTRIC_CURRENT_MILLIAMPERE
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("fan_current", f"{device.device_name} Fan Current x10", device)
         self._state: float = None
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return UnitOfElectricCurrent.MILLIAMPERE
+
 
     @property
     def native_value(self):
@@ -235,13 +237,20 @@ class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
     """Monitors the fan frequency"""
 
     _attr_icon = FAN_FREQUENCY_ICON
-    _attr_native_unit_of_measurement = FREQUENCY_HERTZ
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("fan_frequency", f"{device.device_name} Fan Frequency", device)
         self._state: float = None
+
+    @property
+    def state_class(self):
+        """Return the state class of the sensor."""
+        return SensorStateClass.MEASUREMENT
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return UnitOfFrequency.HERTZ
 
     @property
     def native_value(self):
