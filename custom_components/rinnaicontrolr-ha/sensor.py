@@ -51,8 +51,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
-    _attr_device_class = DEVICE_CLASS_TEMPERATURE
-
     def __init__(self, device):
         """Initialize the temperature sensor."""
         super().__init__("outlet_temperature", f"{device.device_name} Outlet Temperature", device)

@@ -37,7 +37,6 @@ class RinnaiEntity(Entity):
             manufacturer=self._device.manufacturer,
             model=self._device.model,
             name=self._device.device_name,
-            serial=self._device.serial_number,
             sw_version=self._device.firmware_version,
         )
     
