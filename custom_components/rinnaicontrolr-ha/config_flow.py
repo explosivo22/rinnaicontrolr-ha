@@ -3,10 +3,11 @@ from aiorinnai import async_get_api
 from aiorinnai.errors import RequestError
 import voluptuous as vol
 
-from homeassistant import config_entries, core, exceptions
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.core import callback
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, config_entries
+from homeassistant.exceptions import HomeAssistantError
+from homeassistant.const import  CONF_HOST
+from homeassistant.core import callback, HomeAssistant
+from homeassistant.util.network import is_host_valid
 
 from .const import (
     DOMAIN,
@@ -15,28 +16,22 @@ from .const import (
     DEFAULT_MAINT_INTERVAL_ENABLED,
 )
 
-DATA_SCHEMA = vol.Schema({vol.Required("email"): str, vol.Required("password"): str})
+DATA_SCHEMA = vol.Schema({vol.Required(CONF_HOST): str})
 
-async def validate_input(hass: core.HomeAssistant, data):
+async def validate_input(hass: HomeAssistant, data):
     """Validate the user input allows us to connect.
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
 
-    session = async_get_clientsession(hass)
-    try:
-        api = await async_get_api(
-            data[CONF_EMAIL], data[CONF_PASSWORD], session=session
-        )
-    except RequestError as request_error:
-        LOGGER.error("Error connecting to the Rinnai API: %s", request_error)
-        raise CannotConnect from request_error
+    if not is_host_valid(data[CONF_HOST]):
+        raise InvalidHost
 
     user_info = await api.user.get_info()
     first_device_name = user_info["devices"]["items"][0]["id"]
     device_info = await api.device.get_info(first_device_name)
     return {"title": device_info["data"]["getDevice"]["device_name"]}
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
 
     VERSION = 1
@@ -90,5 +85,11 @@ class OptionsFlow(config_entries.OptionsFlow):
             ),
         )
 
-class CannotConnect(exceptions.HomeAssistantError):
+class CannotConnect(HomeAssistantError):
     """Error to indicate we cannot connect."""
+
+class InvalidHost(HomeAssistantError):
+    """Error to indicate that hostname/IP address is invalid."""
+
+class AnotherDevice(HomeAssistantError):
+    """Error to indicate that hostname/IP address belongs to another device."""
