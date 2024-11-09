@@ -169,7 +169,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set set_domestic_temperature ' + str(temp) + '\n')
+            writer.write(bytes('set set_domestic_temperature ' + str(temp) + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -225,10 +225,10 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set recirculation_duration ' + str(duration) + '\n')
+            writer.write(bytes('set recirculation_duration ' + str(duration) + '\n', 'utf-8'))
             await writer.drain()
 
-            writer.write(b'set set_recirculation_enabled true' + '\n')
+            writer.write(bytes('set set_recirculation_enabled true' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -284,7 +284,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set set_recirculation_enabled false' + '\n')
+            writer.write(bytes('set set_recirculation_enabled false' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -339,7 +339,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set schedule_holiday true' + '\n')
+            writer.write(bytes('set schedule_holiday true' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -394,7 +394,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set schedule_holiday false' + '\n')
+            writer.write(bytes('set schedule_holiday false' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -449,7 +449,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set set_operation_enabled false' + '\n')
+            writer.write(bytes('set set_operation_enabled false' + '\n' ,'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -504,7 +504,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set set_operation_enabled true' + '\n')
+            writer.write(bytes('set set_operation_enabled true' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
@@ -559,7 +559,7 @@ class WaterHeater(object):
             socket_data = await reader.read(1024)
             socket_data = socket_data.decode('utf-8')
 
-            writer.write(b'set do_maintenance_retrieval true' + '\n')
+            writer.write(bytes('set do_maintenance_retrieval true' + '\n', 'utf-8'))
             await writer.drain()
 
             total_data = []
