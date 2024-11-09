@@ -14,7 +14,7 @@ from homeassistant.components.sensor import (
     SensorDeviceClass
 )
 
-from .const import DOMAIN as RINNAI_DOMAIN, CONF_UNIT
+from .const import DOMAIN as RINNAI_DOMAIN, COORDINATOR
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -28,24 +28,21 @@ FAN_FREQUENCY_ICON = "mdi:fan-chevron-up"
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai sensors from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
+    device = hass.data[RINNAI_DOMAIN][config_entry.entry_id][COORDINATOR]
     entities = []
-    for device in devices:
-        entities.extend(
-            [
-                RinnaiOutletTemperatureSensor(device),
-                RinnaiInletTemperatureSensor(device),
-                RinnaiWaterFlowRateSensor(device),
-                RinnaiCombustionCyclesSensor(device),
-                RinnaiCombustionHoursSensor(device),
-                RinnaiPumpHoursSensor(device),
-                RinnaiPumpCyclesSensor(device),
-                RinnaiFanCurrentSensor(device),
-                RinnaiFanFrequencySensor(device),
-            ]
-        )
+    entities.extend(
+        [
+            RinnaiOutletTemperatureSensor(device),
+            RinnaiInletTemperatureSensor(device),
+            RinnaiWaterFlowRateSensor(device),
+            RinnaiCombustionCyclesSensor(device),
+            RinnaiCombustionHoursSensor(device),
+            RinnaiPumpHoursSensor(device),
+            RinnaiPumpCyclesSensor(device),
+            RinnaiFanCurrentSensor(device),
+            RinnaiFanFrequencySensor(device),
+        ]
+    )
     async_add_entities(entities)
 
 class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):

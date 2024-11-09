@@ -10,7 +10,7 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, CONF_UNIT
+from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, COORDINATOR
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -26,12 +26,9 @@ RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 15
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai Water heater from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
+    device = hass.data[RINNAI_DOMAIN][config_entry.entry_id][COORDINATOR]
     entities = []
-    for device in devices:
-        entities.append(RinnaiWaterHeater(device))
+    entities.append(RinnaiWaterHeater(device))
     async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
@@ -61,6 +58,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     @property
     def current_operation(self):
         """Return current operation"""
+        LOGGER.debug(type(self._device.is_heating))
         if self._device.is_heating:
             return STATE_GAS
         elif self._device.is_on:
@@ -75,8 +73,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def temperature_unit(self):
-        if self.hass.config.units is METRIC_SYSTEM:
-            return UnitOfTemperature.CELSIUS
         return UnitOfTemperature.FAHRENHEIT
 
     @property

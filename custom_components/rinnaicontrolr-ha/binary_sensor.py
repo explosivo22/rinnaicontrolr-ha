@@ -6,19 +6,16 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
 )
 
-from .const import DOMAIN as RINNAI_DOMAIN
+from .const import DOMAIN as RINNAI_DOMAIN, COORDINATOR
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Flo sensors from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
+    device = hass.data[RINNAI_DOMAIN][config_entry.entry_id][COORDINATOR]
     entities = []
-    for device in devices:
-        entities.append(RinnaiIsRecirculatingBinarySensor(device))
-        entities.append(RinnaiIsHeatingBinarySensor(device))
+    entities.append(RinnaiIsRecirculatingBinarySensor(device))
+    entities.append(RinnaiIsHeatingBinarySensor(device))
     async_add_entities(entities)
 
 class RinnaiIsRecirculatingBinarySensor(RinnaiEntity, BinarySensorEntity):

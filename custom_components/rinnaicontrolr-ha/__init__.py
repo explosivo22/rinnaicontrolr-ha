@@ -1,13 +1,9 @@
 import logging
 import asyncio
 
-from aiorinnai import async_get_api
-from aiorinnai.errors import RequestError
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
-    CONF_PASSWORD, 
-    CONF_EMAIL,
+    CONF_HOST,
     MAJOR_VERSION,
     MINOR_VERSION,
 )
@@ -17,27 +13,16 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
 from .const import (
-    CLIENT,
     DOMAIN,
-    CONF_UNIT,
-    DEFAULT_UNIT,
-    CONF_MAINT_INTERVAL_ENABLED,
-    DEFAULT_MAINT_INTERVAL_ENABLED,
+    COORDINATOR
 )
 
 from .device import RinnaiDeviceDataUpdateCoordinator
+from .rinnai import WaterHeater
 
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS = ["water_heater","binary_sensor", "sensor"]
-
-def is_min_ha_version(min_ha_major_ver: int, min_ha_minor_ver: int) -> bool:
-    """Check if HA version at least a specific version."""
-    return (
-        MAJOR_VERSION > min_ha_major_ver or
-        (MAJOR_VERSION == min_ha_major_ver and MINOR_VERSION >= min_ha_minor_ver)
-    )
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up Rinnai from config entry"""
@@ -45,32 +30,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {}
 
-    try:
-        hass.data[DOMAIN][entry.entry_id][CLIENT] = client = await async_get_api(
-            entry.data[CONF_EMAIL], entry.data[CONF_PASSWORD], session=session
-        )
-    except RequestError as err:
-        raise ConfigEntryNotReady from err
+    waterHeater = WaterHeater(entry.data[CONF_HOST])
+    sysinfo = await waterHeater.get_sysinfo()
 
-    user_info = await client.user.get_info()
+    coordinator = RinnaiDeviceDataUpdateCoordinator(hass, sysinfo["sysinfo"]["local-ip"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["ayla-dsn"], entry.options)
 
-    _LOGGER.debug("Rinnai user information: %s", user_info)
-
-    hass.data[DOMAIN][entry.entry_id]["devices"] = devices = [
-        RinnaiDeviceDataUpdateCoordinator(hass, device["info"]["local_ip"],device["info"]["serial_id"],device["device_name"],device["model"], entry.options)
-        for device in user_info["devices"]["items"]
-    ]
+    await coordinator.async_refresh()
 
     if not entry.options:
         await _async_options_updated(hass, entry)
-    
-    tasks = [device.async_refresh() for device in devices]
-    await asyncio.gather(*tasks)
 
-    if is_min_ha_version(2022,8):
-        await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
-    else:
-        hass.config_entries.async_setup_platforms(entry, PLATFORMS)
+    hass.data[DOMAIN][entry.entry_id] = {
+        COORDINATOR: coordinator
+    }
+
+    for component in PLATFORMS:
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, component)
+        )
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
     

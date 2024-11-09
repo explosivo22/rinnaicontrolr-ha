@@ -11,6 +11,8 @@ ATTRIBUTION = "Data provided by Rinnai"
 DEFAULT_UNIT = "fahrenheit"
 CONF_UNIT = "units"
 
+COORDINATOR = "coordinator"
+
 CONF_MAINT_INTERVAL_ENABLED = "maint_interval_enabled"
 DEFAULT_MAINT_INTERVAL_ENABLED = True
 

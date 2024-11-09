@@ -2,7 +2,7 @@
 import asyncio
 from datetime import timedelta
 
-from async_timeout import timeout
+import async_timeout
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -22,13 +22,13 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistant, host: str, serial: str, cloud_name: str, model: str, options
+		self, hass: HomeAssistant, host: str, serial: str, name: str, model: str, options
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
 		self.waterHeater = WaterHeater(host)
 		self.serial = serial
-		self.cloud_name = cloud_name
+		self.name = name
 		self.device_model = model
 		self.device_manufacturer: str = "Rinnai"
 		self._device_info: Optional[Dict[str, Any]] | None = None
@@ -43,17 +43,15 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	async def _async_update_data(self):
 		"""Update data via library"""
 		try:
-			async with timeout(10):
-				await asyncio.gather(
-					*[self._update_device()]
-				)
+			async with async_timeout.timeout(10):
+				await self._update_device()
 		except (IndexError) as error:
 			raise UpdateFailed(error) from error
 	
 	@property
 	def device_name(self) -> str:
 		"""Return the device name"""
-		return self.cloud_name
+		return self.name
 
 	@property
 	def manufacturer(self) -> str:
@@ -68,7 +66,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def firmware_version(self) -> str:
 		"""Return the firmware version for the device"""
-		return self._device_info['firmware_version']
+		return self._device_info['module_firmware_version']
 
 	@property
 	def current_temperature(self) -> float:
@@ -90,115 +88,122 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def is_heating(self) -> bool:
 		"""Return if the water heater is heating"""
-		return self._device_info['domestic_combustion']
-
+		return self.str_to_bool(self._device_info['domestic_combustion'])
 	@property
 	def is_on(self) -> bool:
 		"""Return if the water heater is on"""
-		return self._device_info['operation_enabled']
+		return self.str_to_bool(self._device_info['operation_enabled'])
 
 	@property
 	def is_recirculating(self) -> bool:
 		"""Return if recirculation is running"""
-		return self._device_info['recirculation_enabled']
+		return self.str_to_bool(self._device_info['recirculation_enabled'])
 
 	@property
 	def outlet_temperature(self) -> float:
 		"""Return the outlet water temperature"""
-		return float(self._device_info['outlet_temperature'])
+		return float(self._device_info['m02_outlet_temperature'])
 
 	@property
 	def inlet_temperature(self) -> float:
 		"""Return the inlet water temperature"""
-		return float(self._device_info['inlet_temperature'])
+		return float(self._device_info['m08_inlet_temperature'])
 
 	@property
 	def vacation_mode_on(self) -> bool:
 		"""Return if vacation mode is on"""
 		if self._device_info['schedule_holiday'] is None:
 			return None
-		return self._device_info['schedule_holiday']
+		return self.str_to_bool(self._device_info['schedule_holiday'])
 
 	@property
 	def water_flow_rate(self) -> float:
 		"""Return the water flow rate"""
-		if int(self._device_info['water_flow_rate']) is None:
+		if int(self._device_info['m01_water_flow_rate_raw']) is None:
 			return None
-		return float(self._device_info['water_flow_rate'])
+		return float(self._device_info['m01_water_flow_rate_raw'])
 
 	@property
 	def combustion_cycles(self) -> float:
 		"""Return the combustion cycles"""
-		if self._device_info['combustion_cycles'] is None:
+		if self._device_info['m04_combustion_cycles'] is None:
 			return None
-		return float(self._device_info['combustion_cycles'])
+		return float(self._device_info['m04_combustion_cycles'])
 
 	@property
 	def pump_hours(self) -> float:
 		"""Return the pump hours"""
-		if self._device_info['pump_hours'] is None:
+		if self._device_info['m19_pump_hours'] is None:
 			return None
-		return float(self._device_info['pump_hours'])
+		return float(self._device_info['m19_pump_hours'])
 
 	@property
 	def combustion_hours(self) -> float:
 		"""Return the combustion hours"""
-		if self._device_info['combustion_hours_raw'] is None:
+		if self._device_info['m03_combustion_hours_raw'] is None:
 			return None
-		return float(self._device_info['combustion_hours_raw'])
+		return float(self._device_info['m03_combustion_hours_raw'])
 
 	@property
 	def fan_current(self) -> float:
 		"""Return the fan current"""
-		if self._device_info['fan_current'] is None:
+		if self._device_info['m09_fan_current'] is None:
 			return None
-		return float(self._device_info['fan_current'])
+		return float(self._device_info['m09_fan_current'])
 
 	@property
 	def fan_frequency(self) -> float:
 		"""Return the fan frequency"""
-		if self._device_info['fan_frequency'] is None:
+		if self._device_info['m05_fan_frequency'] is None:
 			return None
-		return float(self._device_info['fan_frequency'])
+		return float(self._device_info['m05_fan_frequency'])
 
 	@property
 	def pump_cycles(self) -> float:
 		"""Return the pump cycles"""
-		if self._device_info['pump_cycles'] is None:
+		if self._device_info['m20_pump_cycles'] is None:
 			return None
-		return float(self._device_info['pump_cycles'])
+		return float(self._device_info['m20_pump_cycles'])
+	
+	@staticmethod
+	def str_to_bool(s):
+		LOGGER.debug(f"String value: {s}")
+		if s.lower() == "true":
+			return True
+		elif s.lower() == "false":
+			return False
+		else:
+			raise ValueError(f"Cannot convert {s} to boolean.")
 
 	async def async_set_temperature(self, temperature: int):
-		await self.hass.async_add_executor_job(self.waterHeater.set_temperature, temperature)
+		await self.waterHeater.set_temperature(temperature)
 
 	async def async_start_recirculation(self, duration: int):
-		await self.hass.async_add_executor_job(self.waterHeater.start_recirculation, duration)
+		await self.waterHeater.start_recirculation(duration)
 
 	async def async_stop_recirculation(self):
-		await self.hass.async_add_executor_job(self.waterHeater.stop_recirculation)
+		await self.waterHeater.stop_recirculation()
 
 	async def async_enable_vacation_mode(self):
-		await self.hass.async_add_executor_job(self.waterHeater.vacation_mode_on)
+		await self.waterHeater.vacation_mode_on()
 
 	async def async_disable_vacation_mode(self):
-		await self.hass.async_add_executor_job(self.waterHeater.vacation_mode_off)
+		await self.waterHeater.vacation_mode_off()
 
 	async def async_turn_off(self):
-		await self.hass.async_add_executor_job(self.waterHeater.turn_off)
+		await self.waterHeater.turn_off()
 
 	async def async_turn_on(self):
-		await self.hass.async_add_executor_job(self.waterHeater.turn_on)
+		await self.waterHeater.turn_on()
 
 	@Throttle(MIN_TIME_BETWEEN_UPDATES)
 	async def async_do_maintenance_retrieval(self):
-		await self.hass.async_add_executor_job(self.waterHeater.do_maintenance_retrieval)
+		await self.waterHeater.do_maintenance_retrieval()
 		LOGGER.debug("Rinnai Maintenance Retrieval Started")
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
-		self._device_info = await self.hass.async_add_executor_job(
-			self.waterHeater.get_status
-		)
+		self._device_info = await self.waterHeater.get_status()
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
 			await self.async_do_maintenance_retrieval()
 		else:

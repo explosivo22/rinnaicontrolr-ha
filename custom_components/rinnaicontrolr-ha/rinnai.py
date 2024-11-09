@@ -1,5 +1,7 @@
-import socket
+import asyncio
 import json
+import socket
+import re
 import time
 
 from .const import LOGGER
@@ -8,229 +10,597 @@ PORT = 9798
 BUFF_SIZE = 512
 
 class WaterHeater(object):
-
-    def __init__(self, host: str) -> None:
+    def __init__(self, host):
         self.host = host
 
-    def recv_timeout(self,timeout=2):
-        #make socket non blocking
-        self.s.setblocking(0)
-        
-        #total data partwise in an array
-        total_data=[]
-        data=''
-        
-        #beginning time
-        begin=time.time()
-        while 1:
-            #if you got some data, then break after timeout
-            if total_data and time.time()-begin > timeout:
-                break
-            
-            #if you got no data at all, wait a little longer, twice the timeout
-            elif time.time()-begin > timeout*2:
-                break
-            
-            #recv something
-            try:
-                data = self.s.recv(8192)
-                if data:
-                    total_data.append(data.decode())
-                    #change the beginning time for measurement
-                    begin=time.time()
+    async def get_status(self):
+        try:
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
+
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
+
+            writer.write(b'list\n')
+            await writer.drain()
+
+            total_data = []
+            timeout = 2
+
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
+
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            status = self.parse_data(''.join(total_data))
+
+            LOGGER.debug(status)
+
+            return status
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+    
+    async def get_sysinfo(self):
+
+        try:
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
+
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
+
+            writer.write(b'sysinfo\n')
+            await writer.drain()
+
+            total_data = []
+            timeout = 2
+
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
+
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            sysinfo = ''.join(total_data)
+
+            LOGGER.debug(sysinfo)
+
+            return json.loads(sysinfo)
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    @staticmethod
+    def parse_data(data):
+        key_value_pairs = {}
+        pattern = re.compile(r'([^\s]+)')  # Pattern to match valid value before extra data
+        temp_pattern = re.compile(r'(\d+)')  # Pattern to match only numbers
+
+        for line in data.split('\n'):
+            if ':' in line:
+                key, value = line.split(':', 1)
+                key = key.strip()
+                value = value.strip()
+
+                # Specific handling for set_domestic_temperature to remove '+'
+                if key == "set_domestic_temperature":
+                    match = temp_pattern.search(value)
+                    if match:
+                        value = match.group(1)
+
+                # Specific handling for schedule_holiday to remove '+' and '{70d}'
+                elif key == "schedule_holiday":
+                    value = value.replace("+", "").strip()
+                    value = re.sub(r'\{.*?\}', '', value).strip()
+
+                # General handling to remove extra data in parentheses, braces, and single quotes
                 else:
-                    #sleep for sometime to indicate a gap
-                    time.sleep(0.1)
-            except:
-                pass
-    
-        #join all parts to make final string
-        return ''.join(total_data)
+                    match = pattern.search(value)
+                    if match:
+                        value = match.group(1).replace("'", "")
 
-    def connect(self):
-        LOGGER.debug("connecting to socket with host: %s" % self.host)
-        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.connect((self.host, PORT))
-        #self.s.timeout(5)
-        time.sleep(1) #sleep here just to make sure we have time to connect
-        self.s.recv(32)
-    
-    def get_status(self) -> dict:
-        self.connect()
-        LOGGER.debug("connected to socket")
+                # Convert numerical strings to integers or floats
+                if value.isdigit():
+                    value = int(value)
+                else:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
 
-        self.s.sendall(bytes('list' + '\n', 'UTF-8'))
+                key_value_pairs[key] = value
 
-        receive = self.recv_timeout().replace('\n',',')
-        status = receive.split()
-        json_data = ""
+        return key_value_pairs
+
+    async def set_temperature(self, temp: int):
         try:
-            json_data = ('{"water_flow_rate": %s, "outlet_temperature": %s, "combustion_hours_raw": %s,"combustion_cycles": %s,'
-                     '"fan_frequency": %s, "inlet_temperature": %s, "fan_current": %s,'
-                     '"pump_hours": %s, "pump_cycles": %s, "exhaust_temperature": %s,'
-                     '"domestic_combustion": %s, "domestic_temperature": %s, "recirculation_capable": %s,'
-                     '"recirculation_duration": %s, "operation_enabled": %s, "priority_status": %s,'
-                     '"recirculation_enabled": %s, "set_domestic_temperature": %s, "schedule_enabled": %s,'
-                     '"schedule_holiday": %s, "firmware_version": "%s"}') % (int(status[1] or None),int(status[5] or None),int(status[9] or None),int(status[13] or None),int(status[17] or None),
-                                                                                    int(status[29] or None),int(status[33] or None),int(status[68] or None),int(status[72] or None),int(status[76]or None),
-                                                                                    status[96],int(status[99] or None),status[103],int(status[106] or None),status[167],
-                                                                                    status[170],status[173],int(status[179] or None),status[195],status[198],
-                                                                                    status[210].strip("'"))
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        except IndexError as msg:
-            LOGGER.debug(msg)
-            raise IndexError(msg)
-        
-        self.s.close()
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        LOGGER.debug(json_data)
-        
-        return json.loads(json_data)
+            writer.write(b'set set_domestic_temperature ' + str(temp) + '\n')
+            await writer.drain()
 
-    def set_temperature(self, temp: int):
-        self.connect()
+            total_data = []
+            timeout = 2
 
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
+
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == f"#? set 'set_domestic_temperature' to {temp} ({hex(temp)})\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+
+    async def start_recirculation(self, duration: int):
         try:
-            self.s.sendall(bytes('set set_domestic_temperature ' + str(temp) + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set recirculation_duration ' + str(duration) + '\n')
+            await writer.drain()
 
-        if request == f"#? set 'set_domestic_temperature' to {temp} ({hex(temp)})\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            writer.write(b'set set_recirculation_enabled true' + '\n')
+            await writer.drain()
 
-    def start_recirculation(self, duration: int):
-        self.connect()
+            total_data = []
+            timeout = 2
 
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
+
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'set_recirculation_enabled' to true\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+
+    async def stop_recirculation(self):
         try:
-            self.s.sendall(bytes('set recirculation_duration ' + str(duration) + '\n', 'UTF-8'))
-            self.s.recv(BUFF_SIZE).decode('UTF-8')
-            time.sleep(1)
-            self.s.sendall(bytes('set set_recirculation_enabled true' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
-        LOGGER.debug(request)
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set set_recirculation_enabled false' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'set_recirculation_enabled' to true\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def stop_recirculation(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'set_recirculation_enabled' to false\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    async def vacation_mode_on(self):
         try:
-            self.s.sendall(bytes('set set_recirculation_enabled false' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set schedule_holiday true' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'set_recirculation_enabled' to false\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def vacation_mode_on(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'schedule_holiday' to true\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    async def vacation_mode_off(self):
         try:
-            self.s.sendall(bytes('set schedule_holiday true' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set schedule_holiday false' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'schedule_holiday' to true\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def vacation_mode_off(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'schedule_holiday' to false\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    async def turn_off(self):
         try:
-            self.s.sendall(bytes('set schedule_holiday false' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set set_operation_enabled false' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'schedule_holiday' to false\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def turn_off(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'set_operation_enabled' to false\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    async def turn_on(self):
         try:
-            self.s.sendall(bytes('set set_operation_enabled false' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set set_operation_enabled true' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'set_operation_enabled' to false\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def turn_on(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
+
+            writer.close()
+            await writer.wait_closed()
+
+            request = ''.join(total_data)
+
+            LOGGER.debug(request)
+
+            if request == "#? set 'set_operation_enabled' to true\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None
+
+    async def do_maintenance_retrieval(self):
         try:
-            self.s.sendall(bytes('set set_operation_enabled true' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+            # Create a socket object
+            reader, writer = await asyncio.open_connection(self.host, PORT)
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            # Assuming the server sends data upon connection
+            socket_data = await reader.read(1024)
+            socket_data = socket_data.decode('utf-8')
 
-        self.s.close()
+            writer.write(b'set do_maintenance_retrieval true' + '\n')
+            await writer.drain()
 
-        if request == "#? set 'set_operation_enabled' to true\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            total_data = []
+            timeout = 2
 
-    def do_maintenance_retrieval(self):
-        self.connect()
+            begin = asyncio.get_event_loop().time()
+            while True:
+                if total_data and asyncio.get_event_loop().time() - begin > timeout:
+                    break
+                elif asyncio.get_event_loop().time() - begin > timeout * 2:
+                    break
 
-        try:
-            self.s.sendall(bytes('set do_maintenance_retrieval true' + '\n', 'UTF-8'))
-            time.sleep(1) #sleep here to make sure our send has time to get there
-        except socket.error as msg:
-            print("Socket Error: %s" % msg)
+                try:
+                    socket_data = await asyncio.wait_for(reader.read(8192), timeout=1)
+                    if socket_data:
+                        total_data.append(socket_data.decode())
+                        begin = asyncio.get_event_loop().time()
+                    else:
+                        await asyncio.sleep(0.1)
+                except asyncio.TimeoutError:
+                    break  # If reading data takes too long, break out
 
-        request = self.s.recv(BUFF_SIZE).decode('UTF-8')
+            writer.close()
+            await writer.wait_closed()
 
-        self.s.close()
+            request = ''.join(total_data)
 
-        if request == "#? set \'do_maintenance_retrieval\' to true\n":
-            return json.loads('{"success": true}')
-        else:
-            return json.loads('{"success": false}')
+            LOGGER.debug(request)
+
+            if request == "#? set \'do_maintenance_retrieval\' to true\n":
+                return json.loads('{"success": true}')
+            else:
+                return json.loads('{"success": false}')
+
+        except asyncio.TimeoutError:
+            print("Timeout error")
+        except ConnectionRefusedError:
+            print("Connection refused error")
+        except socket.error as e:
+            print(f"Socket error: {e}")
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+
+        return None

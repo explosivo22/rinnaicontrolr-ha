@@ -1,13 +1,13 @@
 """Config flow for Rinnai integration."""
-from aiorinnai import async_get_api
-from aiorinnai.errors import RequestError
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, config_entries
+from homeassistant import config_entries
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.const import  CONF_HOST
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.util.network import is_host_valid
+
+from .rinnai import WaterHeater
 
 from .const import (
     DOMAIN,
@@ -25,13 +25,17 @@ async def validate_input(hass: HomeAssistant, data):
 
     if not is_host_valid(data[CONF_HOST]):
         raise InvalidHost
+    
+    try:
+        waterHeater = WaterHeater(data[CONF_HOST])
+        sysinfo = await waterHeater.get_sysinfo()
+        return {"title": sysinfo["sysinfo"]["serial-number"]}
+    except ConnectionRefusedError:
+        raise ConnectionRefusedError
+    except TimeoutError:
+        raise TimeoutError
 
-    user_info = await api.user.get_info()
-    first_device_name = user_info["devices"]["items"][0]["id"]
-    device_info = await api.device.get_info(first_device_name)
-    return {"title": device_info["data"]["getDevice"]["device_name"]}
-
-class ConfigFlow(ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
 
     VERSION = 1
@@ -40,7 +44,7 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle the initial step."""
         errors = {}
         if user_input is not None:
-            await self.async_set_unique_id(user_input[CONF_EMAIL])
+            await self.async_set_unique_id(user_input[CONF_HOST])
             self._abort_if_unique_id_configured()
             try:
                 info = await validate_input(self.hass, user_input)
