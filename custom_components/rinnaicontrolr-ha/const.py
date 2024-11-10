@@ -15,6 +15,10 @@ COORDINATOR = "coordinator"
 
 CONF_MAINT_INTERVAL_ENABLED = "maint_interval_enabled"
 DEFAULT_MAINT_INTERVAL_ENABLED = True
+CONF_MAINT_REFRESH_INTERVAL = "maint_refresh_interval"
+DEFAULT_MAINT_REFRESH_INTERVAL = 300
+CONF_REFRESH_INTERVAL = "refresh_interval"
+DEFAULT_REFRESH_INTERVAL = 30
 
 CONF_UNITS = ["celsius", "fahrenheit"]
 

@@ -1,7 +1,14 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
 
-from homeassistant.components.sensor import SensorEntity
+from types import MappingProxyType
+
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 from homeassistant.const import (
     DEVICE_CLASS_TEMPERATURE,
     ELECTRIC_CURRENT_MILLIAMPERE,

@@ -22,7 +22,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
 
 	def __init__(
-		self, hass: HomeAssistant, host: str, serial: str, name: str, model: str, options
+		self, hass: HomeAssistant, host: str, serial: str, name: str, model: str, update_interval: int, options
 	):
 		"""Initialize the device"""
 		self.hass: HomeAssistantType = hass
@@ -37,7 +37,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			hass,
 			LOGGER,
 			name=f"{RINNAI_DOMAIN}-{serial}",
-			update_interval=timedelta(seconds=30),
+			update_interval=timedelta(seconds=update_interval),
 		)
 
 	async def _async_update_data(self):

@@ -14,7 +14,9 @@ from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
 
 from .const import (
     DOMAIN,
-    COORDINATOR
+    COORDINATOR,
+    CONF_REFRESH_INTERVAL,
+    DEFAULT_REFRESH_INTERVAL
 )
 
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -33,7 +35,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     waterHeater = WaterHeater(entry.data[CONF_HOST])
     sysinfo = await waterHeater.get_sysinfo()
 
-    coordinator = RinnaiDeviceDataUpdateCoordinator(hass, sysinfo["sysinfo"]["local-ip"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["ayla-dsn"], entry.options)
+    if CONF_REFRESH_INTERVAL in entry.options:
+        update_interval = entry.options[CONF_REFRESH_INTERVAL]
+    else:
+        update_interval = DEFAULT_REFRESH_INTERVAL
+
+    coordinator = RinnaiDeviceDataUpdateCoordinator(hass, sysinfo["sysinfo"]["local-ip"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["serial-number"],sysinfo["sysinfo"]["ayla-dsn"], update_interval, entry.options)
 
     await coordinator.async_refresh()
 

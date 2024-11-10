@@ -6,10 +6,19 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.const import  CONF_HOST
 from homeassistant.core import callback, HomeAssistant
 from homeassistant.util.network import is_host_valid
+from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
+)
 
 from .rinnai import WaterHeater
 
 from .const import (
+    CONF_MAINT_REFRESH_INTERVAL,
+    CONF_REFRESH_INTERVAL,
+    DEFAULT_MAINT_REFRESH_INTERVAL,
+    DEFAULT_REFRESH_INTERVAL,
     DOMAIN,
     LOGGER,
     CONF_MAINT_INTERVAL_ENABLED,
@@ -85,8 +94,24 @@ class OptionsFlow(config_entries.OptionsFlow):
                         CONF_MAINT_INTERVAL_ENABLED,
                         default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
                     ) : bool,
+                    vol.Optional(CONF_MAINT_REFRESH_INTERVAL, default=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL)
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            mode=NumberSelectorMode.SLIDER,
+                            min=60,
+                            max=300
+                        )
+                    ),
+                    vol.Optional(CONF_REFRESH_INTERVAL, default=self.config_entry.options.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            mode=NumberSelectorMode.SLIDER,
+                            min=15,
+                            max=60
+                        )
+                    )
                 }
-            ),
+            )
         )
 
 class CannotConnect(HomeAssistantError):
