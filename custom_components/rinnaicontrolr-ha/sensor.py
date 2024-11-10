@@ -10,16 +10,11 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
-    DEVICE_CLASS_TEMPERATURE,
-    ELECTRIC_CURRENT_MILLIAMPERE,
-    FREQUENCY_HERTZ,
-    UnitOfTemperature
+    UnitOfTemperature,
+    UnitOfFrequency,
+    UnitOfElectricCurrent
 )
 
-from homeassistant.components.sensor import (
-    SensorStateClass,
-    SensorDeviceClass
-)
 
 from .const import DOMAIN as RINNAI_DOMAIN, COORDINATOR
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -83,8 +78,6 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
 
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
-
-    _attr_device_class = DEVICE_CLASS_TEMPERATURE
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
@@ -211,7 +204,7 @@ class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     _attr_icon = FAN_CURRENT_ICON
-    _attr_native_unit_of_measurement = ELECTRIC_CURRENT_MILLIAMPERE
+    _attr_native_unit_of_measurement = UnitOfElectricCurrent.MILLIAMPERE
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
@@ -230,7 +223,7 @@ class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     _attr_icon = FAN_FREQUENCY_ICON
-    _attr_native_unit_of_measurement = FREQUENCY_HERTZ
+    _attr_native_unit_of_measurement = UnitOfFrequency.HERTZ
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
 
     def __init__(self, device):
