@@ -75,8 +75,6 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def temperature_unit(self):
-        if self.hass.config.units is METRIC_SYSTEM:
-            return UnitOfTemperature.CELSIUS
         return UnitOfTemperature.FAHRENHEIT
 
     @property
@@ -98,10 +96,14 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     @property
     def outlet_temperature(self):
+        if self.hass.config.units is METRIC_SYSTEM:
+            return round((self._device.outlet_temperature-32)/1.8, 1)
         return round(self._device.outlet_temperature, 1)
 
     @property
     def inlet_temperature(self):
+        if self.hass.config.units is METRIC_SYSTEM:
+            return round((self._device.inlet_temperature-32)/1.8, 1)
         return round(self._device.inlet_temperature, 1)
 
     @property
