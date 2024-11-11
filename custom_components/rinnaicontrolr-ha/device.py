@@ -165,6 +165,13 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 			return None
 		return float(self._device_info['m20_pump_cycles'])
 	
+	@property
+	def wifi_signal(self) -> int:
+		"""Return the wifi signal strength"""
+		if self._device_info['wifi_signal_strength'] is None:
+			return None
+		return self._device_info['wifi_signal_strength']
+	
 	@staticmethod
 	def str_to_bool(s):
 		LOGGER.debug(f"String value: {s}")

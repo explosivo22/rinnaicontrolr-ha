@@ -8,11 +8,13 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
+    EntityCategory,
 )
 from homeassistant.const import (
     UnitOfTemperature,
     UnitOfFrequency,
-    UnitOfElectricCurrent
+    UnitOfElectricCurrent,
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT
 )
 
 
@@ -27,6 +29,7 @@ PUMP_ICON = "mdi:pump"
 PUMP_CYCLES_ICON = "mdi:heat-pump-outline"
 FAN_CURRENT_ICON = "mdi:fan-auto"
 FAN_FREQUENCY_ICON = "mdi:fan-chevron-up"
+WIFI_SIGNAL_ICON = "mdi:wifi"
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up the Rinnai sensors from config entry."""
@@ -43,6 +46,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             RinnaiPumpCyclesSensor(device),
             RinnaiFanCurrentSensor(device),
             RinnaiFanFrequencySensor(device),
+            RinnaiWifiSensor(device),
         ]
     )
     async_add_entities(entities)
@@ -237,3 +241,21 @@ class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
         if self._device.fan_frequency is None:
             return None
         return round(self._device.fan_frequency, 1)
+    
+class RinnaiWifiSensor(RinnaiEntity, SensorEntity):
+    """Monitors the wifi signal"""
+
+    _attr_icon = WIFI_SIGNAL_ICON
+    _attr_native_unit_of_measurement = SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    _attr_state_class = SensorDeviceClass.SIGNAL_STRENGTH,
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+
+    def __init__(self, device):
+        super().__init__("wifi_signal_strength", f"{device.device_name} WiFi Signal Strength", device)
+        self._state: int = None
+    
+    @property
+    def native_value(self):
+        if self._device.wifi_signal is None:
+            return None
+        return self._device.wifi_signal
