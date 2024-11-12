@@ -7,16 +7,16 @@ import async_timeout
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import Throttle
+from homeassistant.helpers.event import async_track_time_interval
 
 from .rinnai import WaterHeater
 
 from .const import (
 	CONF_MAINT_INTERVAL_ENABLED,
+	CONF_MAINT_REFRESH_INTERVAL,
 	DOMAIN as RINNAI_DOMAIN,
 	LOGGER,
 )
-
-MIN_TIME_BETWEEN_UPDATES = timedelta(minutes=5)
 
 class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	"""Rinnai device object"""
@@ -33,6 +33,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self.device_manufacturer: str = "Rinnai"
 		self._device_info: Optional[Dict[str, Any]] | None = None
 		self.options = options
+		self.maint_refresh_interval = timedelta(seconds=self.options[CONF_MAINT_REFRESH_INTERVAL])
+		self._unsub_maintenance_timer = None  # Track the maintenance timer
 		super().__init__(
 			hass,
 			LOGGER,
@@ -174,7 +176,6 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	
 	@staticmethod
 	def str_to_bool(s):
-		LOGGER.debug(f"String value: {s}")
 		if s.lower() == "true":
 			return True
 		elif s.lower() == "false":
@@ -203,17 +204,40 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	async def async_turn_on(self):
 		await self.waterHeater.turn_on()
 
-	@Throttle(MIN_TIME_BETWEEN_UPDATES)
-	async def async_do_maintenance_retrieval(self):
+	async def async_do_maintenance_retrieval(self, _event=None):
 		await self.waterHeater.do_maintenance_retrieval()
 		LOGGER.debug("Rinnai Maintenance Retrieval Started")
 
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
 		self._device_info = await self.waterHeater.get_status()
+		
+		# Handle dynamic maintenance update interval
 		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
-			await self.async_do_maintenance_retrieval()
+			# Cancel previous maintenance update timer if it exists
+			if self._unsub_maintenance_timer:
+				self._unsub_maintenance_timer()
+			
+			# Set new maintenance update interval
+			self._unsub_maintenance_timer = async_track_time_interval(
+				self.hass, self.async_do_maintenance_retrieval, self.maint_refresh_interval
+			)
 		else:
 			LOGGER.debug("Skipping Maintenance retrieval since disabled inside of configuration")
 		
 		LOGGER.debug("Rinnai device data: %s", self._device_info)
+
+	async def async_added_to_hass(self):
+		"""Called when the device is added to Home Assistant"""
+		# If maintenance retrieval is enabled, initialize the timer
+		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
+			self._unsub_maintenance_timer = async_track_time_interval(
+				self.hass, self.async_do_maintenance_retrieval, self.maint_refresh_interval
+            )
+
+	async def async_will_remove_from_hass(self):
+		"""Called when the device is removed from Home Assistant"""
+		# Unsubscribe from any existing maintenance update timer
+		if self._unsub_maintenance_timer:
+			self._unsub_maintenance_timer()
+			self._unsub_maintenance_timer = None

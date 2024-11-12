@@ -23,8 +23,9 @@
         "step": {
             "init": {
               "data": {
-                "units": "Unit of Temperature",
-                "maint_interval_enabled":  "Enable scheduled maintenance retrieval (Every 5 min)"
+                "maint_interval_enabled":  "Enable scheduled maintenance retrieval",
+                "maint_refresh_interval":  "How often the maintenance retrieval runs in seconds (Caution: to often could lock up things up)",
+                "refresh_interval":  "How often the integration will poll the device in seconds"
               },
                 "description": "Configure rinnai options"
             }

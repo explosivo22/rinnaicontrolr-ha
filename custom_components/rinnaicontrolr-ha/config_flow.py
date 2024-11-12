@@ -98,7 +98,7 @@ class OptionsFlow(config_entries.OptionsFlow):
                     ): NumberSelector(
                         NumberSelectorConfig(
                             mode=NumberSelectorMode.SLIDER,
-                            min=60,
+                            min=15,
                             max=300
                         )
                     ),

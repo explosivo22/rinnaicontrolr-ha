@@ -50,8 +50,6 @@ class WaterHeater(object):
 
             status = self.parse_data(''.join(total_data))
 
-            LOGGER.debug(status)
-
             return status
 
         except asyncio.TimeoutError:
@@ -102,8 +100,6 @@ class WaterHeater(object):
             await writer.wait_closed()
 
             sysinfo = ''.join(total_data)
-
-            LOGGER.debug(sysinfo)
 
             return json.loads(sysinfo)
 
