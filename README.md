@@ -74,6 +74,6 @@ Please make sure to use one of the official release branches when installing usi
 
 > [!Tip]
 > If you are unable to use the button above, follow the steps below:
-> 1. Navigate to the Home Assistant Integrations page (Settings --> Devices & Services)
+> 1. Navigate to the Home Assistant Integrations page `(Settings --> Devices & Services)`
 > 2. Click the `+ ADD INTEGRATION` button in the lower right-hand corner
 > 3. Search for `Rinnai Control-R Water Heater`
