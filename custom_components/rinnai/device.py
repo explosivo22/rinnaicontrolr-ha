@@ -14,6 +14,7 @@ from .rinnai import WaterHeater
 from .const import (
 	CONF_MAINT_INTERVAL_ENABLED,
 	CONF_MAINT_REFRESH_INTERVAL,
+	DEFAULT_MAINT_REFRESH_INTERVAL,
 	DOMAIN as RINNAI_DOMAIN,
 	LOGGER,
 )
@@ -33,7 +34,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self.device_manufacturer: str = "Rinnai"
 		self._device_info: Optional[Dict[str, Any]] | None = None
 		self.options = options
-		self.maint_refresh_interval = timedelta(seconds=self.options[CONF_MAINT_REFRESH_INTERVAL])
+		self.maint_refresh_interval = timedelta(seconds=self.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL))
 		self._unsub_maintenance_timer = None  # Track the maintenance timer
 		super().__init__(
 			hass,

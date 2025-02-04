@@ -62,6 +62,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     data=user_input,
                     options={
                         CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
+                        CONF_MAINT_REFRESH_INTERVAL: DEFAULT_MAINT_REFRESH_INTERVAL,
+                        CONF_REFRESH_INTERVAL: DEFAULT_REFRESH_INTERVAL,
                     },
                 )
             except CannotConnect:
@@ -94,12 +96,16 @@ class OptionsFlow(config_entries.OptionsFlow):
                         CONF_MAINT_INTERVAL_ENABLED,
                         default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
                     ) : bool,
-                    vol.Optional(CONF_MAINT_REFRESH_INTERVAL, default=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL)
+                    vol.Optional(
+                        CONF_MAINT_REFRESH_INTERVAL, 
+                        default=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL),
                     ): NumberSelector(
                         NumberSelectorConfig(
                             mode=NumberSelectorMode.SLIDER,
                             min=15,
-                            max=300
+                            max=300,
+                            step=1,  # You can also specify step if needed
+                            value=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL),  # Default value for the selector
                         )
                     ),
                     vol.Optional(CONF_REFRESH_INTERVAL, default=self.config_entry.options.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)
