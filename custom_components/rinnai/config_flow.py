@@ -82,7 +82,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 class OptionsFlow(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry):
         """Initialize options flow."""
-        self.config_entry = config_entry
+        self.options = config_entry
 
     async def async_step_init(self, user_input=None):
         if user_input is not None:
@@ -94,18 +94,17 @@ class OptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_MAINT_INTERVAL_ENABLED,
-                        default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
+                        default=self.options.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
                     ) : bool,
                     vol.Optional(
                         CONF_MAINT_REFRESH_INTERVAL, 
-                        default=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL),
+                        default=self.options.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL),
                     ): NumberSelector(
                         NumberSelectorConfig(
                             mode=NumberSelectorMode.SLIDER,
                             min=15,
                             max=300,
-                            step=1,  # You can also specify step if needed
-                            value=self.config_entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL),  # Default value for the selector
+                            step=1,
                         )
                     ),
                     vol.Optional(CONF_REFRESH_INTERVAL, default=self.config_entry.options.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)
@@ -113,7 +112,8 @@ class OptionsFlow(config_entries.OptionsFlow):
                         NumberSelectorConfig(
                             mode=NumberSelectorMode.SLIDER,
                             min=15,
-                            max=60
+                            max=60,
+                            step=1,
                         )
                     )
                 }
