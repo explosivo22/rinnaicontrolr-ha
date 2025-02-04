@@ -14,7 +14,8 @@ from homeassistant.const import (
     UnitOfTemperature,
     UnitOfFrequency,
     UnitOfElectricCurrent,
-    SIGNAL_STRENGTH_DECIBELS_MILLIWATT
+    SIGNAL_STRENGTH_DECIBELS_MILLIWATT,
+    UnitOfTime
 )
 
 
@@ -153,6 +154,7 @@ class RinnaiCombustionHoursSensor(RinnaiEntity, SensorEntity):
     _attr_icon = OPERATION_ICON
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
@@ -172,6 +174,7 @@ class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
     _attr_icon = PUMP_ICON
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
+    _attr_native_unit_of_measurement = UnitOfTime.HOURS
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
