@@ -44,10 +44,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     coordinator = RinnaiDeviceDataUpdateCoordinator(
             hass, 
-            sysinfo["sysinfo"]["local-ip"],
+            entry.data[CONF_HOST],
             sysinfo["sysinfo"]["serial-number"],
             sysinfo["sysinfo"]["serial-number"],
-            sysinfo["sysinfo"]["ayla-dsn"], 
+            sysinfo["sysinfo"].get("ayla-dsn", "unknown"),  # Use get method with default value
             update_interval, 
             entry.options
         )
