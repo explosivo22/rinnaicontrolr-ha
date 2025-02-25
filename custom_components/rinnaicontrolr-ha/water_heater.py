@@ -59,7 +59,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         super().__init__("water_heater", f"{device.device_name} Water Heater", device)
 
     @property
-    def current_operation(self):
+    def current_operation(self) -> str:
         """Return current operation"""
         if self._device.is_heating:
             return STATE_GAS
@@ -69,46 +69,46 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
             return STATE_OFF
 
     @property
-    def icon(self):
+    def icon(self) -> str:
         """Return the icon to use for the valve."""
         return "mdi:water-boiler"
 
     @property
-    def temperature_unit(self):
+    def temperature_unit(self) -> str:
         return UnitOfTemperature.FAHRENHEIT
 
     @property
-    def min_temp(self):
+    def min_temp(self) -> float:
         return float(110)
 
     @property
-    def max_temp(self):
+    def max_temp(self) -> float:
         return float(140)
 
     @property
-    def target_temperature(self):
+    def target_temperature(self) -> float:
         """Return the temperature we try to reach"""
         return self._device.target_temperature
 
     @property
-    def is_away_mode_on(self):
+    def is_away_mode_on(self) -> bool:
         return self._device.vacation_mode_on
 
     @property
-    def outlet_temperature(self):
+    def outlet_temperature(self) -> float:
         if self.hass.config.units is METRIC_SYSTEM:
-            return round((self._device.outlet_temperature-32)/1.8, 1)
+            return round((self._device.outlet_temperature - 32) / 1.8, 1)
         return round(self._device.outlet_temperature, 1)
 
     @property
-    def inlet_temperature(self):
+    def inlet_temperature(self) -> float:
         if self.hass.config.units is METRIC_SYSTEM:
-            return round((self._device.inlet_temperature-32)/1.8, 1)
+            return round((self._device.inlet_temperature - 32) / 1.8, 1)
         return round(self._device.inlet_temperature, 1)
 
     @property
-    def current_temperature(self):
-        """REturn the current temperature."""
+    def current_temperature(self) -> float:
+        """Return the current temperature."""
         return self._device.current_temperature
 
     @property
@@ -120,11 +120,14 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
             "inlet_temperature": self.inlet_temperature
         }
 
-    async def async_set_temperature(self, **kwargs):
+    async def async_set_temperature(self, **kwargs) -> None:
         target_temp = kwargs.get(ATTR_TEMPERATURE)
         if target_temp is not None:
-            await self._device.async_set_temperature(int(target_temp))
-            LOGGER.debug("Updated temperature to: %s", target_temp)
+            try:
+                await self._device.async_set_temperature(int(target_temp))
+                LOGGER.debug("Updated temperature to: %s", target_temp)
+            except ValueError:
+                LOGGER.error("Invalid temperature value: %s", target_temp)
         else:
             LOGGER.error("A target temperature must be provided")
 
@@ -136,30 +139,32 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         """Turn away mode off."""
         await self._device.async_disable_vacation_mode()
 
-    async def async_set_operation_mode(self, operation_mode):
+    async def async_set_operation_mode(self, operation_mode: str) -> None:
         if operation_mode == STATE_ON:
             await self._device.async_turn_on()
         elif operation_mode == STATE_GAS:
             await self._device.async_turn_on()
-        else: #STATE OFF
+        else:  # STATE OFF
             await self._device.async_turn_off()
 
-    async def async_turn_on(self):
+    async def async_turn_on(self) -> None:
         """Turn on."""
         await self.async_set_operation_mode(STATE_ON)
 
-    async def async_turn_off(self):
+    async def async_turn_off(self) -> None:
         """Turn off."""
         await self.async_set_operation_mode(STATE_OFF)
 
-    async def async_start_recirculation(self, recirculation_minutes = 5):
+    async def async_start_recirculation(self, recirculation_minutes: int = 5) -> None:
         await self._device.async_start_recirculation(recirculation_minutes)
+        LOGGER.debug("Started recirculation for %s minutes", recirculation_minutes)
         self.async_write_ha_state()
 
-    async def async_stop_recirculation(self):
+    async def async_stop_recirculation(self) -> None:
         await self._device.async_stop_recirculation()
+        LOGGER.debug("Stopped recirculation")
         self.async_write_ha_state()
 
-    async def async_added_to_hass(self):
+    async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         await super().async_added_to_hass()

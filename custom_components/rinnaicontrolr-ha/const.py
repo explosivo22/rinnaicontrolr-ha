@@ -27,3 +27,6 @@ ICON_RECIRCULATION_DISABLED='mdi:octagon-outline'
 
 CONF_UNIT_SYSTEM_IMPERIAL = "imperial"
 CONF_UNIT_SYSTEM_METRIC = "metric"
+
+CONF_REFRESH_TOKEN = 'conf_refresh_token'
+CONF_ACCESS_TOKEN = 'conf_access_token'

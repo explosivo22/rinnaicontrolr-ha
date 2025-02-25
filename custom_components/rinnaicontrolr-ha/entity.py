@@ -1,4 +1,4 @@
-"""Base entity class for Flo entities."""
+"""Base entity class for Rinnai entities."""
 from __future__ import annotations
 
 from typing import Any
@@ -19,7 +19,7 @@ class RinnaiEntity(Entity):
         self,
         entity_type: str,
         name: str,
-        device: RinnaiDeviceUpdateCoordinator,
+        device: RinnaiDeviceDataUpdateCoordinator,
         **kwargs,
     ) -> None:
         """Init Rinnai entity."""
@@ -45,5 +45,5 @@ class RinnaiEntity(Entity):
         await self._device.async_request_refresh()
 
     async def async_added_to_hass(self):
-        """When entity is added to hass"""
+        """When entity is added to hass."""
         self.async_on_remove(self._device.async_add_listener(self.async_write_ha_state))
