@@ -4,7 +4,12 @@
     "config_flow": true,
     "documentation": "https://github.com/explosivo22/rinnaicontrolr-ha/",
     "codeowners": [ "@explosivo22" ],
+<<<<<<< HEAD:custom_components/rinnaicontrolr-ha/manifest.json
     "requirements": [ "aiorinnai==0.4.0a2" ],
     "version": "1.5.1",
+=======
+    "requirements": [ "aiorinnai==0.3.3" ],
+    "version": "1.4.6",
+>>>>>>> 6a60ac3ef2862a01b180479f5b5a2e441f6a6f88:custom_components/rinnai/manifest.json
     "iot_class":  "cloud_polling"
 }
