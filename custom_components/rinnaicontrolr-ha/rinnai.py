@@ -157,8 +157,11 @@ class WaterHeater(object):
                     if match:
                         value = match.group(1).replace("'", "")
 
+                # Convert 'null' to None
+                if value.lower() == 'null':
+                    value = None
                 # Convert numerical strings to integers or floats
-                if value.isdigit():
+                elif value.isdigit():
                     value = int(value)
                 else:
                     try:

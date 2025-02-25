@@ -115,7 +115,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def vacation_mode_on(self) -> bool:
 		"""Return if vacation mode is on"""
-		if self._device_info['schedule_holiday'] is None:
+		if self._device_info['schedule_holiday'] is None or self._device_info['schedule_holiday'].lower() == 'null':
 			return None
 		return self.str_to_bool(self._device_info['schedule_holiday'])
 
