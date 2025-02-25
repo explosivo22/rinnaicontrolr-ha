@@ -1,3 +1,4 @@
+<<<<<<< HEAD:custom_components/rinnaicontrolr-ha/const.py
 """Constants for Rinnai Water Heater Monitoring"""
 import logging
 
@@ -27,3 +28,37 @@ ICON_RECIRCULATION_DISABLED='mdi:octagon-outline'
 
 CONF_UNIT_SYSTEM_IMPERIAL = "imperial"
 CONF_UNIT_SYSTEM_METRIC = "metric"
+
+CONF_REFRESH_TOKEN = 'conf_refresh_token'
+CONF_ACCESS_TOKEN = 'conf_access_token'
+=======
+"""Constants for Rinnai Water Heater Monitoring"""
+import logging
+
+LOGGER = logging.getLogger(__package__)
+
+DOMAIN = 'rinnai'
+CLIENT = "client"
+
+ATTRIBUTION = "Data provided by Rinnai"
+
+DEFAULT_UNIT = "fahrenheit"
+CONF_UNIT = "units"
+
+CONF_MAINT_INTERVAL_ENABLED = "maint_interval_enabled"
+DEFAULT_MAINT_INTERVAL_ENABLED = True
+
+CONF_UNITS = ["celsius", "fahrenheit"]
+
+ATTR_CACHE = 'cache'
+ATTR_COORDINATOR = 'coordinator'
+
+SIGNAL_UPDATE_RINNAI = 'rinnai_temp_update'
+
+ICON_DOMESTIC_TEMP='mdi:thermometer'
+ICON_RECIRCULATION='mdi:sync'
+ICON_RECIRCULATION_DISABLED='mdi:octagon-outline'
+
+CONF_UNIT_SYSTEM_IMPERIAL = "imperial"
+CONF_UNIT_SYSTEM_METRIC = "metric"
+>>>>>>> 6a60ac3ef2862a01b180479f5b5a2e441f6a6f88:custom_components/rinnai/const.py
