@@ -93,6 +93,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
 
         if not data.get(CONF_ACCESS_TOKEN):
             data[CONF_ACCESS_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
+        if not data.get(CONF_REFRESH_TOKEN):
+            data[CONF_REFRESH_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
 
         hass.config_entries.async_update_entry(config_entry, data=data, version=2)
 
