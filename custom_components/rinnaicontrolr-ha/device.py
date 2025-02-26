@@ -115,9 +115,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def vacation_mode_on(self) -> bool:
 		"""Return if vacation mode is on"""
-		if self._device_info['schedule_holiday'] is None or self._device_info['schedule_holiday'].lower() == 'null':
+		schedule_holiday = self._device_info['schedule_holiday']
+		if schedule_holiday is None or 'null' in schedule_holiday.lower():
 			return None
-		return self.str_to_bool(self._device_info['schedule_holiday'])
+		return self.str_to_bool(schedule_holiday)
 
 	@property
 	def water_flow_rate(self) -> float:

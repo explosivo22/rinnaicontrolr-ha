@@ -140,9 +140,9 @@ class WaterHeater(object):
                 key = key.strip()
                 value = value.strip()
 
-                # Specific handling for set_domestic_temperature to remove '+'
+                # Specific handling for set_domestic_temperature to remove '+' and handle 'null'
                 if key == "set_domestic_temperature":
-                    if value == "+ null {-}":
+                    if 'null' in value:
                         value = key_value_pairs.get("domestic_temperature", value)
                     else:
                         match = temp_pattern.search(value)
