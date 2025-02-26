@@ -6,7 +6,7 @@ from aiorinnai.api import Unauthenticated
 from aiorinnai.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
@@ -91,10 +91,28 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
     if config_entry.version == 1:
         data = {**config_entry.data}
 
-        if not data.get(CONF_ACCESS_TOKEN):
-            data[CONF_ACCESS_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
-        if not data.get(CONF_REFRESH_TOKEN):
-            data[CONF_REFRESH_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
+        # Set default values if keys are missing
+        data.setdefault(CONF_ACCESS_TOKEN, "")
+        data.setdefault(CONF_REFRESH_TOKEN, "")
+
+        if not data[CONF_ACCESS_TOKEN] or not data[CONF_REFRESH_TOKEN]:
+            # Fetch new tokens from the API using existing credentials
+            client = API()
+            try:
+                # Assuming you have CONF_EMAIL and CONF_PASSWORD in the config_entry.data
+                await client.async_login(config_entry.data[CONF_EMAIL], config_entry.data[CONF_PASSWORD])
+                user_info = await client.user.get_info()
+                _LOGGER.debug("User info retrieved during migration: %s", user_info)
+                
+                # Update tokens in data
+                data[CONF_ACCESS_TOKEN] = client.access_token
+                data[CONF_REFRESH_TOKEN] = client.refresh_token
+            except Unauthenticated as err:
+                _LOGGER.error("Authentication error during migration: %s", err)
+                raise ConfigEntryAuthFailed from err
+            except RequestError as err:
+                _LOGGER.error("Request error during migration: %s", err)
+                raise ConfigEntryNotReady from err
 
         hass.config_entries.async_update_entry(config_entry, data=data, version=2)
 
