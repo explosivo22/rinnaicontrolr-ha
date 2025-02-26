@@ -83,3 +83,21 @@ async def async_remove_config_entry_device(
 ) -> bool:
     """Remove a config entry from a device."""
     return True
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry):
+    """Migrate old entry."""
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+    if config_entry.version == 1:
+        data = {**config_entry.data}
+
+        if not data.get(CONF_ACCESS_TOKEN):
+            data[CONF_ACCESS_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
+        if not data.get(CONF_REFRESH_TOKEN):
+            data[CONF_REFRESH_TOKEN] = config_entry.data[CONF_REFRESH_TOKEN]
+
+        hass.config_entries.async_update_entry(config_entry, data=data, version=2)
+
+    _LOGGER.info("Migration to version %s successful", config_entry.version)
+
+    return True

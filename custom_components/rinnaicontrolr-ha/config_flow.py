@@ -23,7 +23,7 @@ from .const import (
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
 
-    VERSION = 1
+    VERSION = 2
 
     entry: config_entries.ConfigEntry | None
 
