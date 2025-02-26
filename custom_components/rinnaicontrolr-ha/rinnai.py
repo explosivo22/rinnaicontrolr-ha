@@ -142,9 +142,12 @@ class WaterHeater(object):
 
                 # Specific handling for set_domestic_temperature to remove '+'
                 if key == "set_domestic_temperature":
-                    match = temp_pattern.search(value)
-                    if match:
-                        value = match.group(1)
+                    if value == "+ null {-}":
+                        value = key_value_pairs.get("domestic_temperature", value)
+                    else:
+                        match = temp_pattern.search(value)
+                        if match:
+                            value = match.group(1)
 
                 # Specific handling for schedule_holiday to remove '+' and '{70d}'
                 elif key == "schedule_holiday":
