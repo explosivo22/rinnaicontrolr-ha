@@ -5,6 +5,8 @@ from typing import Any, Dict, Optional
 
 from aiorinnai.api import API
 from aiorinnai.errors import RequestError
+from aiorinnai.api import Unauthenticated
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from async_timeout import timeout
 
 from homeassistant.core import HomeAssistant
@@ -54,6 +56,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
                 await asyncio.gather(
                     self._update_device()
                 )
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
         except RequestError as error:
             raise UpdateFailed(error) from error
 
@@ -193,30 +198,78 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
         return float(self._device_information["data"]["getDevice"]["info"]["m20_pump_cycles"])
 
     async def async_set_temperature(self, temperature: int) -> None:
-        await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"], temperature)
+        try:
+            await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"], temperature)
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_start_recirculation(self, duration: int) -> None:
-        await self.api_client.device.start_recirculation(self._device_information["data"]["getDevice"], duration)
+        try:
+            await self.api_client.device.start_recirculation(self._device_information["data"]["getDevice"], duration)
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_stop_recirculation(self) -> None:
-        await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
+        try:
+            await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_enable_vacation_mode(self) -> None:
-        await self.api_client.device.enable_vacation_mode(self._device_information["data"]["getDevice"])
+        try:
+            await self.api_client.device.enable_vacation_mode(self._device_information["data"]["getDevice"])
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_disable_vacation_mode(self) -> None:
-        await self.api_client.device.disable_vacation_mode(self._device_information["data"]["getDevice"])
+        try:
+            await self.api_client.device.disable_vacation_mode(self._device_information["data"]["getDevice"])
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_turn_off(self) -> None:
-        await self.api_client.device.turn_off(self._device_information["data"]["getDevice"])
+        try:
+            await self.api_client.device.turn_off(self._device_information["data"]["getDevice"])
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def async_turn_on(self) -> None:
-        await self.api_client.device.turn_on(self._device_information["data"]["getDevice"])
+        try:
+            await self.api_client.device.turn_on(self._device_information["data"]["getDevice"])
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_do_maintenance_retrieval(self) -> None:
-        await self.api_client.device.do_maintenance_retrieval(self._device_information["data"]["getDevice"])
-        LOGGER.debug("Rinnai Maintenance Retrieval Started")
+        try:
+            await self.api_client.device.do_maintenance_retrieval(self._device_information["data"]["getDevice"])
+            LOGGER.debug("Rinnai Maintenance Retrieval Started")
+        except Unauthenticated as error:
+            LOGGER.error("Authentication error: %s", error)
+            raise ConfigEntryAuthFailed from error
+        except RequestError as error:
+            raise UpdateFailed(error) from error
 
     async def _update_device(self, *_) -> None:
         """Update the device information from the API"""
