@@ -10,6 +10,7 @@ from homeassistant import config_entries, core, exceptions
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.core import callback
+from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .const import (
     DOMAIN,
@@ -20,8 +21,9 @@ from .const import (
     CONF_REFRESH_TOKEN,
 )
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(config_entries.ConfigFlow):
     """Handle a config flow for Rinnai."""
+    DOMAIN = DOMAIN
 
     VERSION = 2
 
@@ -90,6 +92,75 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 CONF_MAINT_INTERVAL_ENABLED: DEFAULT_MAINT_INTERVAL_ENABLED,
             }
         )
+
+    async def async_step_reauth(self, user_input=None):
+        """Handle re-authentication with the user."""
+        errors: dict[str, str] = {}
+        if user_input is None:
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(CONF_EMAIL, default=self.context.get(CONF_EMAIL, "")): str,
+                        vol.Required(CONF_PASSWORD): str,
+                    }
+                ),
+                errors=errors,
+            )
+
+        self.username = user_input[CONF_EMAIL]
+        self.password = user_input[CONF_PASSWORD]
+
+        try:
+            self.api = API()
+            await self.api.async_login(self.username, self.password)
+        except RequestError as request_error:
+            LOGGER.error("Reauth: Error connecting to the Rinnai API: %s", request_error)
+            errors["base"] = "cannot_connect"
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(CONF_EMAIL, default=self.username): str,
+                        vol.Required(CONF_PASSWORD): str,
+                    }
+                ),
+                errors=errors,
+            )
+        except Exception as err:
+            LOGGER.error("Reauth: Unexpected error: %s", err)
+            errors["base"] = "unknown"
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=vol.Schema(
+                    {
+                        vol.Required(CONF_EMAIL, default=self.username): str,
+                        vol.Required(CONF_PASSWORD): str,
+                    }
+                ),
+                errors=errors,
+            )
+
+        # Safely get entry_id from context
+        entry_id = self.context.get("entry_id")
+        if not entry_id:
+            LOGGER.error("Reauth: No entry_id in context; cannot update tokens.")
+            return self.async_abort(reason="reauth_failed")
+        entry = self.hass.config_entries.async_get_entry(entry_id)
+        if entry:
+            self.hass.config_entries.async_update_entry(
+                entry,
+                data={
+                    **entry.data,
+                    CONF_EMAIL: self.username,
+                    CONF_ACCESS_TOKEN: self.api.access_token,
+                    CONF_REFRESH_TOKEN: self.api.refresh_token,
+                },
+            )
+            self.hass.async_create_task(
+                self.hass.config_entries.async_reload(entry.entry_id)
+            )
+        return self.async_abort(reason="reauth_successful")
 
     @staticmethod
     @callback
