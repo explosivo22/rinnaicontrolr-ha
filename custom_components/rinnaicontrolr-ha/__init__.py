@@ -38,6 +38,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     waterHeater = WaterHeater(entry.data[CONF_HOST])
     sysinfo = await waterHeater.get_sysinfo()
 
+    # Gracefully handle controller offline or unreachable
+    if not sysinfo or "sysinfo" not in sysinfo or "serial-number" not in sysinfo["sysinfo"]:
+        _LOGGER.error("Could not connect to Rinnai controller or missing sysinfo; will retry later.")
+        raise ConfigEntryNotReady("Rinnai controller is offline or unreachable.")
+
     update_interval = entry.options.get(CONF_REFRESH_INTERVAL, DEFAULT_REFRESH_INTERVAL)
 
     maint_refresh_interval = entry.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL)
