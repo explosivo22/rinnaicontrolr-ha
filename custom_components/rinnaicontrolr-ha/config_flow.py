@@ -21,10 +21,8 @@ from .const import (
     CONF_REFRESH_TOKEN,
 )
 
-class ConfigFlow(config_entries.ConfigFlow):
+class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
-    DOMAIN = DOMAIN
-
     VERSION = 2
 
     entry: config_entries.ConfigEntry | None
