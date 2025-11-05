@@ -67,21 +67,47 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		return self.device_model
 		
 	@property
-	def firmware_version(self) -> str:
+	def firmware_version(self) -> str | None:
 		"""Return the firmware version for the device"""
-		return self._device_info['module_firmware_version']
-
-	@property
-	def current_temperature(self) -> float:
-		"""Return the current temperature in degrees F"""
-		return float(self._device_info['domestic_temperature'])
-
-	@property
-	def target_temperature(self) -> float:
-		"""Return the target temperature in degrees F"""
-		if self._device_info['set_domestic_temperature'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['set_domestic_temperature'])
+		return self._device_info.get('module_firmware_version')
+
+	@property
+	def current_temperature(self) -> float | None:
+		"""Return the current temperature in degrees F"""
+		if not self._device_info:
+			return None
+		value = self._device_info.get('domestic_temperature')
+		if value is None:
+			LOGGER.debug(
+				"No current temperature found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid current_temperature value: %s", value)
+			return None
+
+	@property
+	def target_temperature(self) -> float | None:
+		"""Return the target temperature in degrees F"""
+		if not self._device_info:
+			return None
+		value = self._device_info.get('set_domestic_temperature')
+		if value is None:
+			LOGGER.debug(
+				"No target temperature found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid target_temperature value: %s", value)
+			return None
 
 	@property
 	def serial_number(self) -> str:
@@ -91,90 +117,248 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	@property
 	def is_heating(self) -> bool:
 		"""Return if the water heater is heating"""
-		return self.str_to_bool(self._device_info['domestic_combustion'])
+		if not self._device_info:
+			return False
+		value = self._device_info.get('domestic_combustion')
+		if value is None:
+			LOGGER.debug(
+				"No domestic_combustion found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return False
+		try:
+			return self.str_to_bool(value)
+		except Exception:
+			LOGGER.warning("Invalid is_heating value: %s", value)
+			return False
 	@property
 	def is_on(self) -> bool:
 		"""Return if the water heater is on"""
-		return self.str_to_bool(self._device_info['operation_enabled'])
+		if not self._device_info:
+			return False
+		value = self._device_info.get('operation_enabled')
+		if value is None:
+			LOGGER.debug(
+				"No operation_enabled found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return False
+		try:
+			return self.str_to_bool(value)
+		except Exception:
+			LOGGER.warning("Invalid is_on value: %s", value)
+			return False
 
 	@property
 	def is_recirculating(self) -> bool:
 		"""Return if recirculation is running"""
-		return self.str_to_bool(self._device_info['recirculation_enabled'])
+		if not self._device_info:
+			return False
+		value = self._device_info.get('recirculation_enabled')
+		if value is None:
+			LOGGER.debug(
+				"No recirculation_enabled found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return False
+		try:
+			return self.str_to_bool(value)
+		except Exception:
+			LOGGER.warning("Invalid is_recirculating value: %s", value)
+			return False
 
 	@property
-	def outlet_temperature(self) -> float:
+	def outlet_temperature(self) -> float | None:
 		"""Return the outlet water temperature"""
-		return float(self._device_info['m02_outlet_temperature'])
+		if not self._device_info:
+			return None
+		value = self._device_info.get('m02_outlet_temperature')
+		if value is None:
+			LOGGER.debug(
+				"No outlet temperature found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid outlet_temperature value: %s", value)
+			return None
 
 	@property
-	def inlet_temperature(self) -> float:
+	def inlet_temperature(self) -> float | None:
 		"""Return the inlet water temperature"""
-		return float(self._device_info['m08_inlet_temperature'])
+		if not self._device_info:
+			return None
+		value = self._device_info.get('m08_inlet_temperature')
+		if value is None:
+			LOGGER.debug(
+				"No inlet temperature found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid inlet_temperature value: %s", value)
+			return None
 
 	@property
 	def vacation_mode_on(self) -> bool:
 		"""Return if vacation mode is on"""
-		schedule_holiday = self._device_info['schedule_holiday']
-		if schedule_holiday is None or 'null' in schedule_holiday.lower():
-			return None
-		return self.str_to_bool(schedule_holiday)
+		if not self._device_info:
+			return False
+		schedule_holiday = self._device_info.get('schedule_holiday')
+		if schedule_holiday is None or (isinstance(schedule_holiday, str) and 'null' in schedule_holiday.lower()):
+			return False
+		try:
+			return self.str_to_bool(schedule_holiday)
+		except Exception:
+			return False
 
 	@property
-	def water_flow_rate(self) -> float:
+	def water_flow_rate(self) -> float | None:
 		"""Return the water flow rate"""
-		if int(self._device_info['m01_water_flow_rate_raw']) is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m01_water_flow_rate_raw'])
+		value = self._device_info.get('m01_water_flow_rate_raw')
+		if value is None:
+			LOGGER.debug(
+				"No water flow rate found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid water_flow_rate value: %s", value)
+			return None
 
 	@property
-	def combustion_cycles(self) -> float:
+	def combustion_cycles(self) -> float | None:
 		"""Return the combustion cycles"""
-		if self._device_info['m04_combustion_cycles'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m04_combustion_cycles'])
+		value = self._device_info.get('m04_combustion_cycles')
+		if value is None:
+			LOGGER.debug(
+				"No combustion cycles found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid combustion_cycles value: %s", value)
+			return None
 
 	@property
-	def pump_hours(self) -> float:
+	def pump_hours(self) -> float | None:
 		"""Return the pump hours"""
-		if self._device_info['m19_pump_hours'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m19_pump_hours'])
+		value = self._device_info.get('m19_pump_hours')
+		if value is None:
+			LOGGER.debug(
+				"No pump hours found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid pump_hours value: %s", value)
+			return None
 
 	@property
-	def combustion_hours(self) -> float:
+	def combustion_hours(self) -> float | None:
 		"""Return the combustion hours"""
-		if self._device_info['m03_combustion_hours_raw'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m03_combustion_hours_raw'])
+		value = self._device_info.get('m03_combustion_hours_raw')
+		if value is None:
+			LOGGER.debug(
+				"No combustion hours found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid combustion_hours value: %s", value)
+			return None
 
 	@property
-	def fan_current(self) -> float:
+	def fan_current(self) -> float | None:
 		"""Return the fan current"""
-		if self._device_info['m09_fan_current'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m09_fan_current'])
+		value = self._device_info.get('m09_fan_current')
+		if value is None:
+			LOGGER.debug(
+				"No fan current found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid fan_current value: %s", value)
+			return None
 
 	@property
-	def fan_frequency(self) -> float:
+	def fan_frequency(self) -> float | None:
 		"""Return the fan frequency"""
-		if self._device_info['m05_fan_frequency'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m05_fan_frequency'])
+		value = self._device_info.get('m05_fan_frequency')
+		if value is None:
+			LOGGER.debug(
+				"No fan frequency found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid fan_frequency value: %s", value)
+			return None
 
 	@property
-	def pump_cycles(self) -> float:
+	def pump_cycles(self) -> float | None:
 		"""Return the pump cycles"""
-		if self._device_info['m20_pump_cycles'] is None:
+		if not self._device_info:
 			return None
-		return float(self._device_info['m20_pump_cycles'])
+		value = self._device_info.get('m20_pump_cycles')
+		if value is None:
+			LOGGER.debug(
+				"No pump cycles found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return float(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid pump_cycles value: %s", value)
+			return None
 	
 	@property
-	def wifi_signal(self) -> int:
+	def wifi_signal(self) -> int | None:
 		"""Return the wifi signal strength"""
-		if self._device_info['wifi_signal_strength'] is None:
+		if not self._device_info:
 			return None
-		return self._device_info['wifi_signal_strength']
+		value = self._device_info.get('wifi_signal_strength')
+		if value is None:
+			LOGGER.debug(
+				"No wifi signal found in device_info keys: %s",
+				list(self._device_info.keys()),
+			)
+			return None
+		try:
+			return int(value)
+		except (TypeError, ValueError):
+			LOGGER.warning("Invalid wifi_signal value: %s", value)
+			return None
 	
 	@staticmethod
 	def str_to_bool(s):
