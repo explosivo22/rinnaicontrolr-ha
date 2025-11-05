@@ -19,6 +19,12 @@
             "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
         }
     },
+    "issues": {
+        "reauth_required": {
+            "title": "Reauthentication required",
+            "description": "Your session has expired and you must re-authenticate to continue using the Rinnai integration. Please reconfigure the integration from the Integrations page."
+        }
+    },
     "options": {
         "step": {
             "init": {
