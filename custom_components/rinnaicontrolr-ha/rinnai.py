@@ -131,49 +131,58 @@ class WaterHeater(object):
     def parse_data(data):
         LOGGER.debug(f"Parsing data: {data}")
         key_value_pairs = {}
-        pattern = re.compile(r'([^\s]+)')  # Pattern to match valid value before extra data
-        temp_pattern = re.compile(r'(\d+)')  # Pattern to match only numbers
+        value_pattern = re.compile(r'([^\s]+)')  # Pattern to match valid value before extra data
+        number_pattern = re.compile(r'(\d+)')   # Pattern to match only numbers
 
-        for line in data.split('\n'):
-            if ':' in line:
-                key, value = line.split(':', 1)
-                key = key.strip()
-                value = value.strip()
+        for line in str(data).split('\n'):  # ensure data is string
+            LOGGER.debug(f"Parsing line: {line}")
+            if ':' not in line:
+                continue
 
-                # Specific handling for set_domestic_temperature to remove '+' and handle 'null'
-                if key == "set_domestic_temperature":
-                    if 'null' in value:
-                        value = key_value_pairs.get("domestic_temperature", value)
-                    else:
-                        match = temp_pattern.search(value)
-                        if match:
-                            value = match.group(1)
+            key, value = line.split(':', 1)
+            key = key.strip()
+            value = value.strip()
 
-                # Specific handling for schedule_holiday to remove '+' and '{70d}'
-                elif key == "schedule_holiday":
+            # Skip empty keys
+            if not key:
+                continue
+
+            # Specific handling for set_domestic_temperature to remove '+' and handle 'null'
+            if key == "set_domestic_temperature":
+                if isinstance(value, str) and 'null' in value.lower():
+                    value = key_value_pairs.get("domestic_temperature", value)
+                else:
+                    match = number_pattern.search(value)
+                    if match:
+                        value = int(match.group(1))
+
+            # Specific handling for schedule_holiday to remove '+' and '{70d}'
+            elif key == "schedule_holiday":
+                if isinstance(value, str):
                     value = value.replace("+", "").strip()
                     value = re.sub(r'\{.*?\}', '', value).strip()
 
-                # General handling to remove extra data in parentheses, braces, and single quotes
-                else:
-                    match = pattern.search(value)
+            # General handling to remove extra data in parentheses, braces, and single quotes
+            else:
+                if isinstance(value, str):
+                    match = value_pattern.search(value)
                     if match:
                         value = match.group(1).replace("'", "")
 
-                if isinstance(value, str):
-                    # Convert 'null' to None
-                    if value.lower() == 'null':
-                        value = None
-                    # Convert numerical strings to integers or floats
-                    elif value.isdigit():
-                        value = int(value)
-                    else:
-                        try:
-                            value = float(value)
-                        except ValueError:
-                            pass
+            # Convert 'null' to None
+            if isinstance(value, str) and value.lower() == 'null':
+                value = None
+            # Convert numerical strings to integers or floats
+            elif isinstance(value, str):
+                if value.isdigit():
+                    value = int(value)
+                else:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
 
-                key_value_pairs[key] = value
+            key_value_pairs[key] = value
 
         LOGGER.debug(f"Parsed key-value pairs: {key_value_pairs}")
         return key_value_pairs
