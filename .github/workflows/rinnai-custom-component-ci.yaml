@@ -91,6 +91,20 @@ jobs:
           print('Imported module:', m.__name__)
           PY
 
+      - name: Import platform modules (smoke)
+        run: |
+          python - <<'PY'
+          import os, sys, importlib
+          sys.path.insert(0, os.path.abspath('./config'))
+          for mod in (
+              'custom_components.rinnai.sensor',
+              'custom_components.rinnai.binary_sensor',
+              'custom_components.rinnai.water_heater',
+          ):
+              m = importlib.import_module(mod)
+              print('Imported platform:', m.__name__)
+          PY
+
       - name: Run unit tests
         run: |
           pytest -q
