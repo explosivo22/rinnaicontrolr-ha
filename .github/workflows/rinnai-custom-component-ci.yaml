@@ -36,7 +36,7 @@ jobs:
       - name: Install missing dependencies
         run: |
           pip install psutil_home_assistant Pillow janus pyserial zeroconf async_upnp_client numpy securetar
-          pip install --upgrade josepy
+          pip install josepy==1.13.0
 
       - name: Prepare Home Assistant config
         run: |
