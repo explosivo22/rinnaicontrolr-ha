@@ -51,6 +51,12 @@ jobs:
               custom_components.rinnai: debug
           YAML
 
+      - name: Verify custom component files present
+        run: |
+          test -f ./config/custom_components/rinnai/manifest.json
+          echo "Custom component files:"
+          ls -la ./config/custom_components/rinnai
+
       # Install custom component requirements from manifest.json
       - name: Install custom component requirements
         run: |
@@ -63,7 +69,9 @@ jobs:
       - name: Import custom component module
         run: |
           python - <<'PY'
-          import importlib
+          import os, sys, importlib
+          # Ensure Home Assistant config dir is on sys.path for custom_components discovery
+          sys.path.insert(0, os.path.abspath('./config'))
           m = importlib.import_module('custom_components.rinnai')
           print('Imported module:', m.__name__)
           PY
