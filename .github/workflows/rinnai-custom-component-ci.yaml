@@ -28,10 +28,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install Home Assistant
+      - name: Install Home Assistant (with test extras)
         run: |
           pip install --upgrade pip
-          pip install homeassistant
+          pip install "homeassistant[test]"
 
       - name: Prepare Home Assistant config
         run: |
