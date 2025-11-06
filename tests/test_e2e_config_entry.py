@@ -170,6 +170,9 @@ async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_int
             "conf_access_token": "access",
             "conf_refresh_token": "refresh",
         },
+        options={
+            "maint_interval_enabled": False,
+        },
         version=2,
     )
     entry.add_to_hass(hass)

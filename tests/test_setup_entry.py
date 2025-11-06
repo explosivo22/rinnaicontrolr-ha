@@ -142,6 +142,9 @@ async def test_async_setup_entry_success(hass, monkeypatch):
             "conf_access_token": "access",
             "conf_refresh_token": "refresh",
         },
+        options={
+            "maint_interval_enabled": False,
+        },
         version=2,
     )
     entry.add_to_hass(hass)
@@ -173,6 +176,9 @@ async def test_async_setup_entry_auth_failed(hass, monkeypatch):
             "conf_access_token": "bad",
             "conf_refresh_token": "bad",
         },
+        options={
+            "maint_interval_enabled": False,
+        },
         version=2,
     )
     entry.add_to_hass(hass)
@@ -193,6 +199,9 @@ async def test_config_flow_reauth_success(hass, monkeypatch):
             "email": "old@example.com",
             "conf_access_token": "old_access",
             "conf_refresh_token": "old_refresh",
+        },
+        options={
+            "maint_interval_enabled": False,
         },
         version=1,
     )
