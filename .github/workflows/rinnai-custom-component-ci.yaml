@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ dev, master ]
   workflow_dispatch:
+    inputs:
+      run_boot:
+        description: "Run a short HA boot and log check"
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   test-component:
@@ -13,7 +19,8 @@ jobs:
     env:
       # Toggle to 'true' to run a short HA boot and log check. Disabled by default
       # to avoid optional dependency noise like hass_frontend during CI.
-      RUN_BOOT: 'false'
+      # When dispatched manually, this will reflect the input value.
+      RUN_BOOT: ${{ github.event_name == 'workflow_dispatch' && inputs.run_boot && 'true' || 'false' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -39,6 +46,10 @@ jobs:
       - name: Install tooling dependencies
         run: |
           pip install colorlog
+
+      - name: Install test dependencies
+        run: |
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
 
 
       - name: Prepare Home Assistant config
@@ -80,10 +91,17 @@ jobs:
           print('Imported module:', m.__name__)
           PY
 
+      - name: Run unit tests
+        run: |
+          pytest -q
+
       # Optional sanity boot (short) to ensure HA core starts with minimal config
       - name: Optional short boot and log check
         if: ${{ env.RUN_BOOT == 'true' }}
+        env:
+          RUN_BOOT: ${{ env.RUN_BOOT }}
         run: |
+          pip install hass-frontend
           nohup hass --config ./config >/dev/null 2>&1 &
           PID=$!
           sleep 25
