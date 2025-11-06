@@ -187,14 +187,20 @@ jobs:
           hass --config ./config > ha_output.log 2>&1 &
           HA_PID=$!
           
-          # Wait for Home Assistant to start (check for successful boot message)
+          # Wait for Home Assistant to start (check for successful boot indicators)
           echo "Waiting for Home Assistant to boot..."
           for i in {1..60}; do
-            if grep -q "Home Assistant initialized" ha_output.log 2>/dev/null || \
-               grep -q "Home Assistant is running" ha_output.log 2>/dev/null || \
-               grep -q "Starting Home Assistant" ha_output.log 2>/dev/null; then
-              echo "Home Assistant started successfully!"
+            # Look for signs that HA has completed core setup
+            if grep -q "Setup of domain http took" ha_output.log 2>/dev/null || \
+               grep -q "Home Assistant initialized" ha_output.log 2>/dev/null; then
+              echo "Home Assistant core components loaded successfully!"
               break
+            fi
+            # Check if process died unexpectedly
+            if ! kill -0 $HA_PID 2>/dev/null; then
+              echo "Home Assistant process died unexpectedly"
+              cat ha_output.log
+              exit 1
             fi
             if [ $i -eq 60 ]; then
               echo "Timeout waiting for Home Assistant to start"
@@ -205,8 +211,9 @@ jobs:
             sleep 2
           done
           
-          # Let it run for a bit
-          sleep 10
+          # Let it run for a bit longer to ensure stability
+          echo "Letting Home Assistant run for additional stability check..."
+          sleep 15
           
           # Check for errors in logs
           if [ -f ./config/home-assistant.log ]; then
