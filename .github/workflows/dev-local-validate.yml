@@ -36,15 +36,5 @@ jobs:
         run: |
           mv custom_components/rinnaicontrolr-ha custom_components/rinnai
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install Home Assistant
-        run: |
-          pip install homeassistant
-
       - name: Run Hassfest
-        run: |
-          python -m script.hassfest --integration-path custom_components/rinnai
+        uses: home-assistant/actions/hassfest@master
