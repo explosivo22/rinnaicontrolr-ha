@@ -2,6 +2,7 @@ import sys
 import types
 import pathlib
 import importlib.util
+import shutil
 import pytest
 
 from pytest_homeassistant_custom_component.common import MockConfigEntry
@@ -128,10 +129,31 @@ def _install_fake_aiorinnai(monkeypatch):
     monkeypatch.setitem(sys.modules, "aiorinnai.errors", mod_err)
 
 
+def _materialize_custom_component(hass) -> pathlib.Path:
+    """Copy the repo integration into the HA test config/custom_components/rinnai path.
+
+    Home Assistant's integration loader expects custom components on disk with a
+    manifest.json under config/custom_components/<domain>. This ensures the loader
+    can discover the integration and read the manifest.
+    """
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    src = repo_root / "custom_components" / "rinnaicontrolr-ha"
+    dest = pathlib.Path(hass.config.path("custom_components")) / "rinnai"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    # Copy the tree, overwriting if it exists
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
+    return dest
+
+
 @pytest.mark.asyncio
-async def test_end_to_end_config_entry_sets_up_platforms(hass, monkeypatch):
+async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_integrations, monkeypatch):
     _install_fake_aiorinnai(monkeypatch)
     mod = _preload_integration()
+
+    # Place the integration on disk where HA expects custom components
+    _materialize_custom_component(hass)
 
     # Speed up coordinator and avoid throttled maintenance side-effects
     async def _fake_refresh(self):
