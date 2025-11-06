@@ -15,10 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.11
+      - name: Set up Python 3.12
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: '3.12'
 
       - name: Cache pip
         uses: actions/cache@v3
@@ -32,6 +32,11 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install "homeassistant[test]"
+
+      - name: Install missing dependencies
+        run: |
+          pip install psutil_home_assistant Pillow janus pyserial zeroconf async_upnp_client numpy securetar
+          pip install --upgrade josepy
 
       - name: Prepare Home Assistant config
         run: |
