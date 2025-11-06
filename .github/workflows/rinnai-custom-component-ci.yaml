@@ -32,6 +32,10 @@ jobs:
           pip install --upgrade pip
           pip install homeassistant
 
+      - name: Install tooling dependencies
+        run: |
+          pip install colorlog
+
 
       - name: Prepare Home Assistant config
         run: |
