@@ -9,7 +9,7 @@ on:
 
 jobs:
   # Validate the component using Home Assistant's official hassfest action
-  validate:
+  validate-hassfest:
     name: Validate with Hassfest
     runs-on: ubuntu-latest
     steps:
@@ -27,11 +27,33 @@ jobs:
       - name: Run Hassfest validation
         uses: home-assistant/actions/hassfest@master
 
+  # Validate the component using HACS action
+  validate-hacs:
+    name: Validate with HACS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare component structure for HACS validation
+        run: |
+          # HACS expects the structure as-is with custom_components/
+          # Just ensure the structure is correct
+          echo "Current structure:"
+          ls -la custom_components/
+          
+      - name: Run HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          # Ignore 'brands' check since not all integrations are in home-assistant/brands
+          ignore: brands
+
   # Test the component with full Home Assistant setup
   test:
     name: Test Component (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    needs: validate
+    needs: [validate-hassfest, validate-hacs]
     strategy:
       fail-fast: false
       matrix:
@@ -123,7 +145,7 @@ jobs:
   integration-test:
     name: Integration Test - Boot HA
     runs-on: ubuntu-latest
-    needs: validate
+    needs: [validate-hassfest, validate-hacs]
     
     steps:
       - name: Checkout repository
@@ -259,13 +281,17 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [validate, test, integration-test]
+    needs: [validate-hassfest, validate-hacs, test, integration-test]
     if: always()
     steps:
       - name: Check test results
         run: |
-          if [ "${{ needs.validate.result }}" != "success" ]; then
-            echo "❌ Validation failed"
+          if [ "${{ needs.validate-hassfest.result }}" != "success" ]; then
+            echo "❌ Hassfest validation failed"
+            exit 1
+          fi
+          if [ "${{ needs.validate-hacs.result }}" != "success" ]; then
+            echo "❌ HACS validation failed"
             exit 1
           fi
           if [ "${{ needs.test.result }}" != "success" ]; then
