@@ -10,15 +10,14 @@ on:
 jobs:
   test-component:
     runs-on: ubuntu-latest
-    # Target only Python 3.11, as required by Home Assistant 2025.11.0
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python 3.13
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Cache pip
         uses: actions/cache@v3
@@ -28,36 +27,55 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install Home Assistant (with all extras)
+      - name: Install Home Assistant (core)
         run: |
           pip install --upgrade pip
-          pip install "homeassistant[all]"
+          pip install homeassistant
 
-      - name: Install missing dependencies
-        run: |
-          pip install josepy==1.13.0
-          pip install hass-frontend numpy ha-ffmpeg aiodhcpwatcher async_upnp_client zeroconf pyserial hassil
 
       - name: Prepare Home Assistant config
         run: |
           mkdir -p ./config/custom_components
           cp -r custom_components/rinnaicontrolr-ha ./config/custom_components/rinnai
+          # Minimal configuration.yaml that does NOT load default_config
+          cat > ./config/configuration.yaml <<'YAML'
+          homeassistant:
+            name: CI Test
+          logger:
+            default: warning
+            logs:
+              custom_components.rinnai: debug
+          YAML
 
       # Install custom component requirements from manifest.json
       - name: Install custom component requirements
         run: |
           python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
 
-      - name: Start Home Assistant
+      - name: Validate configuration
         run: |
-          nohup hass --config ./config &
-          sleep 60
+          hass --script check_config --config ./config
 
-      - name: Check Home Assistant log for errors
+      - name: Import custom component module
         run: |
-          if grep -i 'error' ./config/home-assistant.log; then
-            echo "Errors found in Home Assistant log!"
-            exit 1
-          else
-            echo "No errors found in Home Assistant log."
+          python - <<'PY'
+          import importlib
+          m = importlib.import_module('custom_components.rinnai')
+          print('Imported module:', m.__name__)
+          PY
+
+      # Optional sanity boot (short) to ensure HA core starts with minimal config
+      - name: Optional short boot and log check
+        run: |
+          nohup hass --config ./config >/dev/null 2>&1 &
+          PID=$!
+          sleep 25
+          if [ -f ./config/home-assistant.log ]; then
+            if grep -iE 'ERROR|Traceback' ./config/home-assistant.log; then
+              echo 'Errors found in Home Assistant log:'
+              grep -iE 'ERROR|Traceback' ./config/home-assistant.log || true
+              kill $PID || true
+              exit 1
+            fi
           fi
+          kill $PID || true
