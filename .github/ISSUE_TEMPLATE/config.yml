@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/explosivo22/rinnaicontrolr-ha
+    about: Please check the documentation for usage information and examples.
+  - name: 💬 Community Discussion
+    url: https://github.com/explosivo22/rinnaicontrolr-ha/discussions
+    about: Join the community discussion for questions and general help.
