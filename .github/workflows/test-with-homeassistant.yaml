@@ -137,7 +137,7 @@ jobs:
       - name: Install Home Assistant and dependencies
         run: |
           pip install --upgrade pip setuptools wheel
-          pip install homeassistant home-assistant-frontend
+          pip install homeassistant home-assistant-frontend colorlog
 
       - name: Install pytest tools
         run: |
