@@ -101,7 +101,8 @@ jobs:
         env:
           RUN_BOOT: ${{ env.RUN_BOOT }}
         run: |
-          pip install hass-frontend
+          # Frontend component requires the Python package 'home-assistant-frontend'
+          pip install home-assistant-frontend
           nohup hass --config ./config >/dev/null 2>&1 &
           PID=$!
           sleep 25
