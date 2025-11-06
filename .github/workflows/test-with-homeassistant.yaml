@@ -1,0 +1,266 @@
+name: Test with Home Assistant
+
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
+  workflow_dispatch:
+
+jobs:
+  # Validate the component using Home Assistant's official hassfest action
+  validate:
+    name: Validate with Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  # Test the component with full Home Assistant setup
+  test:
+    name: Test Component (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install Home Assistant
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install homeassistant
+
+      - name: Install pytest and testing tools
+        run: |
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+
+      - name: Get component requirements from manifest
+        id: requirements
+        run: |
+          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))")
+          echo "requirements=$REQS" >> $GITHUB_OUTPUT
+          echo "Component requires: $REQS"
+
+      - name: Install component requirements
+        if: steps.requirements.outputs.requirements != ''
+        run: |
+          pip install ${{ steps.requirements.outputs.requirements }}
+
+      - name: Create Home Assistant config directory
+        run: |
+          mkdir -p config/custom_components/rinnai
+          
+      - name: Install custom component to 'rinnai' folder
+        run: |
+          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          echo "Installed component files:"
+          ls -la config/custom_components/rinnai/
+
+      - name: Verify manifest exists
+        run: |
+          test -f config/custom_components/rinnai/manifest.json
+          echo "Manifest contents:"
+          cat config/custom_components/rinnai/manifest.json
+
+      - name: Create minimal Home Assistant configuration
+        run: |
+          cat > config/configuration.yaml <<'EOF'
+          # Minimal configuration for testing
+          homeassistant:
+            name: CI Test
+            latitude: 37.0
+            longitude: -122.0
+            elevation: 0
+            unit_system: metric
+            time_zone: UTC
+            
+          logger:
+            default: info
+            logs:
+              custom_components.rinnai: debug
+              homeassistant.components: warning
+          EOF
+          echo "Configuration created:"
+          cat config/configuration.yaml
+
+      - name: Run unit tests with pytest
+        run: |
+          pytest tests/ -v --tb=short --cov=custom_components.rinnai --cov-report=term-missing --cov-report=xml
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Full end-to-end test: Boot Home Assistant with the component
+  integration-test:
+    name: Integration Test - Boot HA
+    runs-on: ubuntu-latest
+    needs: validate
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: 'pip'
+
+      - name: Install Home Assistant and dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install homeassistant home-assistant-frontend
+
+      - name: Install pytest tools
+        run: |
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
+
+      - name: Get and install component requirements
+        run: |
+          python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
+
+      - name: Prepare Home Assistant environment
+        run: |
+          mkdir -p config/custom_components/rinnai
+          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          
+          # Create configuration that loads the component
+          cat > config/configuration.yaml <<'EOF'
+          homeassistant:
+            name: Integration Test
+            latitude: 37.0
+            longitude: -122.0
+            elevation: 0
+            unit_system: metric
+            time_zone: UTC
+            
+          logger:
+            default: warning
+            logs:
+              custom_components.rinnai: debug
+              homeassistant.loader: debug
+              homeassistant.setup: info
+          EOF
+
+      - name: Run end-to-end config entry test
+        run: |
+          pytest tests/test_e2e_config_entry.py -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Verify Home Assistant can check config
+        run: |
+          hass --script check_config --config ./config
+
+      - name: Test Home Assistant boots successfully
+        timeout-minutes: 3
+        run: |
+          # Start Home Assistant in background
+          hass --config ./config > ha_output.log 2>&1 &
+          HA_PID=$!
+          
+          # Wait for Home Assistant to start (check for successful boot message)
+          echo "Waiting for Home Assistant to boot..."
+          for i in {1..60}; do
+            if grep -q "Home Assistant initialized" ha_output.log 2>/dev/null || \
+               grep -q "Home Assistant is running" ha_output.log 2>/dev/null || \
+               grep -q "Starting Home Assistant" ha_output.log 2>/dev/null; then
+              echo "Home Assistant started successfully!"
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "Timeout waiting for Home Assistant to start"
+              cat ha_output.log
+              kill $HA_PID 2>/dev/null || true
+              exit 1
+            fi
+            sleep 2
+          done
+          
+          # Let it run for a bit
+          sleep 10
+          
+          # Check for errors in logs
+          if [ -f ./config/home-assistant.log ]; then
+            echo "Checking home-assistant.log for errors..."
+            if grep -iE "ERROR.*rinnai|Traceback.*rinnai" ./config/home-assistant.log; then
+              echo "=== ERRORS FOUND IN HOME ASSISTANT LOG ==="
+              cat ./config/home-assistant.log
+              kill $HA_PID 2>/dev/null || true
+              exit 1
+            else
+              echo "No critical errors found in component logs"
+            fi
+          fi
+          
+          # Check stdout/stderr for critical errors
+          if grep -iE "ERROR.*rinnai.*Traceback|CRITICAL.*rinnai" ha_output.log; then
+            echo "=== CRITICAL ERRORS FOUND ==="
+            cat ha_output.log
+            kill $HA_PID 2>/dev/null || true
+            exit 1
+          fi
+          
+          # Clean shutdown
+          echo "Shutting down Home Assistant..."
+          kill -SIGTERM $HA_PID 2>/dev/null || true
+          wait $HA_PID 2>/dev/null || true
+          
+          echo "=== Home Assistant Output ==="
+          cat ha_output.log
+          echo "=== Test completed successfully ==="
+
+      - name: Upload Home Assistant logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-logs-integration-test
+          path: |
+            config/home-assistant.log
+            ha_output.log
+          retention-days: 7
+
+  # Summary job
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [validate, test, integration-test]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.validate.result }}" != "success" ]; then
+            echo "❌ Validation failed"
+            exit 1
+          fi
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Unit tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.integration-test.result }}" != "success" ]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed!"
