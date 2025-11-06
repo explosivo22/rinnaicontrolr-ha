@@ -1,0 +1,58 @@
+name: Rinnai Custom Component CI
+
+on:
+  push:
+    branches: [ dev, master ]
+  pull_request:
+    branches: [ dev, master ]
+  workflow_dispatch:
+
+jobs:
+  test-component:
+    runs-on: ubuntu-latest
+    # Target only Python 3.11, as required by Home Assistant 2025.11.0
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/manifest.json') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Home Assistant
+        run: |
+          pip install --upgrade pip
+          pip install homeassistant
+
+      - name: Prepare Home Assistant config
+        run: |
+          mkdir -p ./config/custom_components
+          cp -r custom_components/rinnaicontrolr-ha ./config/custom_components/rinnai
+
+      # Install custom component requirements from manifest.json
+      - name: Install custom component requirements
+        run: |
+          python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
+
+      - name: Start Home Assistant
+        run: |
+          nohup hass --config ./config &
+          sleep 60
+
+      - name: Check Home Assistant log for errors
+        run: |
+          if grep -i 'error' ./config/home-assistant.log; then
+            echo "Errors found in Home Assistant log!"
+            exit 1
+          else
+            echo "No errors found in Home Assistant log."
+          fi
