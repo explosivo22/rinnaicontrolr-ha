@@ -10,6 +10,10 @@ on:
 jobs:
   test-component:
     runs-on: ubuntu-latest
+    env:
+      # Toggle to 'true' to run a short HA boot and log check. Disabled by default
+      # to avoid optional dependency noise like hass_frontend during CI.
+      RUN_BOOT: 'false'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -78,6 +82,7 @@ jobs:
 
       # Optional sanity boot (short) to ensure HA core starts with minimal config
       - name: Optional short boot and log check
+        if: ${{ env.RUN_BOOT == 'true' }}
         run: |
           nohup hass --config ./config >/dev/null 2>&1 &
           PID=$!
