@@ -16,6 +16,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Prepare component structure for validation
+        run: |
+          # Hassfest requires the directory name to match the domain in manifest.json
+          # The domain is 'rinnai', so we need to rename the directory
+          mkdir -p custom_components/rinnai
+          cp -r custom_components/rinnaicontrolr-ha/* custom_components/rinnai/
+          rm -rf custom_components/rinnaicontrolr-ha
+
       - name: Run Hassfest validation
         uses: home-assistant/actions/hassfest@master
 
@@ -51,7 +59,7 @@ jobs:
       - name: Get component requirements from manifest
         id: requirements
         run: |
-          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))")
+          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
           echo "requirements=$REQS" >> $GITHUB_OUTPUT
           echo "Component requires: $REQS"
 
