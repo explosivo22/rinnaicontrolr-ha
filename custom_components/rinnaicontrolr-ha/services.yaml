@@ -8,6 +8,7 @@ start_recirculation:
     recirculation_minutes:
       name: Recirculation minutes
       description: The time to recirculate in minutes.
+      # Changed default from 'true' (invalid for numeric field) to "5" for correct behavior.
       default: "5"
       selector:
         select:

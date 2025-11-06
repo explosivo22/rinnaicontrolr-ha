@@ -49,7 +49,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
         )
 
     async def _async_update_data(self) -> dict[str, Any]:
-        """Fetch data from device via API, following Home Assistant best practices."""
+        """Fetch data from device via API and return the fetched device information as a dict[str, Any]."""
         try:
             async with timeout(10):
                 device_info = await self.api_client.device.get_info(self._rinnai_device_id)
@@ -63,8 +63,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
         if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
             try:
                 await self.async_do_maintenance_retrieval()
-            except Exception as error:
-                LOGGER.warning("Maintenance retrieval failed: %s", error)
+            except Unauthenticated as error:
+                LOGGER.error("Authentication error during maintenance retrieval: %s", error)
+                raise ConfigEntryAuthFailed from error
+            except RequestError as error:
+                LOGGER.warning("Maintenance retrieval failed due to request error: %s", error)
         else:
             LOGGER.debug("Skipping Maintenance retrieval since disabled inside of configuration")
 
@@ -253,6 +256,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_set_temperature(self, temperature: int) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot set temperature: device information not yet loaded")
             return
         try:
             await self.api_client.device.set_temperature(self._device_information["data"]["getDevice"], temperature)
@@ -264,6 +268,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_start_recirculation(self, duration: int) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot start recirculation: device information not yet loaded")
             return
         try:
             await self.api_client.device.start_recirculation(self._device_information["data"]["getDevice"], duration)
@@ -275,6 +280,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_stop_recirculation(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot stop recirculation: device information not yet loaded")
             return
         try:
             await self.api_client.device.stop_recirculation(self._device_information["data"]["getDevice"])
@@ -286,6 +292,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_enable_vacation_mode(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot enable vacation mode: device information not yet loaded")
             return
         try:
             await self.api_client.device.enable_vacation_mode(self._device_information["data"]["getDevice"])
@@ -297,6 +304,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_disable_vacation_mode(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot disable vacation mode: device information not yet loaded")
             return
         try:
             await self.api_client.device.disable_vacation_mode(self._device_information["data"]["getDevice"])
@@ -308,6 +316,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_turn_off(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot turn off device: device information not yet loaded")
             return
         try:
             await self.api_client.device.turn_off(self._device_information["data"]["getDevice"])
@@ -319,6 +328,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 
     async def async_turn_on(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot turn on device: device information not yet loaded")
             return
         try:
             await self.api_client.device.turn_on(self._device_information["data"]["getDevice"])
@@ -331,6 +341,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
     @Throttle(MIN_TIME_BETWEEN_UPDATES)
     async def async_do_maintenance_retrieval(self) -> None:
         if not self._device_information:
+            LOGGER.debug("Cannot perform maintenance retrieval: device information not yet loaded")
             return
         try:
             await self.api_client.device.do_maintenance_retrieval(self._device_information["data"]["getDevice"])
