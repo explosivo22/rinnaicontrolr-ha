@@ -4,10 +4,10 @@ from datetime import timedelta
 
 import async_timeout
 
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import Throttle
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 
 from .rinnai import WaterHeater
 
@@ -35,7 +35,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 		self._device_info: Optional[Dict[str, Any]] | None = None
 		self.options = options
 		self.maint_refresh_interval = timedelta(seconds=self.options.get(CONF_MAINT_REFRESH_INTERVAL, DEFAULT_MAINT_REFRESH_INTERVAL))
-		self._unsub_maintenance_timer = None  # Track the maintenance timer
+		self._unsub_maintenance_timer = None  # Track the recurring maintenance timer
+		self._unsub_maintenance_delay = None  # Track the initial delay timer
+		self._maintenance_enabled = self.options.get(CONF_MAINT_INTERVAL_ENABLED, False)
 		super().__init__(
 			hass,
 			LOGGER,
@@ -397,33 +399,79 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator):
 	async def _update_device(self, *_) -> None:
 		"""Update the device information from the API"""
 		self._device_info = await self.waterHeater.get_status()
-		
-		# Handle dynamic maintenance update interval
-		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
-			# Cancel previous maintenance update timer if it exists
-			if self._unsub_maintenance_timer:
-				self._unsub_maintenance_timer()
-			
-			# Set new maintenance update interval
-			self._unsub_maintenance_timer = async_track_time_interval(
-				self.hass, self.async_do_maintenance_retrieval, self.maint_refresh_interval
-			)
-		else:
-			LOGGER.debug("Skipping Maintenance retrieval since disabled inside of configuration")
-		
 		LOGGER.debug("Rinnai device data: %s", self._device_info)
 
-	async def async_added_to_hass(self):
-		"""Called when the device is added to Home Assistant"""
-		# If maintenance retrieval is enabled, initialize the timer
-		if self.options[CONF_MAINT_INTERVAL_ENABLED]:
-			self._unsub_maintenance_timer = async_track_time_interval(
-				self.hass, self.async_do_maintenance_retrieval, self.maint_refresh_interval
-            )
-
-	async def async_will_remove_from_hass(self):
-		"""Called when the device is removed from Home Assistant"""
-		# Unsubscribe from any existing maintenance update timer
+	def start_maintenance_timer(self):
+		"""Start the maintenance retrieval timer if enabled.
+		
+		Note: The first maintenance retrieval will occur after the configured interval,
+		not immediately. This prevents unnecessary API calls during initialization.
+		"""
+		# Cancel any existing timers first
+		if self._unsub_maintenance_delay:
+			self._unsub_maintenance_delay()
+			self._unsub_maintenance_delay = None
 		if self._unsub_maintenance_timer:
 			self._unsub_maintenance_timer()
 			self._unsub_maintenance_timer = None
+		
+		# Only set up timer if maintenance is enabled
+		if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+			from datetime import datetime
+			next_run = datetime.now() + self.maint_refresh_interval
+			LOGGER.info(
+				"Maintenance retrieval scheduled. First run will occur at approximately %s (in %s seconds)",
+				next_run.strftime("%H:%M:%S"),
+				self.maint_refresh_interval.total_seconds(),
+			)
+			
+			# Schedule the first call after the interval delay
+			# This prevents immediate execution on startup
+			self._unsub_maintenance_delay = async_call_later(
+				self.hass,
+				self.maint_refresh_interval.total_seconds(),
+				self._start_maintenance_interval,
+			)
+		else:
+			LOGGER.debug("Maintenance retrieval disabled in configuration")
+	
+	@callback
+	def _start_maintenance_interval(self, _now=None):
+		"""Start the recurring maintenance interval timer.
+		
+		This is called after the initial delay to set up the recurring timer.
+		"""
+		# Clear the delay timer reference since it's now complete
+		self._unsub_maintenance_delay = None
+		
+		LOGGER.info(
+			"Starting maintenance retrieval cycle. Will run every %s",
+			self.maint_refresh_interval,
+		)
+		
+		# Perform the first maintenance retrieval
+		self.hass.async_create_task(self.async_do_maintenance_retrieval())
+		
+		# Set up recurring timer for subsequent calls
+		self._unsub_maintenance_timer = async_track_time_interval(
+			self.hass, self.async_do_maintenance_retrieval, self.maint_refresh_interval
+		)
+	
+	def stop_maintenance_timer(self):
+		"""Stop the maintenance retrieval timer and any pending delayed calls"""
+		# Cancel the delayed initial call if it hasn't fired yet
+		if self._unsub_maintenance_delay:
+			self._unsub_maintenance_delay()
+			self._unsub_maintenance_delay = None
+			LOGGER.debug("Cancelled pending maintenance retrieval delay")
+		
+		# Cancel the recurring timer if it exists
+		if self._unsub_maintenance_timer:
+			self._unsub_maintenance_timer()
+			self._unsub_maintenance_timer = None
+			LOGGER.debug("Maintenance retrieval timer stopped")
+
+	async def async_shutdown(self):
+		"""Called when the coordinator is being shut down"""
+		# Clean up the maintenance timer
+		self.stop_maintenance_timer()

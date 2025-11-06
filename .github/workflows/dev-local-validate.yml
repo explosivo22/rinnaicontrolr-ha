@@ -1,0 +1,51 @@
+name: Validate Local Polling Integration (dev-local)
+
+on:
+  push:
+    branches:
+      - dev-local
+  pull_request:
+    branches:
+      - dev-local
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-hacs:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  validate-hassfest:
+    name: Hassfest Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Rename directory to match domain
+        run: |
+          mv custom_components/rinnaicontrolr-ha custom_components/rinnai
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install Home Assistant
+        run: |
+          pip install homeassistant
+
+      - name: Run Hassfest
+        run: |
+          python -m script.hassfest --integration-path custom_components/rinnai

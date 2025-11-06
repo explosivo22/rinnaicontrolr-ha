@@ -1,14 +1,22 @@
 """Water Heater representing the water heater for the Rinnai integration"""
 from __future__ import annotations
 
+from typing import Any
+
 import voluptuous as vol
 
-from homeassistant.components.water_heater import WaterHeaterEntity, WaterHeaterEntityFeature, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF, STATE_ON
-from homeassistant.helpers import entity_platform
-from homeassistant.util.unit_system import METRIC_SYSTEM
+from homeassistant.components.water_heater import (
+    WaterHeaterEntity,
+    WaterHeaterEntityFeature,
+    STATE_GAS,
+)
 from homeassistant.const import (
+    ATTR_TEMPERATURE,
+    STATE_OFF,
+    STATE_ON,
     UnitOfTemperature,
 )
+from homeassistant.helpers import entity_platform
 
 from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, COORDINATOR
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -36,7 +44,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     platform.async_register_entity_service(
         SERVICE_START_RECIRCULATION,
         {
-            vol.Required(ATTR_RECIRCULATION_MINUTES, default=5): vol.In(RECIRCULATION_MINUTE_OPTIONS)
+            vol.Optional(ATTR_RECIRCULATION_MINUTES, default=5): vol.All(
+                vol.Coerce(int), 
+                vol.In(RECIRCULATION_MINUTE_OPTIONS)
+            )
         },
         "async_start_recirculation",
     )
@@ -56,7 +67,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         super().__init__("water_heater", f"{device.device_name} Water Heater", device)
 
     @property
-    def current_operation(self):
+    def current_operation(self) -> str | None:
         """Return current operation"""
         if self._device.is_heating:
             return STATE_GAS
@@ -66,46 +77,58 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
             return STATE_OFF
 
     @property
-    def icon(self):
+    def icon(self) -> str | None:
         """Return the icon to use for the valve."""
         return "mdi:water-boiler"
 
     @property
-    def temperature_unit(self):
+    def temperature_unit(self) -> str:
+        """Return the unit of measurement."""
         return UnitOfTemperature.FAHRENHEIT
 
     @property
-    def min_temp(self):
+    def min_temp(self) -> float:
+        """Return the minimum temperature."""
         return float(110)
 
     @property
-    def max_temp(self):
+    def max_temp(self) -> float:
+        """Return the maximum temperature."""
         return float(140)
 
     @property
-    def target_temperature(self):
+    def target_temperature(self) -> float | None:
         """Return the temperature we try to reach"""
         return self._device.target_temperature
 
     @property
-    def is_away_mode_on(self):
+    def is_away_mode_on(self) -> bool | None:
+        """Return True if away mode is on."""
         return self._device.vacation_mode_on
 
     @property
-    def outlet_temperature(self):
-        return round(self._device.outlet_temperature, 1)
+    def outlet_temperature(self) -> float | None:
+        """Return the outlet temperature."""
+        temp = self._device.outlet_temperature
+        if temp is None:
+            return None
+        return round(temp, 1)
 
     @property
-    def inlet_temperature(self):
-        return round(self._device.inlet_temperature, 1)
+    def inlet_temperature(self) -> float | None:
+        """Return the inlet temperature."""
+        temp = self._device.inlet_temperature
+        if temp is None:
+            return None
+        return round(temp, 1)
 
     @property
-    def current_temperature(self):
-        """REturn the current temperature."""
+    def current_temperature(self) -> float | None:
+        """Return the current temperature."""
         return self._device.current_temperature
 
     @property
-    def extra_state_attributes(self) -> dict:
+    def extra_state_attributes(self) -> dict[str, float | None]:
         """Return the optional device state attributes."""
         return {
             "target_temp_step": 5,
@@ -137,18 +160,24 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         else: #STATE OFF
             await self._device.async_turn_off()
 
-    async def async_turn_on(self):
+    async def async_turn_on(self, **kwargs) -> None:
         """Turn on."""
         await self.async_set_operation_mode(STATE_ON)
 
-    async def async_turn_off(self):
+    async def async_turn_off(self, **kwargs) -> None:
         """Turn off."""
         await self.async_set_operation_mode(STATE_OFF)
 
-    async def async_start_recirculation(self, recirculation_minutes = 5):
+    async def async_start_recirculation(self, recirculation_minutes: int = 5) -> None:
+        """Start recirculation for specified duration in minutes."""
+        LOGGER.debug(
+            "Starting recirculation on %s for %d minutes",
+            self.entity_id,
+            recirculation_minutes,
+        )
         await self._device.async_start_recirculation(recirculation_minutes)
 
-    async def async_stop_recirculation(self):
+    async def async_stop_recirculation(self) -> None:
         await self._device.async_stop_recirculation()
 
     async def async_added_to_hass(self):

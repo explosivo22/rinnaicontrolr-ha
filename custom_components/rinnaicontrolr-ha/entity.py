@@ -1,10 +1,10 @@
-"""Base entity class for Flo entities."""
+"""Base entity class for Rinnai entities."""
 from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
-from homeassistant.helpers.entity import DeviceInfo, Entity
+from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import Entity
 
 from .const import DOMAIN as RINNAI_DOMAIN
 from .device import RinnaiDeviceDataUpdateCoordinator
@@ -19,7 +19,7 @@ class RinnaiEntity(Entity):
         self,
         entity_type: str,
         name: str,
-        device: RinnaiDeviceUpdateCoordinator,
+        device: RinnaiDeviceDataUpdateCoordinator,
         **kwargs,
     ) -> None:
         """Init Rinnai entity."""
@@ -28,11 +28,8 @@ class RinnaiEntity(Entity):
 
         self._device: RinnaiDeviceDataUpdateCoordinator = device
         self._state: Any = None
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return a device description for device registry."""
-        return DeviceInfo(
+        
+        self._attr_device_info = DeviceInfo(
             identifiers={(RINNAI_DOMAIN, self._device.serial_number)},
             manufacturer=self._device.manufacturer,
             model=self._device.model,
