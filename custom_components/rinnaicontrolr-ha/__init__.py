@@ -6,11 +6,12 @@ from aiorinnai.api import Unauthenticated
 from aiorinnai.errors import RequestError
 
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.components.water_heater import DOMAIN as WATER_HEATER_DOMAIN
+from homeassistant.components.water_heater.const import DOMAIN as WATER_HEATER_DOMAIN
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import (
@@ -40,6 +41,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.debug("User info retrieved: %s", user_info)
     except Unauthenticated as err:
         _LOGGER.error("Authentication error: %s", err)
+        # Create actionable repair issue for user notification
+        ir.async_create_issue(
+            hass,
+            DOMAIN,
+            "reauth_required",
+            is_fixable=True,
+            is_persistent=True,
+            severity=ir.IssueSeverity.ERROR,
+            translation_key="reauth_required",
+        )
         raise ConfigEntryAuthFailed from err
     except RequestError as err:
         _LOGGER.error("Request error: %s", err)
@@ -50,8 +61,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("No devices found in user info")
         raise ConfigEntryNotReady("No devices found")
 
+    # Convert MappingProxyType to dict for options
+    options = dict(entry.options) if not isinstance(entry.options, dict) else entry.options
     hass.data[DOMAIN][entry.entry_id]["devices"] = [
-        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"], entry.options)
+        RinnaiDeviceDataUpdateCoordinator(hass, client, device["id"], options)
         for device in devices
     ]
 

@@ -1,8 +1,4 @@
 {
     "name": "Rinnai Control-R Water Heater",
-    "domains": [
-        "water_heater"
-    ],
-    "content_in_root": false,
-    "iot_class": "cloud_polling"
+    "content_in_root": false
 }

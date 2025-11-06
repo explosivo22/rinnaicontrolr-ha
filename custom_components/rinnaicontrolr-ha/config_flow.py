@@ -21,6 +21,7 @@ from .const import (
     CONF_REFRESH_TOKEN,
 )
 
+# The above class is a Python ConfigFlow class for a specific domain.
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
     VERSION = 2
@@ -164,12 +165,11 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry):
         """Get the options flow for this handler."""
-        return OptionsFlow(config_entry)
+        return OptionsFlow()
+
 
 class OptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
+    # No __init__ needed; base class handles config_entry
 
     async def async_step_init(self, user_input=None):
         if user_input is not None:

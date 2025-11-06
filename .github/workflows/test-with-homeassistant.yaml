@@ -1,0 +1,482 @@
+name: Test with Home Assistant
+
+on:
+  push:
+    branches: [ dev, master ]
+    tags:
+      - 'v*.*.*'
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  # Validate the component using Home Assistant's official hassfest action
+  validate-hassfest:
+    name: Validate with Hassfest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare component structure for validation
+        run: |
+          # Hassfest requires the directory name to match the domain in manifest.json
+          # The domain is 'rinnai', so we need to rename the directory
+          mkdir -p custom_components/rinnai
+          cp -r custom_components/rinnaicontrolr-ha/* custom_components/rinnai/
+          rm -rf custom_components/rinnaicontrolr-ha
+
+      - name: Run Hassfest validation
+        uses: home-assistant/actions/hassfest@master
+
+  # Validate the component using HACS action
+  validate-hacs:
+    name: Validate with HACS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare component structure for HACS validation
+        run: |
+          # HACS expects the structure as-is with custom_components/
+          # Just ensure the structure is correct
+          echo "Current structure:"
+          ls -la custom_components/
+          
+      - name: Run HACS validation
+        uses: hacs/action@main
+        with:
+          category: integration
+          # Ignore 'brands' check since not all integrations are in home-assistant/brands
+          ignore: brands
+
+  # Test the component with full Home Assistant setup
+  test:
+    name: Test Component (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    needs: [validate-hassfest, validate-hacs]
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Home Assistant
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install homeassistant
+
+      - name: Install pytest and testing tools
+        run: |
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+
+      - name: Get component requirements from manifest
+        id: requirements
+        run: |
+          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          echo "requirements=$REQS" >> $GITHUB_OUTPUT
+          echo "Component requires: $REQS"
+
+      - name: Install component requirements
+        if: steps.requirements.outputs.requirements != ''
+        run: |
+          pip install ${{ steps.requirements.outputs.requirements }}
+
+      - name: Create Home Assistant config directory
+        run: |
+          mkdir -p config/custom_components/rinnai
+          
+      - name: Install custom component to 'rinnai' folder
+        run: |
+          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          echo "Installed component files:"
+          ls -la config/custom_components/rinnai/
+
+      - name: Verify manifest exists
+        run: |
+          test -f config/custom_components/rinnai/manifest.json
+          echo "Manifest contents:"
+          cat config/custom_components/rinnai/manifest.json
+
+      - name: Create minimal Home Assistant configuration
+        run: |
+          cat > config/configuration.yaml <<'EOF'
+          # Minimal configuration for testing
+          homeassistant:
+            name: CI Test
+            latitude: 37.0
+            longitude: -122.0
+            elevation: 0
+            unit_system: metric
+            time_zone: UTC
+            
+          logger:
+            default: info
+            logs:
+              custom_components.rinnai: debug
+              homeassistant.components: warning
+          EOF
+          echo "Configuration created:"
+          cat config/configuration.yaml
+
+      - name: Run unit tests with pytest
+        run: |
+          pytest tests/ -v --tb=short --cov=custom_components.rinnai --cov-report=term-missing --cov-report=xml
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Upload coverage to Codecov
+        if: matrix.python-version == '3.12'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Full end-to-end test: Boot Home Assistant with the component
+  integration-test:
+    name: Integration Test - Boot HA
+    runs-on: ubuntu-latest
+    needs: [validate-hassfest, validate-hacs]
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install Home Assistant and dependencies
+        run: |
+          pip install --upgrade pip setuptools wheel
+          pip install homeassistant home-assistant-frontend colorlog
+
+      - name: Install pytest tools
+        run: |
+          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
+
+      - name: Get and install component requirements
+        run: |
+          python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
+
+      - name: Prepare Home Assistant environment
+        run: |
+          mkdir -p config/custom_components/rinnai
+          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          
+          # Create configuration that loads the component
+          cat > config/configuration.yaml <<'EOF'
+          homeassistant:
+            name: Integration Test
+            latitude: 37.0
+            longitude: -122.0
+            elevation: 0
+            unit_system: metric
+            time_zone: UTC
+            
+          logger:
+            default: warning
+            logs:
+              custom_components.rinnai: debug
+              homeassistant.loader: debug
+              homeassistant.setup: info
+          EOF
+
+      - name: Run end-to-end config entry test
+        run: |
+          pytest tests/test_e2e_config_entry.py -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Verify Home Assistant can check config
+        run: |
+          hass --script check_config --config ./config
+
+      - name: Test Home Assistant boots successfully
+        timeout-minutes: 3
+        run: |
+          # Start Home Assistant in background
+          hass --config ./config > ha_output.log 2>&1 &
+          HA_PID=$!
+          
+          # Wait for Home Assistant to start (check for successful boot indicators)
+          echo "Waiting for Home Assistant to boot..."
+          for i in {1..60}; do
+            # Look for signs that HA has completed core setup
+            if grep -q "Setup of domain http took" ha_output.log 2>/dev/null || \
+               grep -q "Home Assistant initialized" ha_output.log 2>/dev/null; then
+              echo "Home Assistant core components loaded successfully!"
+              break
+            fi
+            # Check if process died unexpectedly
+            if ! kill -0 $HA_PID 2>/dev/null; then
+              echo "Home Assistant process died unexpectedly"
+              cat ha_output.log
+              exit 1
+            fi
+            if [ $i -eq 60 ]; then
+              echo "Timeout waiting for Home Assistant to start"
+              cat ha_output.log
+              kill $HA_PID 2>/dev/null || true
+              exit 1
+            fi
+            sleep 2
+          done
+          
+          # Let it run for a bit longer to ensure stability
+          echo "Letting Home Assistant run for additional stability check..."
+          sleep 15
+          
+          # Check for errors in logs
+          if [ -f ./config/home-assistant.log ]; then
+            echo "Checking home-assistant.log for errors..."
+            if grep -iE "ERROR.*rinnai|Traceback.*rinnai" ./config/home-assistant.log; then
+              echo "=== ERRORS FOUND IN HOME ASSISTANT LOG ==="
+              cat ./config/home-assistant.log
+              kill $HA_PID 2>/dev/null || true
+              exit 1
+            else
+              echo "No critical errors found in component logs"
+            fi
+          fi
+          
+          # Check stdout/stderr for critical errors
+          if grep -iE "ERROR.*rinnai.*Traceback|CRITICAL.*rinnai" ha_output.log; then
+            echo "=== CRITICAL ERRORS FOUND ==="
+            cat ha_output.log
+            kill $HA_PID 2>/dev/null || true
+            exit 1
+          fi
+          
+          # Clean shutdown
+          echo "Shutting down Home Assistant..."
+          kill -SIGTERM $HA_PID 2>/dev/null || true
+          wait $HA_PID 2>/dev/null || true
+          
+          echo "=== Home Assistant Output ==="
+          cat ha_output.log
+          echo "=== Test completed successfully ==="
+
+      - name: Upload Home Assistant logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ha-logs-integration-test
+          path: |
+            config/home-assistant.log
+            ha_output.log
+          retention-days: 7
+
+  # Summary job
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [validate-hassfest, validate-hacs, test, integration-test]
+    if: always()
+    steps:
+      - name: Check test results
+        run: |
+          if [ "${{ needs.validate-hassfest.result }}" != "success" ]; then
+            echo "❌ Hassfest validation failed"
+            exit 1
+          fi
+          if [ "${{ needs.validate-hacs.result }}" != "success" ]; then
+            echo "❌ HACS validation failed"
+            exit 1
+          fi
+          if [ "${{ needs.test.result }}" != "success" ]; then
+            echo "❌ Unit tests failed"
+            exit 1
+          fi
+          if [ "${{ needs.integration-test.result }}" != "success" ]; then
+            echo "❌ Integration tests failed"
+            exit 1
+          fi
+          echo "✅ All tests passed!"
+
+  # Create release when a tag is pushed to master
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [test-summary]
+    if: startsWith(github.ref, 'refs/tags/v') && github.event.base_ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+
+      - name: Get version from manifest
+        id: version
+        run: |
+          VERSION=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); print(json.load(f)['version'])")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Component version: $VERSION"
+          
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "Tag version: $TAG_VERSION"
+          
+          # Check if this is a v1.x.x or v2.x.x release
+          MAJOR_VERSION=$(echo $VERSION | cut -d. -f1)
+          echo "major_version=$MAJOR_VERSION" >> $GITHUB_OUTPUT
+          echo "Major version: $MAJOR_VERSION"
+
+      - name: Verify version matches tag
+        run: |
+          if [ "${{ steps.version.outputs.version }}" != "${{ steps.version.outputs.tag_version }}" ]; then
+            echo "❌ Version mismatch!"
+            echo "manifest.json version: ${{ steps.version.outputs.version }}"
+            echo "Git tag version: ${{ steps.version.outputs.tag_version }}"
+            exit 1
+          fi
+          echo "✅ Version matches tag"
+
+      - name: Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${GITHUB_REF#refs/tags/}$" | head -n 1)
+          
+          if [ -z "$PREV_TAG" ]; then
+            echo "No previous tag found, using all commits"
+            PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+          fi
+          
+          echo "Generating changelog from $PREV_TAG to ${GITHUB_REF#refs/tags/}"
+          
+          # Generate changelog
+          cat > CHANGELOG.md <<'EOF'
+          ## What's Changed
+          
+          EOF
+          
+          # Get commits between tags, format nicely
+          git log ${PREV_TAG}..HEAD --pretty=format:"* %s (%h)" --no-merges >> CHANGELOG.md
+          
+          echo "" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${GITHUB_REF#refs/tags/}" >> CHANGELOG.md
+          
+          # Output for use in release
+          cat CHANGELOG.md
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          cat CHANGELOG.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create release archive
+        run: |
+          # Create a clean archive of just the component
+          mkdir -p release/rinnai
+          cp -r custom_components/rinnaicontrolr-ha/* release/rinnai/
+          cd release
+          zip -r ../rinnai-${{ steps.version.outputs.version }}.zip rinnai/
+          cd ..
+          echo "Created release archive:"
+          ls -lh rinnai-${{ steps.version.outputs.version }}.zip
+
+      - name: Generate version-specific notes
+        id: version_notes
+        run: |
+          if [ "${{ steps.version.outputs.major_version }}" = "1" ]; then
+            cat > VERSION_NOTES.md <<'EOF'
+          > [!WARNING]
+          > **If you have updated to the version 2 code base for this repository, then skip this update to keep the local communication. Version 1 is still dependent on the cloud**
+          
+          > [!NOTE]
+          > We may end up needing to transition to a separate repository for local _vs_ cloud
+          
+          EOF
+          elif [ "${{ steps.version.outputs.major_version }}" = "2" ]; then
+            cat > VERSION_NOTES.md <<'EOF'
+          > [!CAUTION]
+          > ***This version will only work for those running the _RWM101_ or _RWM103_ controllers***
+          
+          > [!WARNING]
+          > **If you are coming from version 1.x.x, You will need to remove and configure the integration again as the setup has changed**
+          
+          > [!NOTE]
+          > We may end up needing to transition to a separate repository for local _vs_ cloud
+          
+          EOF
+          else
+            # For version 3+, no special warning needed (yet)
+            echo "" > VERSION_NOTES.md
+          fi
+          
+          echo "version_notes<<EOF" >> $GITHUB_OUTPUT
+          cat VERSION_NOTES.md >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            # Rinnai Control-R Integration v${{ steps.version.outputs.version }}
+            
+            [![HACS][hacs-badge]][hacs-url]
+            [![Home Assistant][ha-badge]][ha-url]
+            
+            ${{ steps.version_notes.outputs.version_notes }}
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ## Installation
+            
+            ### HACS (Recommended)
+            1. Open HACS in Home Assistant
+            2. Go to "Integrations"
+            3. Click the three dots in the top right
+            4. Select "Custom repositories"
+            5. Add this repository URL
+            6. Install "Rinnai Control-R"
+            7. Restart Home Assistant
+            
+            ### Manual Installation
+            1. Download `rinnai-${{ steps.version.outputs.version }}.zip`
+            2. Extract to your `custom_components` directory
+            3. Restart Home Assistant
+            
+            ## Configuration
+            Configure via the Home Assistant UI:
+            1. Go to Settings → Devices & Services
+            2. Click "+ Add Integration"
+            3. Search for "Rinnai"
+            4. Follow the setup wizard
+            
+            ---
+            
+            **Tested with Home Assistant Core:** Latest
+            **Python Versions:** 3.12, 3.13
+            
+            [hacs-badge]: https://img.shields.io/badge/HACS-Custom-orange.svg
+            [hacs-url]: https://github.com/hacs/integration
+            [ha-badge]: https://img.shields.io/badge/Home%20Assistant-2024.11-blue.svg
+            [ha-url]: https://www.home-assistant.io/
+          files: |
+            rinnai-${{ steps.version.outputs.version }}.zip
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Release published
+        run: |
+          echo "✅ Release v${{ steps.version.outputs.version }} published successfully!"
+          echo "📦 Download: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
