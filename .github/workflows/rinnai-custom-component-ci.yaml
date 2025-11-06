@@ -36,6 +36,7 @@ jobs:
       - name: Install missing dependencies
         run: |
           pip install josepy==1.13.0
+          pip install hass-frontend numpy ha-ffmpeg aiodhcpwatcher async_upnp_client zeroconf pyserial hassil
 
       - name: Prepare Home Assistant config
         run: |

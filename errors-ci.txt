@@ -1,0 +1,437 @@
+2025-11-06 03:30:35.703 WARNING (SyncWorker_0) [homeassistant.loader] We found a custom integration rinnai which has not been tested by Home Assistant. This component might cause stability problems, be sure to disable it if you experience issues with Home Assistant
+2025-11-06 03:30:37.332 WARNING (MainThread) [aiohttp_fast_zlib] zlib_ng and isal are not available, falling back to zlib, performance will be degraded.
+2025-11-06 03:30:40.399 ERROR (MainThread) [homeassistant.setup] Error during setup of component frontend
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 416, in _async_setup_component
+    result = await task
+             ^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/frontend/__init__.py", line 397, in async_setup
+    root_path = _frontend_root(repo_path)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/frontend/__init__.py", line 370, in _frontend_root
+    import hass_frontend
+ModuleNotFoundError: No module named 'hass_frontend'
+2025-11-06 03:30:47.111 ERROR (MainThread) [homeassistant.setup] Setup failed for 'dhcp': Unable to import component: No module named 'aiodhcpwatcher'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/dhcp/__init__.py", line 16, in <module>
+    import aiodhcpwatcher
+ModuleNotFoundError: No module named 'aiodhcpwatcher'
+2025-11-06 03:30:47.414 ERROR (MainThread) [homeassistant.setup] Setup failed for 'usb': Unable to import component: No module named 'serial'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/usb/__init__.py", line 13, in <module>
+    from serial.tools.list_ports import comports
+ModuleNotFoundError: No module named 'serial'
+2025-11-06 03:30:47.415 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'bluetooth'. Setup failed for dependencies: ['usb']
+2025-11-06 03:30:47.416 ERROR (MainThread) [homeassistant.setup] Setup failed for 'bluetooth': Could not setup dependencies: usb
+2025-11-06 03:30:48.551 ERROR (MainThread) [homeassistant.setup] Setup failed for 'zeroconf': Unable to import component: No module named 'zeroconf'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/zeroconf/__init__.py", line 17, in <module>
+    from zeroconf import (
+ModuleNotFoundError: No module named 'zeroconf'
+2025-11-06 03:30:49.107 ERROR (MainThread) [homeassistant.setup] Setup failed for 'ssdp': Unable to import component: No module named 'async_upnp_client'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/ssdp/__init__.py", line 19, in <module>
+    from async_upnp_client.aiohttp import AiohttpSessionRequester
+ModuleNotFoundError: No module named 'async_upnp_client'
+2025-11-06 03:31:02.580 ERROR (MainThread) [homeassistant.setup] Setup failed for 'cloud': Unable to import component: No module named 'numpy'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/cloud/__init__.py", line 14, in <module>
+    from homeassistant.components import alexa, google_assistant
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/__init__.py", line 20, in <module>
+    from . import flash_briefings, intent, smart_home
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/smart_home.py", line 22, in <module>
+    from .config import AbstractConfig
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/config.py", line 16, in <module>
+    from .entities import TRANSLATION_TABLE
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/entities.py", line 9, in <module>
+    from homeassistant.components import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/camera/__init__.py", line 33, in <module>
+    from homeassistant.components.stream import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/__init__.py", line 66, in <module>
+    from .core import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/core.py", line 15, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2025-11-06 03:31:02.586 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'logbook'. Setup failed for dependencies: ['frontend']
+2025-11-06 03:31:02.586 ERROR (MainThread) [homeassistant.setup] Setup failed for 'logbook': Could not setup dependencies: frontend
+2025-11-06 03:31:02.587 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'my'. Setup failed for dependencies: ['frontend']
+2025-11-06 03:31:02.587 ERROR (MainThread) [homeassistant.setup] Setup failed for 'my': Could not setup dependencies: frontend
+2025-11-06 03:31:02.602 ERROR (MainThread) [homeassistant.setup] Setup failed for 'ffmpeg': Unable to import component: No module named 'haffmpeg'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/ffmpeg/__init__.py", line 8, in <module>
+    from haffmpeg.core import HAFFmpeg
+ModuleNotFoundError: No module named 'haffmpeg'
+2025-11-06 03:31:02.605 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'tts'. Setup failed for dependencies: ['ffmpeg']
+2025-11-06 03:31:02.605 ERROR (MainThread) [homeassistant.setup] Setup failed for 'tts': Could not setup dependencies: ffmpeg
+2025-11-06 03:31:02.607 ERROR (MainThread) [homeassistant.setup] Setup failed for 'camera': Unable to import component: No module named 'numpy'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/camera/__init__.py", line 33, in <module>
+    from homeassistant.components.stream import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/__init__.py", line 66, in <module>
+    from .core import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/core.py", line 15, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2025-11-06 03:31:02.609 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'go2rtc'. Setup failed for dependencies: ['camera']
+2025-11-06 03:31:02.609 ERROR (MainThread) [homeassistant.setup] Setup failed for 'go2rtc': Could not setup dependencies: camera
+2025-11-06 03:31:02.689 ERROR (MainThread) [homeassistant.setup] Setup failed for 'conversation': Unable to import component: No module named 'hassil'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/conversation/__init__.py", line 47, in <module>
+    from .default_agent import DefaultAgent, async_setup_default_agent
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/conversation/default_agent.py", line 17, in <module>
+    from hassil.expression import Expression, ListReference, Sequence, TextChunk
+ModuleNotFoundError: No module named 'hassil'
+2025-11-06 03:31:02.692 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'assist_pipeline'. Setup failed for dependencies: ['conversation', 'tts']
+2025-11-06 03:31:02.692 ERROR (MainThread) [homeassistant.setup] Setup failed for 'assist_pipeline': Could not setup dependencies: conversation, tts
+2025-11-06 03:31:03.732 ERROR (MainThread) [homeassistant.setup] Setup failed for 'stream': Unable to import component: No module named 'numpy'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/__init__.py", line 66, in <module>
+    from .core import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/core.py", line 15, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2025-11-06 03:31:03.892 ERROR (MainThread) [homeassistant.setup] Setup failed for 'mobile_app': Unable to import component: No module named 'numpy'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/mobile_app/__init__.py", line 8, in <module>
+    from homeassistant.components import cloud, intent, notify as hass_notify
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/cloud/__init__.py", line 14, in <module>
+    from homeassistant.components import alexa, google_assistant
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/__init__.py", line 20, in <module>
+    from . import flash_briefings, intent, smart_home
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/smart_home.py", line 22, in <module>
+    from .config import AbstractConfig
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/config.py", line 16, in <module>
+    from .entities import TRANSLATION_TABLE
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/entities.py", line 9, in <module>
+    from homeassistant.components import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/camera/__init__.py", line 33, in <module>
+    from homeassistant.components.stream import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/__init__.py", line 66, in <module>
+    from .core import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/core.py", line 15, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2025-11-06 03:31:03.894 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'default_config'. Setup failed for dependencies: ['assist_pipeline', 'bluetooth', 'cloud', 'conversation', 'dhcp', 'go2rtc', 'logbook', 'mobile_app', 'my', 'ssdp', 'stream', 'usb', 'zeroconf']
+2025-11-06 03:31:03.894 ERROR (MainThread) [homeassistant.setup] Setup failed for 'default_config': Could not setup dependencies: assist_pipeline, bluetooth, cloud, conversation, dhcp, go2rtc, logbook, mobile_app, my, ssdp, stream, usb, zeroconf
+2025-11-06 03:31:03.894 WARNING (MainThread) [homeassistant.bootstrap] Support for the running Python version 3.12.12 is deprecated and will be removed in Home Assistant 2025.2; Please upgrade Python to 3.13
+2025-11-06 03:31:03.894 WARNING (MainThread) [homeassistant.bootstrap] Detected that frontend did not load. Activating recovery mode
+2025-11-06 03:31:04.185 WARNING (MainThread) [aiohttp_fast_zlib] zlib_ng and isal are not available, falling back to zlib, performance will be degraded.
+2025-11-06 03:31:04.281 ERROR (MainThread) [homeassistant.setup] Error during setup of component frontend
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 416, in _async_setup_component
+    result = await task
+             ^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/frontend/__init__.py", line 397, in async_setup
+    root_path = _frontend_root(repo_path)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/frontend/__init__.py", line 370, in _frontend_root
+    import hass_frontend
+ModuleNotFoundError: No module named 'hass_frontend'
+2025-11-06 03:31:05.279 ERROR (MainThread) [homeassistant.setup] Setup failed for 'cloud': Unable to import component: No module named 'numpy'
+Traceback (most recent call last):
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/setup.py", line 334, in _async_setup_component
+    component = await integration.async_get_component()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1035, in async_get_component
+    self._component_future.result()
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1015, in async_get_component
+    comp = await self.hass.async_add_import_executor_job(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/loader.py", line 1075, in _get_component
+    ComponentProtocol, importlib.import_module(self.pkg_path)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/util/loop.py", line 200, in protected_loop_func
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/cloud/__init__.py", line 14, in <module>
+    from homeassistant.components import alexa, google_assistant
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/__init__.py", line 20, in <module>
+    from . import flash_briefings, intent, smart_home
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/smart_home.py", line 22, in <module>
+    from .config import AbstractConfig
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/config.py", line 16, in <module>
+    from .entities import TRANSLATION_TABLE
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/alexa/entities.py", line 9, in <module>
+    from homeassistant.components import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/camera/__init__.py", line 33, in <module>
+    from homeassistant.components.stream import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/__init__.py", line 66, in <module>
+    from .core import (
+  File "/opt/hostedtoolcache/Python/3.12.12/x64/lib/python3.12/site-packages/homeassistant/components/stream/core.py", line 15, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2025-11-06 03:31:05.281 ERROR (MainThread) [homeassistant.setup] Unable to set up dependencies of 'recovery_mode'. Setup failed for dependencies: ['frontend', 'cloud']
+2025-11-06 03:31:05.281 ERROR (MainThread) [homeassistant.setup] Setup failed for 'recovery_mode': Could not setup dependencies: frontend, cloud
+2025-11-06 03:31:05.281 WARNING (MainThread) [homeassistant.bootstrap] Support for the running Python version 3.12.12 is deprecated and will be removed in Home Assistant 2025.2; Please upgrade Python to 3.13
