@@ -65,6 +65,7 @@ Thumbs.db
 
 # Claude
 claude/
+CLAUDE.md
 
-# Documentation (generated)
+# Documentation (generated locally, used for PR descriptions)
 CHANGELOG.md
