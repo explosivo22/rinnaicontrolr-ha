@@ -13,7 +13,11 @@ from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import callback
-from homeassistant.helpers.selector import SelectSelector, SelectSelectorConfig
+from homeassistant.helpers.selector import (
+    SelectOptionDict,
+    SelectSelector,
+    SelectSelectorConfig,
+)
 
 from .const import (
     CONF_ACCESS_TOKEN,
@@ -33,7 +37,7 @@ from .const import (
 from .local import RinnaiLocalClient
 
 # Common schema components to reduce duplication
-CONNECTION_MODE_OPTIONS = [
+CONNECTION_MODE_OPTIONS: list[SelectOptionDict] = [
     {"value": CONNECTION_MODE_CLOUD, "label": "Cloud (Rinnai account)"},
     {"value": CONNECTION_MODE_LOCAL, "label": "Local (direct connection)"},
     {"value": CONNECTION_MODE_HYBRID, "label": "Hybrid (local + cloud fallback)"},
@@ -325,7 +329,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
     ) -> ConfigFlowResult:
         """Handle re-authentication with the user."""
         errors: dict[str, str] = {}
-        default_email = self.context.get(CONF_EMAIL, "")
+        default_email = str(self.context.get(CONF_EMAIL, ""))
 
         if user_input is None:
             return self.async_show_form(
