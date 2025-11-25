@@ -49,6 +49,8 @@ class RinnaiRuntimeData:
     entity_adders: dict[Platform, AddEntitiesCallback] = field(default_factory=dict)
     # Config entry options for creating new coordinators
     options: dict = field(default_factory=dict)
+    # Cancel callback for device discovery listener
+    cancel_device_discovery: Any | None = None
 
 
 # Type alias for config entry with runtime data
@@ -182,7 +184,8 @@ def _setup_device_discovery_listener(
     cancel_listener = async_track_time_interval(
         hass, _check_devices, timedelta(minutes=10)
     )
-    entry.async_on_unload(cancel_listener)
+    # Store cancel callback in runtime_data for explicit cleanup in unload
+    entry.runtime_data.cancel_device_discovery = cancel_listener
     _LOGGER.debug("Set up periodic device discovery (every 10 minutes)")
 
 
@@ -320,6 +323,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> b
         True if unload was successful.
     """
     _LOGGER.info("Unloading Rinnai integration (entry_id=%s)", entry.entry_id[:8])
+
+    # Cancel device discovery listener if it exists
+    if hasattr(entry, "runtime_data") and entry.runtime_data is not None:
+        if entry.runtime_data.cancel_device_discovery is not None:
+            entry.runtime_data.cancel_device_discovery()
+            entry.runtime_data.cancel_device_discovery = None
+            _LOGGER.debug("Cancelled device discovery listener")
+
     result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if result:
         _LOGGER.debug("Successfully unloaded all Rinnai platforms")

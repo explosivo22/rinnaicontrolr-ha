@@ -127,7 +127,11 @@ async def test_async_setup_entry_success(hass, monkeypatch):
     async def _no_forward(entry, platforms):
         return None
 
+    async def _no_unload(entry, platforms):
+        return True
+
     monkeypatch.setattr(hass.config_entries, "async_forward_entry_setups", _no_forward)
+    monkeypatch.setattr(hass.config_entries, "async_unload_platforms", _no_unload)
 
     # Short-circuit the device refresh to avoid hitting API
     async def _fake_refresh(self):
@@ -158,6 +162,9 @@ async def test_async_setup_entry_success(hass, monkeypatch):
     assert hasattr(entry, "runtime_data")
     assert entry.runtime_data is not None
     assert len(entry.runtime_data.devices) == 1
+
+    # Cleanup - unload to cancel timers
+    await mod.async_unload_entry(hass, entry)
 
 
 @pytest.mark.asyncio
@@ -278,7 +285,11 @@ async def test_coordinator_has_available_property(hass, monkeypatch):
     async def _no_forward(entry, platforms):
         return None
 
+    async def _no_unload(entry, platforms):
+        return True
+
     monkeypatch.setattr(hass.config_entries, "async_forward_entry_setups", _no_forward)
+    monkeypatch.setattr(hass.config_entries, "async_unload_platforms", _no_unload)
 
     # Short-circuit the device refresh to avoid hitting API
     async def _fake_refresh(self):
@@ -311,6 +322,9 @@ async def test_coordinator_has_available_property(hass, monkeypatch):
 
     # Check available property exists
     assert hasattr(coordinator, "available")
+
+    # Cleanup - unload to cancel timers
+    await mod.async_unload_entry(hass, entry)
 
 
 @pytest.mark.asyncio
@@ -412,7 +426,11 @@ async def test_coordinator_calls_ensure_valid_token(hass, monkeypatch):
     async def _no_forward(entry, platforms):
         return None
 
+    async def _no_unload(entry, platforms):
+        return True
+
     monkeypatch.setattr(hass.config_entries, "async_forward_entry_setups", _no_forward)
+    monkeypatch.setattr(hass.config_entries, "async_unload_platforms", _no_unload)
 
     # Mock _ensure_valid_token to track calls
     monkeypatch.setattr(
@@ -452,3 +470,6 @@ async def test_coordinator_calls_ensure_valid_token(hass, monkeypatch):
 
     # Verify _ensure_valid_token was called during setup
     assert len(token_check_called) >= 1, "Token validation should be called"
+
+    # Cleanup - unload to cancel timers
+    await mod.async_unload_entry(hass, entry)
