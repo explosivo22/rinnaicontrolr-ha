@@ -111,7 +111,7 @@ def _load_config_flow_module(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_config_flow_user_step_shows_form(hass, monkeypatch):
-    """Test that user step shows the login form."""
+    """Test that user step shows the connection mode selection form."""
     cf_mod = _load_config_flow_module(monkeypatch)
 
     flow = cf_mod.ConfigFlow()
@@ -121,20 +121,26 @@ async def test_config_flow_user_step_shows_form(hass, monkeypatch):
 
     assert result["type"] == FlowResultType.FORM
     assert result["step_id"] == "user"
-    assert "email" in result["data_schema"].schema
-    assert "password" in result["data_schema"].schema
+    # User step now shows connection_mode selector first
+    assert "connection_mode" in result["data_schema"].schema
 
 
 @pytest.mark.asyncio
 async def test_config_flow_user_step_success(hass, monkeypatch):
-    """Test successful user step creates config entry."""
+    """Test successful multi-step flow creates config entry."""
     cf_mod = _load_config_flow_module(monkeypatch)
 
     flow = cf_mod.ConfigFlow()
     flow.hass = hass
     flow.context = {}
 
-    result = await flow.async_step_user({
+    # Step 1: Select connection mode
+    result = await flow.async_step_user({"connection_mode": "cloud"})
+    assert result["type"] == FlowResultType.FORM
+    assert result["step_id"] == "cloud"
+
+    # Step 2: Enter credentials
+    result = await flow.async_step_cloud({
         CONF_EMAIL: "test@example.com",
         CONF_PASSWORD: "testpassword",
     })
@@ -148,7 +154,7 @@ async def test_config_flow_user_step_success(hass, monkeypatch):
 
 @pytest.mark.asyncio
 async def test_config_flow_user_step_connection_error(hass, monkeypatch):
-    """Test user step handles connection errors."""
+    """Test cloud step handles connection errors."""
     cf_mod = _load_config_flow_module(monkeypatch)
 
     # Make API fail with RequestError
@@ -160,8 +166,13 @@ async def test_config_flow_user_step_connection_error(hass, monkeypatch):
 
     flow = cf_mod.ConfigFlow()
     flow.hass = hass
+    flow.context = {}
 
-    result = await flow.async_step_user({
+    # Step 1: Select connection mode
+    await flow.async_step_user({"connection_mode": "cloud"})
+
+    # Step 2: Enter credentials - should fail
+    result = await flow.async_step_cloud({
         CONF_EMAIL: "test@example.com",
         CONF_PASSWORD: "testpassword",
     })

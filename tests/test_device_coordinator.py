@@ -266,7 +266,7 @@ async def test_coordinator_properties(hass, monkeypatch):
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     # Fetch data
@@ -302,7 +302,7 @@ async def test_coordinator_temperature_properties(hass, monkeypatch):
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     await coordinator._async_update_data()
@@ -332,7 +332,7 @@ async def test_coordinator_sensor_properties(hass, monkeypatch):
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     await coordinator._async_update_data()
@@ -365,7 +365,7 @@ async def test_coordinator_boolean_properties(hass, monkeypatch):
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     await coordinator._async_update_data()
@@ -396,7 +396,7 @@ async def test_coordinator_available_property(hass, monkeypatch):
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     # Initially should be available (no errors)
@@ -425,7 +425,7 @@ async def test_coordinator_token_refresh_on_expiring_token(hass, monkeypatch):
     api.access_token = api._create_expiring_soon_token()
 
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     await coordinator._async_update_data()
@@ -455,7 +455,7 @@ async def test_coordinator_auth_failure_raises_config_entry_auth_failed(hass, mo
     api.device._fail_with_unauth = True
 
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     with pytest.raises(ConfigEntryAuthFailed):
@@ -483,7 +483,7 @@ async def test_coordinator_request_error_raises_update_failed(hass, monkeypatch)
     api.device._should_fail = True
 
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     with pytest.raises(UpdateFailed):
@@ -512,7 +512,7 @@ async def test_coordinator_properties_return_none_without_data(hass, monkeypatch
 
     api = _FakeAPI()
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
-        hass, api, "device-1", dict(entry.options), entry
+        hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
     # Don't call _async_update_data, so no device info loaded
