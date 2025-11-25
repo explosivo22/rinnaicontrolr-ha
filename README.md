@@ -2,25 +2,45 @@
 
 Support for [Rinnai Control-R Water Heater monitoring and control device](https://www.rinnai.us/tankless-water-heater/accessories/wifi) for Home Assistant.
 
-![release_badge](https://img.shields.io/github/v/release/joyfulhouse/rinnaicontrolr-ha?style=for-the-badge)
-![release_date](https://img.shields.io/github/release-date/joyfulhouse/rinnaicontrolr-ha?style=for-the-badge)
-[![License](https://img.shields.io/github/license/joyfulhouse/rinnaicontrolr-ha?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
+![release_badge](https://img.shields.io/github/v/release/explosivo22/rinnaicontrolr-ha?style=for-the-badge)
+![release_date](https://img.shields.io/github/release-date/explosivo22/rinnaicontrolr-ha?style=for-the-badge)
+[![License](https://img.shields.io/github/license/explosivo22/rinnaicontrolr-ha?style=for-the-badge)](https://opensource.org/licenses/Apache-2.0)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
 
-> **Note:** This is a fork of [explosivo22/rinnaicontrolr-ha](https://github.com/explosivo22/rinnaicontrolr-ha) with enhanced features including local control, hybrid mode, and improved reliability.
+## KNOWN ISSUES
+
+* **Rinnai currently has a known bug that will cause recirculation to only run for 5 minutes.**
+* **OFFICIAL RESPONSE**
+> Thank you for contacting Rinnai.
+>
+> If you are referring to the on demand timers listed in the Control-R 2.0 app, then yes, that is a known issue and I apologize for the inconvenience. I have been told that there's a large update planned for the app and these should issues should be addressed. For now, if you need the unit to run longer than 5 minutes, I would suggest creating a schedule, even if it's just for a short period like an hour.
+>
+> Nicholas Valencia
+> Customer Care Agent
+
+## WARNING
+
+* **THIS LIBRARY ONLY WORKS IF YOU HAVE MIGRATED TO THE RINNAI 2.0 APP. THIS WILL REQUIRE A FIRMWARE UPDATE TO YOUR CONTROL-R MODULE.**
+* [iOS](https://apps.apple.com/us/app/rinnai-control-r-2-0/id1180734911?app=itunes&ign-mpt=uo%3D4)
+* [Android](https://play.google.com/store/apps/details?id=com.controlr)
+
+## IMPORTANT NOTES
+
+* **RINNAI DOESN'T PROVIDE ANY OFFICIALLY SUPPORTED API, THUS THEIR CHANGES MAY BREAK HASS INTEGRATIONS AT ANY TIME.**
 
 ## Features
 
-### Water Heater Control
-- **Temperature Control**: Set and monitor water temperature (110°F - 140°F)
-- **Operation Mode**: Turn water heater on/off
-- **Vacation Mode**: Enable/disable vacation mode for energy savings
-- **Recirculation**: Start/stop hot water recirculation (on capable models)
-
 ### Connection Modes
-- **Cloud Mode**: Uses Rinnai Control-R cloud API (original behavior)
-- **Local Mode**: Direct TCP connection to water heater (port 9798) for faster, more reliable control
-- **Hybrid Mode**: Local primary with automatic cloud fallback for best of both worlds
+- **Cloud**: Uses Rinnai Control-R cloud API (default)
+- **Local**: Direct TCP connection to water heater (port 9798) for faster, more reliable control
+- **Hybrid**: Local primary with automatic cloud fallback
+
+### Water Heater Control
+- Water temperature control (&deg;F)
+- Set operating temperature (110-140&deg;F)
+- Operation mode (on/off)
+- Vacation/away mode
+- Start/stop recirculation (on capable models)
 
 ### Sensors
 | Sensor | Description |
@@ -46,31 +66,17 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 |--------|-------------|
 | Recirculation | Toggle to start/stop recirculation with configurable duration |
 
-### Multi-Language Support
-Translations available for: English, German, Spanish, French, Italian, Japanese, Korean, Dutch, Polish, Portuguese, Russian, Swedish, Chinese (Simplified & Traditional)
-
----
-
-## Requirements
-
-> [!WARNING]
-> **THIS INTEGRATION ONLY WORKS IF YOU HAVE MIGRATED TO THE RINNAI 2.0 APP.**
-> This requires a firmware update to your Control-R module.
-
-- [iOS App](https://apps.apple.com/us/app/rinnai-control-r-2-0/id1180734911)
-- [Android App](https://play.google.com/store/apps/details?id=com.controlr)
-
-> [!IMPORTANT]
-> **RINNAI DOESN'T PROVIDE ANY OFFICIALLY SUPPORTED API.**
-> Their changes may break this integration at any time.
-
----
+### Additional Features
+- Multiple Rinnai devices support
+- Reduced polling of Rinnai webservice to avoid unintentional DDoS
+- Multi-language support (14 languages)
+- Proactive token refresh before expiration
+- Dynamic device discovery without reload
 
 ## Supported Devices
 
 This integration supports Rinnai tankless water heaters equipped with the Control-R Wi-Fi module:
 
-### Confirmed Compatible Models
 | Series | Models | Recirculation |
 |--------|--------|---------------|
 | **RU Series** (Ultra) | RU160, RU180, RU199 | With external pump |
@@ -78,9 +84,9 @@ This integration supports Rinnai tankless water heaters equipped with the Contro
 | **RE Series** (Efficiency) | RE160, RE180, RE199 | With external pump |
 | **RSC Series** (Sensei) | RSC160, RSC180, RSC199 | With external pump |
 
-### Control-R Module Requirements
+### Requirements
 - **Firmware**: 2.0 or later (check in Rinnai app)
-- **Module Type**: Control-R Wi-Fi module (not older modules)
+- **Module Type**: Control-R Wi-Fi module
 - **Network**: 2.4 GHz Wi-Fi (5 GHz not supported by module)
 
 ### Local Mode Requirements
@@ -89,74 +95,50 @@ For local/hybrid modes:
 - Port 9798 must not be blocked by firewall
 - Static IP or DHCP reservation recommended
 
----
+## Special Rinnai Services
+
+Service | Parameters | Description
+:------------ | :------------ | :-------------
+`rinnai.start_recirculation` | `entity_id` - Name of entity to start recirculation on.<br>`recirculation_minutes` - How long to run recirculation (5-300) | Start recirculation for the amount of time specified
+`rinnai.stop_recirculation` | `entity_id` - Name of entity to stop recirculation on. | Stop recirculation on the specified entity
 
 ## Installation
 
-### With HACS (Recommended)
+#### Versions
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=joyfulhouse&repository=rinnaicontrolr-ha&category=integration)
+The 'master' branch of this custom component is considered unstable, alpha quality and not guaranteed to work.
+Please make sure to use one of the official release branches when installing using HACS, see [what has changed in each version](https://github.com/explosivo22/rinnaicontrolr-ha/releases).
 
-Or manually:
-1. Open HACS in Home Assistant
-2. Click the three dots menu → Custom repositories
-3. Add `https://github.com/joyfulhouse/rinnaicontrolr-ha` as an Integration
-4. Search for "Rinnai Control-R" and install
-5. Restart Home Assistant
+#### With HACS
 
-### Manual Installation
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=explosivo22&repository=rinnaicontrolr-ha&category=integration)
 
-1. Copy the `custom_components/rinnaicontrolr-ha` directory to your Home Assistant's `custom_components` directory
+#### Manual
+1. Copy the `rinnai` directory from `custom_components` in this repository and place inside your Home Assistant's `custom_components` directory.
 2. Restart Home Assistant
-3. Follow the Setup instructions below
+3. Follow the instructions in the `Setup` section
 
 > [!WARNING]
-> If installing manually, subscribe to releases to be notified of updates.
-
----
+> If installing manually, in order to be alerted about new releases, you will need to subscribe to releases from this repository.
 
 ## Setup
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=rinnai)
 
-Or manually:
-1. Navigate to **Settings → Devices & Services**
-2. Click **+ ADD INTEGRATION**
-3. Search for "Rinnai Control-R"
-4. Choose your connection mode:
-   - **Cloud**: Enter your Rinnai account email and password
-   - **Local**: Enter the IP address of your Control-R module
-   - **Hybrid**: Enter both cloud credentials and local IP
+> [!TIP]
+> If you are unable to use the button above, follow the steps below:
+> 1. Navigate to the Home Assistant Integrations page `(Settings --> Devices & Services)`
+> 2. Click the `+ ADD INTEGRATION` button in the lower right-hand corner
+> 3. Search for `Rinnai Control-R Water Heater`
 
 ### Configuration Options
+
 After setup, configure options via the integration's **Configure** button:
 
 | Option | Description | Default |
 |--------|-------------|---------|
 | Enable maintenance data | Retrieves detailed sensor data every 5 minutes | Off |
 | Recirculation duration | Default duration for recirculation switch (5-300 min) | 10 min |
-
----
-
-## Services
-
-The integration provides custom services for advanced control:
-
-| Service | Parameters | Description |
-|---------|------------|-------------|
-| `rinnai.start_recirculation` | `entity_id`, `recirculation_minutes` (5-300) | Start recirculation for specified duration |
-| `rinnai.stop_recirculation` | `entity_id` | Stop recirculation immediately |
-
-### Service Example
-```yaml
-service: rinnai.start_recirculation
-target:
-  entity_id: water_heater.rinnai_xxxxx_water_heater
-data:
-  recirculation_minutes: 15
-```
-
----
 
 ## Use Cases & Automations
 
@@ -221,42 +203,6 @@ automation:
           away_mode: true
 ```
 
-### Temperature Alert
-Get notified if outlet temperature drops unexpectedly:
-
-```yaml
-automation:
-  - alias: "Water Heater Temperature Alert"
-    trigger:
-      - platform: numeric_state
-        entity_id: sensor.rinnai_xxxxx_outlet_temperature
-        below: 100
-    condition:
-      - condition: state
-        entity_id: water_heater.rinnai_xxxxx_water_heater
-        state: "gas"
-    action:
-      - service: notify.mobile_app
-        data:
-          title: "Water Heater Alert"
-          message: "Outlet temperature dropped below 100°F while heating"
-```
-
-### Energy Dashboard Integration
-Track water heater activity for energy monitoring:
-
-```yaml
-# configuration.yaml
-template:
-  - sensor:
-      - name: "Water Heater Daily Cycles"
-        state: "{{ states('sensor.rinnai_xxxxx_combustion_cycles') }}"
-        unit_of_measurement: "cycles"
-        state_class: total_increasing
-```
-
----
-
 ## Troubleshooting
 
 ### Connection Issues
@@ -293,9 +239,7 @@ template:
 ### Recirculation Issues
 
 #### Recirculation only runs for 5 minutes
-This is a **known Rinnai firmware bug**. Rinnai has acknowledged this issue:
-
-> "If you are referring to the on demand timers listed in the Control-R 2.0 app, then yes, that is a known issue... For now, if you need the unit to run longer than 5 minutes, I would suggest creating a schedule."
+This is a **known Rinnai firmware bug** (see Known Issues above).
 
 **Workaround**: Create automations that restart recirculation periodically.
 
@@ -305,7 +249,7 @@ Your water heater may not have a recirculation pump installed. The RUR series ha
 ### Authentication Issues
 
 #### "Authentication expired" notification
-1. Go to **Settings → Devices & Services → Rinnai**
+1. Go to **Settings -> Devices & Services -> Rinnai**
 2. Click **Reconfigure**
 3. Re-enter your credentials
 
@@ -324,57 +268,9 @@ Enable debug logging to troubleshoot issues:
 logger:
   default: info
   logs:
-    custom_components.rinnaicontrolr-ha: debug
+    custom_components.rinnai: debug
     aiorinnai: debug
 ```
-
-After reproducing the issue, check your Home Assistant logs for detailed error messages.
-
----
-
-## Known Issues
-
-1. **5-minute recirculation limit**: Rinnai firmware bug limits on-demand recirculation to 5 minutes
-2. **Cloud API changes**: Rinnai may change their API without notice, potentially breaking the integration
-3. **Session injection**: The `aiorinnai` library doesn't support HA's aiohttp session (Platinum requirement blocker)
-
----
-
-## Quality Scale Compliance
-
-This integration targets Home Assistant Integration Quality Scale:
-
-| Tier | Status |
-|------|--------|
-| Bronze | ✅ Complete (9/9) |
-| Silver | ✅ Complete (7/7) |
-| Gold | ✅ Complete (7/7) |
-| Platinum | ⚠️ Partial (3/4) |
-
-**Platinum Blocker**: The `aiorinnai` library doesn't support HA's aiohttp session injection (requires upstream changes).
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed compliance information.
-
----
-
-## Contributing
-
-Contributions are welcome! Please:
-
-1. Fork this repository
-2. Create a feature branch
-3. Make your changes with appropriate tests
-4. Submit a pull request
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/joyfulhouse/rinnaicontrolr-ha/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/joyfulhouse/rinnaicontrolr-ha/discussions)
-
-## Credits
-
-- Original integration by [@explosivo22](https://github.com/explosivo22)
-- Fork maintained by [@joyfulhouse](https://github.com/joyfulhouse)
 
 ## License
 
