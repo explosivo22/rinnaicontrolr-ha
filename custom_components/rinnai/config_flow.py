@@ -405,6 +405,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         new_mode = user_input[CONF_CONNECTION_MODE]
         new_host = user_input.get(CONF_HOST, "")
 
+        # Store for use in subsequent steps
+        self.connection_mode = new_mode
+        self.host = new_host
+
         # Validate host if local or hybrid mode
         if new_mode in (CONNECTION_MODE_LOCAL, CONNECTION_MODE_HYBRID):
             if not new_host:
@@ -445,10 +449,67 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     errors=errors,
                 )
 
+        # Check if switching to a mode that requires cloud credentials
+        needs_cloud = new_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID)
+        has_cloud_credentials = bool(
+            entry.data.get(CONF_ACCESS_TOKEN) and entry.data.get(CONF_REFRESH_TOKEN)
+        )
+
+        if needs_cloud and not has_cloud_credentials:
+            # Need to collect cloud credentials
+            return await self.async_step_reconfigure_cloud()
+
         # Update entry data
         new_data = {**entry.data, CONF_CONNECTION_MODE: new_mode}
         if new_host:
             new_data[CONF_HOST] = new_host
+
+        self.hass.config_entries.async_update_entry(entry, data=new_data)
+        await self.hass.config_entries.async_reload(entry.entry_id)
+        return self.async_abort(reason="reconfigure_successful")
+
+    async def async_step_reconfigure_cloud(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle cloud credentials for reconfiguration."""
+        errors: dict[str, str] = {}
+        entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        assert entry is not None
+
+        if user_input is None:
+            return self.async_show_form(
+                step_id="reconfigure_cloud",
+                data_schema=_get_cloud_auth_schema(),
+                errors=errors,
+            )
+
+        self.username = user_input[CONF_EMAIL]
+        self.password = user_input[CONF_PASSWORD]
+
+        try:
+            self.api = API()
+            await self.api.async_login(self.username, self.password)
+        except RequestError as request_error:
+            LOGGER.error(
+                "Reconfigure: Error connecting to the Rinnai API: %s", request_error
+            )
+            errors["base"] = "cannot_connect"
+            return self.async_show_form(
+                step_id="reconfigure_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+
+        # Build new data with cloud credentials
+        new_data = {
+            **entry.data,
+            CONF_CONNECTION_MODE: self.connection_mode,
+            CONF_EMAIL: self.username,
+            CONF_ACCESS_TOKEN: self.api.access_token,
+            CONF_REFRESH_TOKEN: self.api.refresh_token,
+        }
+        if self.host:
+            new_data[CONF_HOST] = self.host
 
         self.hass.config_entries.async_update_entry(entry, data=new_data)
         await self.hass.config_entries.async_reload(entry.entry_id)

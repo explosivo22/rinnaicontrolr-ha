@@ -74,6 +74,18 @@
                     "connection_mode": "Cloud utilise votre compte Rinnai. Local se connecte directement au chauffe-eau. Hybride utilise local avec repli sur le cloud.",
                     "host": "Adresse IP de votre contrôleur de chauffe-eau Rinnai (requis pour les modes Local et Hybride)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Identifiants cloud requis",
+                "description": "Le mode sélectionné nécessite un accès cloud. Entrez vos identifiants de compte Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Mot de passe"
+                },
+                "data_description": {
+                    "email": "L'adresse e-mail de votre compte Rinnai Control-R",
+                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                }
             }
         },
         "error": {

@@ -74,6 +74,18 @@
                     "connection_mode": "クラウドはRinnaiアカウントを使用します。ローカルは給湯器に直接接続します。ハイブリッドはローカルとクラウドフォールバックを使用します。",
                     "host": "Rinnai給湯器コントローラーのIPアドレス（ローカルおよびハイブリッドモードで必須）"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "クラウド認証情報が必要です",
+                "description": "選択したモードにはクラウドアクセスが必要です。Rinnai Control-Rアカウントの認証情報を入力してください。",
+                "data": {
+                    "email": "メールアドレス",
+                    "password": "パスワード"
+                },
+                "data_description": {
+                    "email": "Rinnai Control-Rアカウントのメールアドレス",
+                    "password": "Rinnai Control-Rアカウントのパスワード"
+                }
             }
         },
         "error": {

@@ -74,6 +74,18 @@
                     "connection_mode": "云端使用您的林内账户。本地直接连接到热水器。混合模式使用本地连接，云端作为后备。",
                     "host": "您的林内热水器控制器的 IP 地址（本地和混合模式必需）"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "需要云端凭据",
+                "description": "所选模式需要云端访问。请输入您的 Rinnai Control-R 账户凭据。",
+                "data": {
+                    "email": "电子邮件",
+                    "password": "密码"
+                },
+                "data_description": {
+                    "email": "您的 Rinnai Control-R 账户电子邮件地址",
+                    "password": "您的 Rinnai Control-R 账户密码"
+                }
             }
         },
         "error": {

@@ -74,6 +74,18 @@
                     "connection_mode": "Cloud usa il tuo account Rinnai. Locale si connette direttamente allo scaldabagno. Ibrido usa locale con fallback cloud.",
                     "host": "Indirizzo IP del controller del tuo scaldabagno Rinnai (richiesto per modalità Locale e Ibrida)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Credenziali cloud richieste",
+                "description": "La modalità selezionata richiede l'accesso cloud. Inserisci le credenziali del tuo account Rinnai Control-R.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                },
+                "data_description": {
+                    "email": "L'indirizzo email del tuo account Rinnai Control-R",
+                    "password": "La password del tuo account Rinnai Control-R"
+                }
             }
         },
         "error": {

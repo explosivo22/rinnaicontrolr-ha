@@ -74,6 +74,18 @@
                     "connection_mode": "Nube usa su cuenta Rinnai. Local se conecta directamente al calentador de agua. Híbrido usa local con respaldo en la nube.",
                     "host": "Dirección IP de su controlador de calentador de agua Rinnai (requerido para modos Local e Híbrido)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Credenciales de la nube requeridas",
+                "description": "El modo seleccionado requiere acceso a la nube. Ingrese las credenciales de su cuenta Rinnai Control-R.",
+                "data": {
+                    "email": "Correo electrónico",
+                    "password": "Contraseña"
+                },
+                "data_description": {
+                    "email": "La dirección de correo electrónico de su cuenta Rinnai Control-R",
+                    "password": "La contraseña de su cuenta Rinnai Control-R"
+                }
             }
         },
         "error": {

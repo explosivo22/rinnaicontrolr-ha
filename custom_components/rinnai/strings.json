@@ -75,6 +75,18 @@
                     "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback.",
                     "host": "IP address of your Rinnai water heater controller (required for Local and Hybrid modes)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud Credentials Required",
+                "description": "The selected mode requires cloud access. Enter your Rinnai Control-R account credentials.",
+                "data": {
+                    "email": "[%key:common::config_flow::data::email%]",
+                    "password": "[%key:common::config_flow::data::password%]"
+                },
+                "data_description": {
+                    "email": "The email address used for your Rinnai Control-R account",
+                    "password": "Your Rinnai Control-R account password"
+                }
             }
         },
         "error": {

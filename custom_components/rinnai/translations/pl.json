@@ -74,6 +74,18 @@
                     "connection_mode": "Chmura używa konta Rinnai. Lokalnie łączy się bezpośrednio z podgrzewaczem. Hybrydowy używa lokalnego z awaryjnym połączeniem chmurowym.",
                     "host": "Adres IP kontrolera podgrzewacza wody Rinnai (wymagany dla trybów Lokalnego i Hybrydowego)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Wymagane dane chmury",
+                "description": "Wybrany tryb wymaga dostępu do chmury. Wprowadź dane logowania do konta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Hasło"
+                },
+                "data_description": {
+                    "email": "Adres e-mail konta Rinnai Control-R",
+                    "password": "Hasło do konta Rinnai Control-R"
+                }
             }
         },
         "error": {

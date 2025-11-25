@@ -74,6 +74,18 @@
                     "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador. Híbrido usa local com fallback cloud.",
                     "host": "Endereço IP do controlador do seu esquentador Rinnai (obrigatório para modos Local e Híbrido)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Credenciais cloud necessárias",
+                "description": "O modo selecionado requer acesso cloud. Introduza as credenciais da sua conta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Palavra-passe"
+                },
+                "data_description": {
+                    "email": "O endereço de e-mail da sua conta Rinnai Control-R",
+                    "password": "A palavra-passe da sua conta Rinnai Control-R"
+                }
             }
         },
         "error": {

@@ -74,6 +74,18 @@
                     "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter. Hybrid verwendet lokal mit Cloud-Fallback.",
                     "host": "IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers (erforderlich für Lokal- und Hybridmodus)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud-Anmeldedaten erforderlich",
+                "description": "Der ausgewählte Modus erfordert Cloud-Zugriff. Geben Sie Ihre Rinnai Control-R Kontodaten ein.",
+                "data": {
+                    "email": "E-Mail",
+                    "password": "Passwort"
+                },
+                "data_description": {
+                    "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
+                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                }
             }
         },
         "error": {

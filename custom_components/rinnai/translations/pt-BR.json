@@ -74,6 +74,18 @@
                     "connection_mode": "Nuvem usa sua conta Rinnai. Local conecta diretamente ao aquecedor. Híbrido usa local com fallback na nuvem.",
                     "host": "Endereço IP do controlador do seu aquecedor de água Rinnai (obrigatório para modos Local e Híbrido)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Credenciais da nuvem necessárias",
+                "description": "O modo selecionado requer acesso à nuvem. Digite as credenciais da sua conta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Senha"
+                },
+                "data_description": {
+                    "email": "O endereço de e-mail da sua conta Rinnai Control-R",
+                    "password": "A senha da sua conta Rinnai Control-R"
+                }
             }
         },
         "error": {

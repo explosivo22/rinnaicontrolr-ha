@@ -74,6 +74,18 @@
                     "connection_mode": "Cloud gebruikt uw Rinnai-account. Lokaal verbindt rechtstreeks met de boiler. Hybride gebruikt lokaal met cloud-fallback.",
                     "host": "IP-adres van uw Rinnai-boilercontroller (vereist voor Lokale en Hybride modi)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud-inloggegevens vereist",
+                "description": "De geselecteerde modus vereist cloud-toegang. Voer uw Rinnai Control-R accountgegevens in.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Wachtwoord"
+                },
+                "data_description": {
+                    "email": "Het e-mailadres van uw Rinnai Control-R account",
+                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                }
             }
         },
         "error": {

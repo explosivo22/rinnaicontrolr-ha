@@ -74,6 +74,18 @@
                     "connection_mode": "Moln använder ditt Rinnai-konto. Lokal ansluter direkt till varmvattenberedaren. Hybrid använder lokal med moln-fallback.",
                     "host": "IP-adress för din Rinnai-varmvattenberedarens kontroller (krävs för lokalt och hybridläge)"
                 }
+            },
+            "reconfigure_cloud": {
+                "title": "Molnuppgifter krävs",
+                "description": "Det valda läget kräver molnåtkomst. Ange dina Rinnai Control-R-kontouppgifter.",
+                "data": {
+                    "email": "E-post",
+                    "password": "Lösenord"
+                },
+                "data_description": {
+                    "email": "E-postadressen för ditt Rinnai Control-R-konto",
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                }
             }
         },
         "error": {
