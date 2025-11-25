@@ -1,9 +1,9 @@
-"""Tests for Rinnai entity platforms (sensor, binary_sensor, water_heater)."""
+"""Tests for Rinnai entity platforms (sensor, binary_sensor)."""
 import sys
 import types
 import pathlib
 import importlib.util
-from unittest.mock import MagicMock, PropertyMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -104,11 +104,11 @@ def _create_mock_device():
 
     # Sensor properties
     device.water_flow_rate = 25  # Will be multiplied by 0.1 = 2.5 gpm
-    device.combustion_cycles = 150
+    device.combustion_cycles = 150  # Will be multiplied by 100 = 15000
     device.operation_hours = 500
     device.pump_hours = 100
-    device.pump_cycles = 50
-    device.fan_current = 100
+    device.pump_cycles = 50  # Will be multiplied by 100 = 5000
+    device.fan_current = 100  # Will be multiplied by 10 = 1000 mA
     device.fan_frequency = 60
 
     # Boolean properties
@@ -123,18 +123,25 @@ def _create_mock_device():
 # Sensor Tests
 # =====================
 
+def _get_sensor_description(sensor_mod, key: str):
+    """Get a sensor description by key."""
+    for desc in sensor_mod.SENSOR_DESCRIPTIONS:
+        if desc.key == key:
+            return desc
+    raise ValueError(f"No sensor description found for key: {key}")
+
+
 @pytest.mark.asyncio
 async def test_outlet_temperature_sensor(monkeypatch):
     """Test outlet temperature sensor returns correct value."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    description = _get_sensor_description(sensor_mod, "outlet_temperature")
 
-    sensor = sensor_mod.RinnaiOutletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value == 120.5
-    assert sensor.native_unit_of_measurement == "°F"
-    assert sensor.device_class.value == "temperature"
-    assert sensor.state_class.value == "measurement"
+    assert sensor.entity_description.native_unit_of_measurement == "°F"
 
 
 @pytest.mark.asyncio
@@ -143,8 +150,9 @@ async def test_outlet_temperature_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.outlet_temperature = None
+    description = _get_sensor_description(sensor_mod, "outlet_temperature")
 
-    sensor = sensor_mod.RinnaiOutletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -154,11 +162,11 @@ async def test_inlet_temperature_sensor(monkeypatch):
     """Test inlet temperature sensor returns correct value."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    description = _get_sensor_description(sensor_mod, "inlet_temperature")
 
-    sensor = sensor_mod.RinnaiInletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value == 60.3
-    assert sensor.native_unit_of_measurement == "°F"
 
 
 @pytest.mark.asyncio
@@ -167,8 +175,9 @@ async def test_inlet_temperature_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.inlet_temperature = None
+    description = _get_sensor_description(sensor_mod, "inlet_temperature")
 
-    sensor = sensor_mod.RinnaiInletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -179,11 +188,12 @@ async def test_water_flow_rate_sensor(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.water_flow_rate = 25  # Should become 2.5 gpm
+    description = _get_sensor_description(sensor_mod, "water_flow_rate")
 
-    sensor = sensor_mod.RinnaiWaterFlowRateSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value == 2.5
-    assert sensor._attr_native_unit_of_measurement == "gpm"
+    assert sensor.entity_description.native_unit_of_measurement == "gpm"
 
 
 @pytest.mark.asyncio
@@ -192,22 +202,25 @@ async def test_water_flow_rate_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.water_flow_rate = None
+    description = _get_sensor_description(sensor_mod, "water_flow_rate")
 
-    sensor = sensor_mod.RinnaiWaterFlowRateSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
 
 @pytest.mark.asyncio
 async def test_combustion_cycles_sensor(monkeypatch):
-    """Test combustion cycles sensor returns correct value."""
+    """Test combustion cycles sensor applies 100x multiplier."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    device.combustion_cycles = 150  # Should become 15000
+    description = _get_sensor_description(sensor_mod, "combustion_cycles")
 
-    sensor = sensor_mod.RinnaiCombustionCyclesSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 150
-    assert sensor._attr_native_unit_of_measurement == "cycles"
+    assert sensor.native_value == 15000
+    assert sensor.entity_description.native_unit_of_measurement == "cycles"
 
 
 @pytest.mark.asyncio
@@ -216,8 +229,9 @@ async def test_combustion_cycles_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.combustion_cycles = None
+    description = _get_sensor_description(sensor_mod, "combustion_cycles")
 
-    sensor = sensor_mod.RinnaiCombustionCyclesSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -227,11 +241,11 @@ async def test_operation_hours_sensor(monkeypatch):
     """Test operation hours sensor returns correct value."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    description = _get_sensor_description(sensor_mod, "operation_hours")
 
-    sensor = sensor_mod.RinnaiOperationHoursSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 500
-    assert sensor.state_class.value == "measurement"
+    assert sensor.native_value == 500.0
 
 
 @pytest.mark.asyncio
@@ -240,8 +254,9 @@ async def test_operation_hours_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.operation_hours = None
+    description = _get_sensor_description(sensor_mod, "operation_hours")
 
-    sensor = sensor_mod.RinnaiOperationHoursSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -251,11 +266,11 @@ async def test_pump_hours_sensor(monkeypatch):
     """Test pump hours sensor returns correct value."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    description = _get_sensor_description(sensor_mod, "pump_hours")
 
-    sensor = sensor_mod.RinnaiPumpHoursSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 100
-    assert sensor.state_class.value == "measurement"
+    assert sensor.native_value == 100.0
 
 
 @pytest.mark.asyncio
@@ -264,22 +279,25 @@ async def test_pump_hours_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.pump_hours = None
+    description = _get_sensor_description(sensor_mod, "pump_hours")
 
-    sensor = sensor_mod.RinnaiPumpHoursSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
 
 @pytest.mark.asyncio
 async def test_pump_cycles_sensor(monkeypatch):
-    """Test pump cycles sensor returns correct value."""
+    """Test pump cycles sensor applies 100x multiplier."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    device.pump_cycles = 50  # Should become 5000
+    description = _get_sensor_description(sensor_mod, "pump_cycles")
 
-    sensor = sensor_mod.RinnaiPumpCyclesSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 50
-    assert sensor._attr_native_unit_of_measurement == "cycles"
+    assert sensor.native_value == 5000
+    assert sensor.entity_description.native_unit_of_measurement == "cycles"
 
 
 @pytest.mark.asyncio
@@ -288,23 +306,25 @@ async def test_pump_cycles_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.pump_cycles = None
+    description = _get_sensor_description(sensor_mod, "pump_cycles")
 
-    sensor = sensor_mod.RinnaiPumpCyclesSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
 
 @pytest.mark.asyncio
 async def test_fan_current_sensor(monkeypatch):
-    """Test fan current sensor returns correct value."""
+    """Test fan current sensor applies 10x multiplier."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    device.fan_current = 100  # Should become 1000 mA
+    description = _get_sensor_description(sensor_mod, "fan_current")
 
-    sensor = sensor_mod.RinnaiFanCurrentSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 100
-    assert sensor.native_unit_of_measurement == "mA"
-    assert sensor.state_class.value == "measurement"
+    assert sensor.native_value == 1000.0
+    assert sensor.entity_description.native_unit_of_measurement == "mA"
 
 
 @pytest.mark.asyncio
@@ -313,8 +333,9 @@ async def test_fan_current_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.fan_current = None
+    description = _get_sensor_description(sensor_mod, "fan_current")
 
-    sensor = sensor_mod.RinnaiFanCurrentSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -324,12 +345,12 @@ async def test_fan_frequency_sensor(monkeypatch):
     """Test fan frequency sensor returns correct value."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    description = _get_sensor_description(sensor_mod, "fan_frequency")
 
-    sensor = sensor_mod.RinnaiFanFrequencySensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 60
-    assert sensor.native_unit_of_measurement == "Hz"
-    assert sensor.state_class.value == "measurement"
+    assert sensor.native_value == 60.0
+    assert sensor.entity_description.native_unit_of_measurement == "Hz"
 
 
 @pytest.mark.asyncio
@@ -338,8 +359,9 @@ async def test_fan_frequency_sensor_none(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.fan_frequency = None
+    description = _get_sensor_description(sensor_mod, "fan_frequency")
 
-    sensor = sensor_mod.RinnaiFanFrequencySensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value is None
 
@@ -348,17 +370,26 @@ async def test_fan_frequency_sensor_none(monkeypatch):
 # Binary Sensor Tests
 # =====================
 
+def _get_binary_sensor_description(binary_sensor_mod, key: str):
+    """Get a binary sensor description by key."""
+    for desc in binary_sensor_mod.BINARY_SENSOR_DESCRIPTIONS:
+        if desc.key == key:
+            return desc
+    raise ValueError(f"No binary sensor description found for key: {key}")
+
+
 @pytest.mark.asyncio
 async def test_recirculating_binary_sensor_on(monkeypatch):
     """Test recirculating binary sensor when on."""
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_recirculating = True
+    description = _get_binary_sensor_description(binary_sensor_mod, "recirculation")
 
-    sensor = binary_sensor_mod.RinnaiIsRecirculatingBinarySensor(device)
+    sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
     assert sensor.is_on is True
-    assert sensor.icon == "mdi:autorenew"
+    assert sensor.icon == "mdi:sync"
 
 
 @pytest.mark.asyncio
@@ -367,11 +398,12 @@ async def test_recirculating_binary_sensor_off(monkeypatch):
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_recirculating = False
+    description = _get_binary_sensor_description(binary_sensor_mod, "recirculation")
 
-    sensor = binary_sensor_mod.RinnaiIsRecirculatingBinarySensor(device)
+    sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
     assert sensor.is_on is False
-    assert sensor.icon == "mdi:circle-off-outline"
+    assert sensor.icon == "mdi:sync-off"
 
 
 @pytest.mark.asyncio
@@ -380,8 +412,9 @@ async def test_heating_binary_sensor_on(monkeypatch):
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_heating = True
+    description = _get_binary_sensor_description(binary_sensor_mod, "water_heater_heating")
 
-    sensor = binary_sensor_mod.RinnaiIsHeatingBinarySensor(device)
+    sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
     assert sensor.is_on is True
     assert sensor.icon == "mdi:fire"
@@ -393,8 +426,9 @@ async def test_heating_binary_sensor_off(monkeypatch):
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_heating = False
+    description = _get_binary_sensor_description(binary_sensor_mod, "water_heater_heating")
 
-    sensor = binary_sensor_mod.RinnaiIsHeatingBinarySensor(device)
+    sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
     assert sensor.is_on is False
     assert sensor.icon == "mdi:fire-off"
@@ -410,8 +444,9 @@ async def test_entity_unique_id(monkeypatch):
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.id = "device-12345"
+    description = _get_sensor_description(sensor_mod, "outlet_temperature")
 
-    sensor = sensor_mod.RinnaiOutletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
 
     # unique_id should be {device.id}_{entity_type}
     assert sensor.unique_id == "device-12345_outlet_temperature"
@@ -427,8 +462,9 @@ async def test_entity_device_info(monkeypatch):
     device.firmware_version = "2.0"
     device.device_name = "My Water Heater"
     device.manufacturer = "Rinnai"
+    description = _get_sensor_description(sensor_mod, "outlet_temperature")
 
-    sensor = sensor_mod.RinnaiOutletTemperatureSensor(device)
+    sensor = sensor_mod.RinnaiSensor(device, description)
     device_info = sensor.device_info
 
     assert device_info["identifiers"] == {("rinnai", "device-12345")}

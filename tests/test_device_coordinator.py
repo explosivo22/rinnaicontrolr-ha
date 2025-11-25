@@ -494,8 +494,8 @@ async def test_coordinator_request_error_raises_update_failed(hass, monkeypatch)
 
 
 @pytest.mark.asyncio
-async def test_coordinator_properties_return_none_without_data(hass, monkeypatch):
-    """Test that properties return None when no data loaded."""
+async def test_coordinator_properties_return_defaults_without_data(hass, monkeypatch):
+    """Test that properties return defaults/None when no data loaded."""
     device_mod = _load_device_module(monkeypatch)
 
     entry = MockConfigEntry(
@@ -516,7 +516,8 @@ async def test_coordinator_properties_return_none_without_data(hass, monkeypatch
     )
 
     # Don't call _async_update_data, so no device info loaded
-    assert coordinator.device_name is None
+    # device_name returns a fallback based on device_id
+    assert coordinator.device_name == "Rinnai device-1"
     assert coordinator.model is None
     assert coordinator.current_temperature is None
     assert coordinator.is_on is None
