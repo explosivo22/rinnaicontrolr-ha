@@ -1,40 +1,41 @@
 """Config flow for Rinnai integration."""
+from __future__ import annotations
+
 from typing import Any
-from collections.abc import Mapping
+
+import voluptuous as vol
 
 from aiorinnai import API
 from aiorinnai.errors import RequestError
-import voluptuous as vol
 
-from homeassistant import config_entries, core, exceptions
+from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.core import callback
-from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .const import (
+    CONF_ACCESS_TOKEN,
+    CONF_MAINT_INTERVAL_ENABLED,
+    CONF_REFRESH_TOKEN,
+    DEFAULT_MAINT_INTERVAL_ENABLED,
     DOMAIN,
     LOGGER,
-    CONF_MAINT_INTERVAL_ENABLED,
-    DEFAULT_MAINT_INTERVAL_ENABLED,
-    CONF_ACCESS_TOKEN,
-    CONF_REFRESH_TOKEN,
 )
 
-# The above class is a Python ConfigFlow class for a specific domain.
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Rinnai."""
+
     VERSION = 2
 
-    entry: config_entries.ConfigEntry | None
+    def __init__(self) -> None:
+        """Initialize the config flow."""
+        self.api: API | None = None
+        self.username: str | None = None
+        self.password: str | None = None
 
-    def __init__(self):
-        """Initialize the config flow."""  # Fixed typo from __int__ to __init__
-        self.api = None
-        self.username = None
-        self.password = None
-
-    async def async_step_user(self, user_input=None):
+    async def async_step_user(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle the initial step."""
         errors: dict[str, str] = {}
         if user_input is None:
@@ -92,7 +93,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             }
         )
 
-    async def async_step_reauth(self, user_input=None):
+    async def async_step_reauth(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
         """Handle re-authentication with the user."""
         errors: dict[str, str] = {}
         if user_input is None:
@@ -169,23 +172,25 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
 
 class OptionsFlow(config_entries.OptionsFlow):
-    # No __init__ needed; base class handles config_entry
+    """Handle options flow for Rinnai."""
 
-    async def async_step_init(self, user_input=None):
+    async def async_step_init(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Handle options flow."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(
-            step_id="init", 
+            step_id="init",
             data_schema=vol.Schema(
                 {
                     vol.Optional(
                         CONF_MAINT_INTERVAL_ENABLED,
-                        default=self.config_entry.options.get(CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED),
-                    ) : bool,
+                        default=self.config_entry.options.get(
+                            CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
+                        ),
+                    ): bool,
                 }
             ),
         )
-
-class CannotConnect(exceptions.HomeAssistantError):
-    """Error to indicate we cannot connect."""
