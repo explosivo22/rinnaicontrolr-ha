@@ -166,13 +166,19 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(
+        config_entry: config_entries.ConfigEntry,
+    ) -> config_entries.OptionsFlow:
         """Get the options flow for this handler."""
-        return OptionsFlow()
+        return OptionsFlow(config_entry)
 
 
 class OptionsFlow(config_entries.OptionsFlow):
     """Handle options flow for Rinnai."""
+
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        """Initialize options flow."""
+        self._config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
@@ -187,7 +193,7 @@ class OptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_MAINT_INTERVAL_ENABLED,
-                        default=self.config_entry.options.get(
+                        default=self._config_entry.options.get(
                             CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
                         ),
                     ): bool,

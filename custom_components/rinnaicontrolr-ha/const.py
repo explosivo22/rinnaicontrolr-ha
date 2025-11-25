@@ -7,7 +7,6 @@ from typing import Final
 LOGGER: Final = logging.getLogger(__package__)
 
 DOMAIN: Final = "rinnai"
-CLIENT: Final = "client"
 
 ATTRIBUTION: Final = "Data provided by Rinnai"
 
@@ -18,9 +17,6 @@ CONF_MAINT_INTERVAL_ENABLED: Final = "maint_interval_enabled"
 DEFAULT_MAINT_INTERVAL_ENABLED: Final = True
 
 CONF_UNITS: Final[list[str]] = ["celsius", "fahrenheit"]
-
-ATTR_CACHE: Final = "cache"
-ATTR_COORDINATOR: Final = "coordinator"
 
 SIGNAL_UPDATE_RINNAI: Final = "rinnai_temp_update"
 

@@ -1,32 +1,23 @@
 """Support for Rinnai Water Heater binary sensors."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from homeassistant.components.binary_sensor import BinarySensorEntity
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN as RINNAI_DOMAIN
+from . import RinnaiConfigEntry
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
-
-if TYPE_CHECKING:
-    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: RinnaiConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai binary sensors from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
     entities: list[BinarySensorEntity] = []
-    for device in devices:
+    for device in config_entry.runtime_data.devices:
         entities.extend([
             RinnaiIsRecirculatingBinarySensor(device),
             RinnaiIsHeatingBinarySensor(device),

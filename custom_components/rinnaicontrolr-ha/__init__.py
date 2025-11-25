@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from aiorinnai import API
@@ -17,7 +18,6 @@ from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import (
-    CLIENT,
     CONF_ACCESS_TOKEN,
     CONF_REFRESH_TOKEN,
     DOMAIN,
@@ -27,6 +27,22 @@ from .device import RinnaiDeviceDataUpdateCoordinator
 if TYPE_CHECKING:
     from homeassistant.helpers.device_registry import DeviceEntry
 
+
+@dataclass
+class RinnaiRuntimeData:
+    """Runtime data for Rinnai integration.
+
+    This class holds data that is created during setup and needed throughout
+    the integration's lifecycle.
+    """
+
+    client: API
+    devices: list[RinnaiDeviceDataUpdateCoordinator] = field(default_factory=list)
+
+
+# Type alias for config entry with runtime data
+RinnaiConfigEntry = ConfigEntry[RinnaiRuntimeData]
+
 _LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
@@ -35,7 +51,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
 ]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bool:
     """Set up Rinnai from config entry.
 
     Args:
@@ -49,13 +65,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ConfigEntryAuthFailed: When authentication fails.
         ConfigEntryNotReady: When the API is unavailable or no devices found.
     """
-    hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = {}
-
     _LOGGER.debug("Setting up Rinnai integration for %s", entry.data[CONF_EMAIL])
 
     client = API()
-    hass.data[DOMAIN][entry.entry_id][CLIENT] = client
 
     try:
         await client.async_renew_access_token(
@@ -96,18 +108,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     options = dict(entry.options) if not isinstance(entry.options, dict) else entry.options
 
     # Create coordinators for each device, passing config_entry for token persistence
-    hass.data[DOMAIN][entry.entry_id]["devices"] = [
+    coordinators = [
         RinnaiDeviceDataUpdateCoordinator(
             hass, client, device["id"], options, entry
         )
         for device in devices
     ]
 
+    # Store runtime data using modern pattern
+    entry.runtime_data = RinnaiRuntimeData(client=client, devices=coordinators)
+
     # Initial data fetch for all devices
-    tasks = [
-        device.async_refresh()
-        for device in hass.data[DOMAIN][entry.entry_id]["devices"]
-    ]
+    tasks = [coordinator.async_refresh() for coordinator in coordinators]
     await asyncio.gather(*tasks)
 
     if not entry.options:
@@ -145,12 +157,14 @@ async def _persist_tokens_if_changed(
             },
         )
 
-async def _async_options_updated(hass: HomeAssistant, entry: ConfigEntry) -> None:
+async def _async_options_updated(
+    hass: HomeAssistant, entry: RinnaiConfigEntry
+) -> None:
     """Handle options update by reloading the config entry."""
     await hass.config_entries.async_reload(entry.entry_id)
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bool:
     """Unload a config entry.
 
     Args:
@@ -160,10 +174,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     Returns:
         True if unload was successful.
     """
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
-    return unload_ok
+    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
 
 async def async_remove_config_entry_device(

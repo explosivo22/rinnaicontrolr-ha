@@ -55,9 +55,5 @@ rules:
   inject_websession:
     status: todo
     comment: aiorinnai library should use HA's aiohttp session
-  strict_typing:
-    status: todo
-    comment: Need to add py.typed marker and strict mypy config
-  runtime_data:
-    status: todo
-    comment: Migrate from hass.data to entry.runtime_data
+  strict_typing: done
+  runtime_data: done

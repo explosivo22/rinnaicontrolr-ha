@@ -1,7 +1,7 @@
 """Water Heater entity for Rinnai Control-R integration."""
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import voluptuous as vol
 
@@ -13,19 +13,16 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntity,
     WaterHeaterEntityFeature,
 )
-from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import entity_platform
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.unit_system import METRIC_SYSTEM
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER
+from . import RinnaiConfigEntry
+from .const import LOGGER
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
-
-if TYPE_CHECKING:
-    from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 STATE_IDLE = "idle"
 
@@ -43,14 +40,13 @@ RECIRCULATION_MINUTE_OPTIONS = {
 
 async def async_setup_entry(
     hass: HomeAssistant,
-    config_entry: ConfigEntry,
+    config_entry: RinnaiConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai Water heater from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
-    async_add_entities(RinnaiWaterHeater(device) for device in devices)
+    async_add_entities(
+        RinnaiWaterHeater(device) for device in config_entry.runtime_data.devices
+    )
 
     platform = entity_platform.async_get_current_platform()
 

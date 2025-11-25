@@ -154,8 +154,10 @@ async def test_async_setup_entry_success(hass, monkeypatch):
 
     # Assert
     assert ok is True
-    assert DOMAIN in hass.data
-    assert entry.entry_id in hass.data[DOMAIN]
+    # Runtime data should be set on the entry
+    assert hasattr(entry, "runtime_data")
+    assert entry.runtime_data is not None
+    assert len(entry.runtime_data.devices) == 1
 
 
 @pytest.mark.asyncio
@@ -301,8 +303,9 @@ async def test_coordinator_has_available_property(hass, monkeypatch):
     ok = await mod.async_setup_entry(hass, entry)
     assert ok is True
 
-    # Get the coordinator
-    devices = hass.data[DOMAIN][entry.entry_id]["devices"]
+    # Get the coordinator from runtime_data
+    assert hasattr(entry, "runtime_data")
+    devices = entry.runtime_data.devices
     assert len(devices) == 1
     coordinator = devices[0]
 
@@ -347,12 +350,13 @@ async def test_async_unload_entry(hass, monkeypatch):
     # Setup
     ok = await mod.async_setup_entry(hass, entry)
     assert ok is True
-    assert entry.entry_id in hass.data[DOMAIN]
+    # Runtime data should be set on the entry
+    assert hasattr(entry, "runtime_data")
+    assert entry.runtime_data is not None
 
     # Unload
     ok = await mod.async_unload_entry(hass, entry)
     assert ok is True
-    assert entry.entry_id not in hass.data[DOMAIN]
 
 
 @pytest.mark.asyncio
