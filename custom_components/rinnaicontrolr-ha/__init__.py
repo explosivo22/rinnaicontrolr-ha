@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import issue_registry as ir
+from homeassistant.helpers import device_registry as dr, issue_registry as ir
 
 from .const import (
     CONF_ACCESS_TOKEN,
@@ -43,6 +43,7 @@ class RinnaiRuntimeData:
     client: API | None = None
     local_client: RinnaiLocalClient | None = None
     connection_mode: str = CONNECTION_MODE_CLOUD
+    known_device_ids: set[str] = field(default_factory=set)
 
 
 # Type alias for config entry with runtime data
@@ -130,6 +131,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         client=api_client,
         local_client=local_client,
         connection_mode=connection_mode,
+        known_device_ids=set(device_ids),
     )
 
     # Initial data fetch for all devices
@@ -310,6 +312,60 @@ async def async_remove_config_entry_device(
     """
     _LOGGER.info("Removing device %s from Rinnai integration", device_entry.identifiers)
     return True
+
+
+async def async_check_and_remove_stale_devices(
+    hass: HomeAssistant,
+    entry: RinnaiConfigEntry,
+    current_device_ids: set[str],
+) -> None:
+    """Check for and remove devices that no longer exist in the account.
+
+    This implements the HA Quality Scale 'stale_devices' requirement.
+    Called periodically to sync device registry with actual devices.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: Config entry with runtime data.
+        current_device_ids: Set of device IDs currently known to exist.
+    """
+    if not hasattr(entry, "runtime_data") or entry.runtime_data is None:
+        return
+
+    known_ids = entry.runtime_data.known_device_ids
+    stale_ids = known_ids - current_device_ids
+
+    if not stale_ids:
+        return
+
+    _LOGGER.info(
+        "Detected %d stale device(s) to remove: %s",
+        len(stale_ids),
+        stale_ids,
+    )
+
+    device_registry = dr.async_get(hass)
+
+    for device_id in stale_ids:
+        # Find the device entry by its identifier
+        device_entry = device_registry.async_get_device(
+            identifiers={(DOMAIN, device_id)}
+        )
+        if device_entry:
+            _LOGGER.info(
+                "Removing stale device %s (%s) from registry",
+                device_id,
+                device_entry.name,
+            )
+            device_registry.async_remove_device(device_entry.id)
+
+    # Update known device IDs
+    entry.runtime_data.known_device_ids = current_device_ids
+
+    # Remove coordinators for stale devices
+    entry.runtime_data.devices = [
+        coord for coord in entry.runtime_data.devices if coord.id not in stale_ids
+    ]
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

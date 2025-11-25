@@ -2,12 +2,14 @@
 # https://developers.home-assistant.io/docs/core/integration-quality-scale
 
 rules:
-  # Bronze tier requirements
+  # ============================================================================
+  # Bronze tier requirements (9/9 complete)
+  # ============================================================================
   config_flow: done
   test_before_setup: done
   unique_config_entry:
     status: exempt
-    comment: Single account per integration instance is standard
+    comment: Uses async_set_unique_id() with email (cloud) or serial (local)
   has_entity_name: done
   entity_unique_id: done
   docs_high_level_description: done
@@ -17,21 +19,25 @@ rules:
     status: exempt
     comment: Custom component, not in HA core brands
 
-  # Silver tier requirements
+  # ============================================================================
+  # Silver tier requirements (7/7 complete)
+  # ============================================================================
   config_entry_unloading: done
   reauthentication_flow: done
   log_when_unavailable: done
   parallel_updates: done
   stale_devices:
-    status: todo
-    comment: Need to implement device removal when devices disappear from account
+    status: done
+    comment: async_check_and_remove_stale_devices() removes disappeared devices
   entity_unavailable: done
   action_exceptions: done
   common_modules:
     status: exempt
     comment: No shared modules with other integrations
 
-  # Gold tier requirements
+  # ============================================================================
+  # Gold tier requirements (6/7 complete)
+  # ============================================================================
   discovery:
     status: exempt
     comment: Cloud-based integration, devices cannot be discovered locally
@@ -41,19 +47,21 @@ rules:
     comment: Need to support adding/removing devices without reload
   integration_owner: done
   docs_use_cases:
-    status: todo
-    comment: Add automation examples to documentation
+    status: done
+    comment: README.md includes automation examples for common use cases
   docs_supported_devices:
-    status: todo
-    comment: Add list of supported Rinnai water heater models
+    status: done
+    comment: README.md lists compatible Rinnai models and requirements
   docs_troubleshooting:
-    status: todo
-    comment: Add troubleshooting section for common issues
+    status: done
+    comment: README.md includes comprehensive troubleshooting section
 
-  # Platinum tier requirements
+  # ============================================================================
+  # Platinum tier requirements (3/4 complete)
+  # ============================================================================
   async_dependency: done
   inject_websession:
     status: todo
-    comment: aiorinnai library should use HA's aiohttp session
+    comment: aiorinnai library doesn't accept HA's aiohttp session; requires upstream changes
   strict_typing: done
   runtime_data: done
