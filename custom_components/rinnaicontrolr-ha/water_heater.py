@@ -1,7 +1,6 @@
 """Water Heater entity for Rinnai Control-R integration."""
-from __future__ import annotations
 
-from typing import Any
+from __future__ import annotations
 
 import voluptuous as vol
 
@@ -33,8 +32,27 @@ SERVICE_STOP_RECIRCULATION = "stop_recirculation"
 
 # The Rinnai app hardcodes recirculation durations to certain intervals
 RECIRCULATION_MINUTE_OPTIONS = {
-    5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240,
-    255, 270, 285, 300
+    5,
+    15,
+    30,
+    45,
+    60,
+    75,
+    90,
+    105,
+    120,
+    135,
+    150,
+    165,
+    180,
+    195,
+    210,
+    225,
+    240,
+    255,
+    270,
+    285,
+    300,
 }
 
 
@@ -53,7 +71,9 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_START_RECIRCULATION,
         {
-            vol.Required(ATTR_RECIRCULATION_MINUTES, default=5): vol.In(RECIRCULATION_MINUTE_OPTIONS)
+            vol.Required(ATTR_RECIRCULATION_MINUTES, default=5): vol.In(
+                RECIRCULATION_MINUTE_OPTIONS
+            )
         },
         "async_start_recirculation",
     )
@@ -62,11 +82,16 @@ async def async_setup_entry(
         SERVICE_STOP_RECIRCULATION, {}, "async_stop_recirculation"
     )
 
+
 class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
     """Water Heater entity for a Rinnai Device"""
 
     _attr_operation_list = OPERATION_LIST
-    _attr_supported_features = (WaterHeaterEntityFeature.AWAY_MODE | WaterHeaterEntityFeature.OPERATION_MODE | WaterHeaterEntityFeature.TARGET_TEMPERATURE)
+    _attr_supported_features = (
+        WaterHeaterEntityFeature.AWAY_MODE
+        | WaterHeaterEntityFeature.OPERATION_MODE
+        | WaterHeaterEntityFeature.TARGET_TEMPERATURE
+    )
 
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
@@ -100,28 +125,37 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return float(140)
 
     @property
-    def target_temperature(self) -> float:
+    def target_temperature(self) -> float | None:
         """Return the temperature we try to reach"""
         return self._device.target_temperature
 
     @property
-    def is_away_mode_on(self) -> bool:
+    def is_away_mode_on(self) -> bool | None:
+        """Return whether away mode is on."""
         return self._device.vacation_mode_on
 
     @property
-    def outlet_temperature(self) -> float:
+    def outlet_temperature(self) -> float | None:
+        """Return outlet temperature, converted to metric if needed."""
+        temp = self._device.outlet_temperature
+        if temp is None:
+            return None
         if self.hass.config.units is METRIC_SYSTEM:
-            return round((self._device.outlet_temperature - 32) / 1.8, 1)
-        return round(self._device.outlet_temperature, 1)
+            return round((temp - 32) / 1.8, 1)
+        return round(temp, 1)
 
     @property
-    def inlet_temperature(self) -> float:
+    def inlet_temperature(self) -> float | None:
+        """Return inlet temperature, converted to metric if needed."""
+        temp = self._device.inlet_temperature
+        if temp is None:
+            return None
         if self.hass.config.units is METRIC_SYSTEM:
-            return round((self._device.inlet_temperature - 32) / 1.8, 1)
-        return round(self._device.inlet_temperature, 1)
+            return round((temp - 32) / 1.8, 1)
+        return round(temp, 1)
 
     @property
-    def current_temperature(self) -> float:
+    def current_temperature(self) -> float | None:
         """Return the current temperature."""
         return self._device.current_temperature
 
@@ -131,7 +165,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return {
             "target_temp_step": 5,
             "outlet_temperature": self.outlet_temperature,
-            "inlet_temperature": self.inlet_temperature
+            "inlet_temperature": self.inlet_temperature,
         }
 
     async def async_set_temperature(self, **kwargs) -> None:
@@ -154,11 +188,10 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         await self._device.async_disable_vacation_mode()
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
-        if operation_mode == STATE_ON:
+        """Set operation mode (on/off)."""
+        if operation_mode in (STATE_ON, STATE_GAS):
             await self._device.async_turn_on()
-        elif operation_mode == STATE_GAS:
-            await self._device.async_turn_on()
-        else:  # STATE OFF
+        else:  # STATE_OFF
             await self._device.async_turn_off()
 
     async def async_turn_on(self) -> None:

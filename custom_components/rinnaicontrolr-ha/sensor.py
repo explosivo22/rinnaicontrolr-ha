@@ -1,4 +1,5 @@
 """Support for Rinnai Water Heater Monitor sensors."""
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import (
@@ -49,12 +50,15 @@ async def async_setup_entry(
         )
     async_add_entities(entities)
 
+
 class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
-        super().__init__("outlet_temperature", f"{device.device_name} Outlet Temperature", device)
+        super().__init__(
+            "outlet_temperature", f"{device.device_name} Outlet Temperature", device
+        )
 
     @property
     def device_class(self):
@@ -77,12 +81,15 @@ class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.outlet_temperature, 1)
 
+
 class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
     """Monitors the temperature."""
 
     def __init__(self, device):
         """Initialize the temperature sensor."""
-        super().__init__("inlet_temperature", f"{device.device_name} Inlet Temperature", device)
+        super().__init__(
+            "inlet_temperature", f"{device.device_name} Inlet Temperature", device
+        )
 
     @property
     def device_class(self):
@@ -105,6 +112,7 @@ class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.inlet_temperature, 1)
 
+
 class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
     """Monitors the water flow rate."""
 
@@ -114,7 +122,9 @@ class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
 
     def __init__(self, device):
         """Initialize the water flow rate sensor."""
-        super().__init__("water_flow_rate", f"{device.device_name} Water Flow Rate", device)
+        super().__init__(
+            "water_flow_rate", f"{device.device_name} Water Flow Rate", device
+        )
 
     @property
     def native_value(self):
@@ -122,6 +132,7 @@ class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
         if self._device.water_flow_rate is None:
             return None
         return round(self._device.water_flow_rate * 0.1, 1)
+
 
 class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
     """Monitors the combustion cycles."""
@@ -132,7 +143,9 @@ class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
 
     def __init__(self, device):
         """Initialize the combustion cycles sensor."""
-        super().__init__("combustion_cycles", f"{device.device_name} Combustion Cycles x100", device)
+        super().__init__(
+            "combustion_cycles", f"{device.device_name} Combustion Cycles x100", device
+        )
 
     @property
     def native_value(self):
@@ -141,6 +154,7 @@ class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.combustion_cycles, 1)
 
+
 class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
     """Monitors the operation hours."""
 
@@ -148,7 +162,9 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
 
     def __init__(self, device):
         """Initialize the operation hours sensor."""
-        super().__init__("operation_hours", f"{device.device_name} Operation Hours x100", device)
+        super().__init__(
+            "operation_hours", f"{device.device_name} Operation Hours x100", device
+        )
 
     @property
     def state_class(self):
@@ -161,6 +177,7 @@ class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
         if self._device.operation_hours is None:
             return None
         return round(self._device.operation_hours, 1)
+
 
 class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
     """Monitors the pump hours."""
@@ -183,6 +200,7 @@ class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
             return None
         return round(self._device.pump_hours, 1)
 
+
 class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
     """Monitors the pump cycles."""
 
@@ -192,7 +210,9 @@ class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
 
     def __init__(self, device):
         """Initialize the pump cycles sensor."""
-        super().__init__("pump_cycles", f"{device.device_name} Pump Cycles x100", device)
+        super().__init__(
+            "pump_cycles", f"{device.device_name} Pump Cycles x100", device
+        )
 
     @property
     def native_value(self):
@@ -200,6 +220,7 @@ class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
         if self._device.pump_cycles is None:
             return None
         return round(self._device.pump_cycles, 1)
+
 
 class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
     """Monitors the fan current."""
@@ -225,6 +246,7 @@ class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
         if self._device.fan_current is None:
             return None
         return round(self._device.fan_current, 1)
+
 
 class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
     """Monitors the fan frequency"""

@@ -1,14 +1,11 @@
 """Rinnai Control-R Water Heater integration for Home Assistant."""
+
 from __future__ import annotations
 
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
-
-from aiorinnai import API
-from aiorinnai.api import Unauthenticated
-from aiorinnai.errors import RequestError
+from typing import TYPE_CHECKING, TypeAlias
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
@@ -19,12 +16,19 @@ from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import (
     CONF_ACCESS_TOKEN,
+    CONF_CONNECTION_MODE,
+    CONF_HOST,
     CONF_REFRESH_TOKEN,
+    CONNECTION_MODE_CLOUD,
+    CONNECTION_MODE_HYBRID,
+    CONNECTION_MODE_LOCAL,
     DOMAIN,
 )
 from .device import RinnaiDeviceDataUpdateCoordinator
+from .local import RinnaiLocalClient
 
 if TYPE_CHECKING:
+    from aiorinnai import API
     from homeassistant.helpers.device_registry import DeviceEntry
 
 
@@ -36,12 +40,14 @@ class RinnaiRuntimeData:
     the integration's lifecycle.
     """
 
-    client: API
     devices: list[RinnaiDeviceDataUpdateCoordinator] = field(default_factory=list)
+    client: API | None = None
+    local_client: RinnaiLocalClient | None = None
+    connection_mode: str = CONNECTION_MODE_CLOUD
 
 
 # Type alias for config entry with runtime data
-RinnaiConfigEntry = ConfigEntry[RinnaiRuntimeData]
+RinnaiConfigEntry: TypeAlias = ConfigEntry[RinnaiRuntimeData]  # type: ignore[type-arg]
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,8 +57,14 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
 ]
 
+
 async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bool:
     """Set up Rinnai from config entry.
+
+    Supports three connection modes:
+    - Cloud: Uses aiorinnai API with Rinnai account credentials
+    - Local: Direct TCP connection to water heater controller
+    - Hybrid: Local primary with cloud fallback
 
     Args:
         hass: Home Assistant instance.
@@ -63,9 +75,85 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
 
     Raises:
         ConfigEntryAuthFailed: When authentication fails.
-        ConfigEntryNotReady: When the API is unavailable or no devices found.
+        ConfigEntryNotReady: When connection fails or no devices found.
     """
-    _LOGGER.debug("Setting up Rinnai integration for %s", entry.data[CONF_EMAIL])
+    connection_mode = entry.data.get(CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD)
+    _LOGGER.debug("Setting up Rinnai integration in %s mode", connection_mode)
+
+    api_client: API | None = None
+    local_client: RinnaiLocalClient | None = None
+    device_ids: list[str] = []
+
+    # Set up clients based on connection mode
+    if connection_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID):
+        api_client, device_ids = await _setup_cloud_client(hass, entry)
+
+    if connection_mode in (CONNECTION_MODE_LOCAL, CONNECTION_MODE_HYBRID):
+        local_client, local_device_id = await _setup_local_client(entry)
+        if connection_mode == CONNECTION_MODE_LOCAL:
+            device_ids = [local_device_id]
+
+    if not device_ids:
+        raise ConfigEntryNotReady("No Rinnai devices found")
+
+    # Convert MappingProxyType to dict for options
+    options = (
+        dict(entry.options) if not isinstance(entry.options, dict) else entry.options
+    )
+
+    # Create coordinators for each device
+    coordinators = []
+    for device_id in device_ids:
+        coordinator = RinnaiDeviceDataUpdateCoordinator(
+            hass,
+            device_id,
+            options,
+            entry,
+            api_client=api_client,
+            local_client=local_client,
+            connection_mode=connection_mode,
+        )
+        coordinators.append(coordinator)
+
+    # Store runtime data using modern pattern
+    entry.runtime_data = RinnaiRuntimeData(
+        devices=coordinators,
+        client=api_client,
+        local_client=local_client,
+        connection_mode=connection_mode,
+    )
+
+    # Initial data fetch for all devices
+    tasks = [coordinator.async_refresh() for coordinator in coordinators]
+    await asyncio.gather(*tasks)
+
+    if not entry.options:
+        await _async_options_updated(hass, entry)
+
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+
+    return True
+
+
+async def _setup_cloud_client(
+    hass: HomeAssistant, entry: ConfigEntry
+) -> tuple[API, list[str]]:
+    """Set up the cloud API client and get device list.
+
+    Returns:
+        Tuple of (API client, list of device IDs).
+
+    Raises:
+        ConfigEntryAuthFailed: When authentication fails.
+        ConfigEntryNotReady: When the API is unavailable.
+    """
+    from aiorinnai import API
+    from aiorinnai.api import Unauthenticated
+    from aiorinnai.errors import RequestError
+
+    _LOGGER.debug("Setting up cloud client for %s", entry.data.get(CONF_EMAIL))
 
     client = API()
 
@@ -95,41 +183,50 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         raise ConfigEntryAuthFailed from err
     except RequestError as err:
         _LOGGER.error("Request error during setup: %s", err)
-        raise ConfigEntryNotReady(
-            f"Unable to connect to Rinnai API: {err}"
-        ) from err
+        raise ConfigEntryNotReady(f"Unable to connect to Rinnai API: {err}") from err
 
     devices = user_info.get("devices", {}).get("items", [])
     if not devices:
         _LOGGER.error("No devices found in user info")
         raise ConfigEntryNotReady("No Rinnai devices found for this account")
 
-    # Convert MappingProxyType to dict for options
-    options = dict(entry.options) if not isinstance(entry.options, dict) else entry.options
+    device_ids = [device["id"] for device in devices]
+    return client, device_ids
 
-    # Create coordinators for each device, passing config_entry for token persistence
-    coordinators = [
-        RinnaiDeviceDataUpdateCoordinator(
-            hass, client, device["id"], options, entry
-        )
-        for device in devices
-    ]
 
-    # Store runtime data using modern pattern
-    entry.runtime_data = RinnaiRuntimeData(client=client, devices=coordinators)
+async def _setup_local_client(entry: ConfigEntry) -> tuple[RinnaiLocalClient, str]:
+    """Set up the local TCP client.
 
-    # Initial data fetch for all devices
-    tasks = [coordinator.async_refresh() for coordinator in coordinators]
-    await asyncio.gather(*tasks)
+    Returns:
+        Tuple of (local client, device ID from sysinfo).
 
-    if not entry.options:
-        await _async_options_updated(hass, entry)
+    Raises:
+        ConfigEntryNotReady: When local connection fails.
+    """
+    host = entry.data.get(CONF_HOST)
+    if not host:
+        raise ConfigEntryNotReady("No host configured for local connection")
 
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _LOGGER.debug("Setting up local client for %s", host)
 
-    entry.async_on_unload(entry.add_update_listener(_async_options_updated))
+    client = RinnaiLocalClient(host)
 
-    return True
+    # Test connection and get device info
+    sysinfo = await client.get_sysinfo()
+    if sysinfo is None:
+        raise ConfigEntryNotReady(f"Unable to connect to Rinnai controller at {host}")
+
+    sysinfo_data = sysinfo.get("sysinfo", {})
+    serial_number = sysinfo_data.get("serial-number", host)
+
+    _LOGGER.info(
+        "Successfully connected to Rinnai controller at %s (Serial: %s)",
+        host,
+        serial_number,
+    )
+
+    # Use serial number as device ID for local mode
+    return client, serial_number
 
 
 async def _persist_tokens_if_changed(
@@ -157,9 +254,8 @@ async def _persist_tokens_if_changed(
             },
         )
 
-async def _async_options_updated(
-    hass: HomeAssistant, entry: RinnaiConfigEntry
-) -> None:
+
+async def _async_options_updated(hass: HomeAssistant, entry: RinnaiConfigEntry) -> None:
     """Handle options update by reloading the config entry."""
     await hass.config_entries.async_reload(entry.entry_id)
 
@@ -209,6 +305,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         ConfigEntryAuthFailed: When authentication fails during migration.
         ConfigEntryNotReady: When the API is unavailable during migration.
     """
+    from aiorinnai import API
+    from aiorinnai.api import Unauthenticated
+    from aiorinnai.errors import RequestError
+
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
     if config_entry.version == 1:
@@ -217,6 +317,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         # Set default values if keys are missing
         data.setdefault(CONF_ACCESS_TOKEN, "")
         data.setdefault(CONF_REFRESH_TOKEN, "")
+        # Default to cloud mode for existing entries
+        data.setdefault(CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD)
 
         if not data[CONF_ACCESS_TOKEN] or not data[CONF_REFRESH_TOKEN]:
             # Fetch new tokens from the API using existing credentials

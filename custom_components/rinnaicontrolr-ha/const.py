@@ -1,4 +1,5 @@
 """Constants for Rinnai Water Heater Monitoring."""
+
 from __future__ import annotations
 
 import logging
@@ -29,3 +30,13 @@ CONF_UNIT_SYSTEM_METRIC: Final = "metric"
 
 CONF_REFRESH_TOKEN: Final = "conf_refresh_token"
 CONF_ACCESS_TOKEN: Final = "conf_access_token"
+
+# Connection modes
+CONF_CONNECTION_MODE: Final = "connection_mode"
+CONNECTION_MODE_CLOUD: Final = "cloud"
+CONNECTION_MODE_LOCAL: Final = "local"
+CONNECTION_MODE_HYBRID: Final = "hybrid"
+
+# Local connection settings
+CONF_HOST: Final = "host"
+LOCAL_PORT: Final = 9798
