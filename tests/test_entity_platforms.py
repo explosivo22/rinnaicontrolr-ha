@@ -238,14 +238,15 @@ async def test_combustion_cycles_sensor_none(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_operation_hours_sensor(monkeypatch):
-    """Test operation hours sensor returns correct value."""
+    """Test operation hours sensor applies 100x multiplier."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    device.operation_hours = 500  # Should become 50000 with 100x multiplier
     description = _get_sensor_description(sensor_mod, "operation_hours")
 
     sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 500.0
+    assert sensor.native_value == 50000
 
 
 @pytest.mark.asyncio
@@ -263,14 +264,15 @@ async def test_operation_hours_sensor_none(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_pump_hours_sensor(monkeypatch):
-    """Test pump hours sensor returns correct value."""
+    """Test pump hours sensor applies 100x multiplier."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
+    device.pump_hours = 100  # Should become 10000 with 100x multiplier
     description = _get_sensor_description(sensor_mod, "pump_hours")
 
     sensor = sensor_mod.RinnaiSensor(device, description)
 
-    assert sensor.native_value == 100.0
+    assert sensor.native_value == 10000
 
 
 @pytest.mark.asyncio
