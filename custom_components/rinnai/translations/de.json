@@ -80,7 +80,8 @@
             "cannot_connect": "Verbindung fehlgeschlagen",
             "invalid_auth": "Ungültige Authentifizierung",
             "unknown": "Unerwarteter Fehler",
-            "host_required": "Host-IP-Adresse ist für Lokal- und Hybridmodus erforderlich"
+            "host_required": "Host-IP-Adresse ist für Lokal- und Hybridmodus erforderlich",
+            "local_connection_failed": "Verbindung zum Rinnai-Controller unter der angegebenen IP-Adresse nicht möglich. Bitte überprüfen Sie: (1) Die IP-Adresse ist korrekt, (2) Port 9798 ist erreichbar, (3) Der Controller ist eingeschaltet. Wenn eine lokale Verbindung nicht möglich ist, verwenden Sie bitte stattdessen den Cloud-Modus."
         },
         "abort": {
             "already_configured": "Gerät ist bereits konfiguriert",
@@ -111,11 +112,11 @@
                 "description": "Konfigurieren Sie Optionen für Ihren Rinnai-Warmwasserbereiter.",
                 "data": {
                     "maint_interval_enabled": "Wartungsdatenabruf aktivieren",
-                    "recirculation_duration": "Standard-Zirkulationsdauer (Minuten)"
+                    "recirculation_duration": "Zirkulationsdauer"
                 },
                 "data_description": {
                     "maint_interval_enabled": "Wenn aktiviert, werden alle 5 Minuten detaillierte Wartungsdaten vom Gerät abgerufen. Dies kann die API-Nutzung erhöhen.",
-                    "recirculation_duration": "Standarddauer für den Zirkulationsschalter (5-300 Minuten). Wird beim Einschalten des Zirkulationsschalters verwendet."
+                    "recirculation_duration": "Dauer in Minuten (5-300), die von der Zirkulations-Schalter-Entität beim Einschalten verwendet wird."
                 }
             }
         }

@@ -80,7 +80,8 @@
             "cannot_connect": "Error al conectar",
             "invalid_auth": "Autenticación inválida",
             "unknown": "Error inesperado",
-            "host_required": "La dirección IP del host es requerida para los modos Local e Híbrido"
+            "host_required": "La dirección IP del host es requerida para los modos Local e Híbrido",
+            "local_connection_failed": "No se puede conectar al controlador Rinnai en la dirección IP especificada. Por favor verifique: (1) La dirección IP es correcta, (2) El puerto 9798 es accesible, (3) El controlador está encendido. Si la conexión local no es posible, por favor use el modo Nube en su lugar."
         },
         "abort": {
             "already_configured": "El dispositivo ya está configurado",
@@ -111,11 +112,11 @@
                 "description": "Configure las opciones para su calentador de agua Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Habilitar recuperación de datos de mantenimiento",
-                    "recirculation_duration": "Duración predeterminada de recirculación (minutos)"
+                    "recirculation_duration": "Duración de Recirculación"
                 },
                 "data_description": {
                     "maint_interval_enabled": "Cuando está habilitado, recupera datos detallados de mantenimiento del dispositivo cada 5 minutos. Esto puede aumentar el uso de la API.",
-                    "recirculation_duration": "Duración predeterminada para el interruptor de recirculación (5-300 minutos). Se usa al encender el interruptor de recirculación."
+                    "recirculation_duration": "Duración en minutos (5-300) utilizada por la entidad del interruptor de Recirculación al encenderlo."
                 }
             }
         }

@@ -80,7 +80,8 @@
             "cannot_connect": "Verbinden mislukt",
             "invalid_auth": "Ongeldige verificatie",
             "unknown": "Onverwachte fout",
-            "host_required": "Host IP-adres is vereist voor Lokale en Hybride modi"
+            "host_required": "Host IP-adres is vereist voor Lokale en Hybride modi",
+            "local_connection_failed": "Kan geen verbinding maken met de Rinnai-controller op het opgegeven IP-adres. Controleer: (1) Het IP-adres is correct, (2) Poort 9798 is toegankelijk, (3) De controller is ingeschakeld. Als lokale verbinding niet mogelijk is, gebruik dan de Cloud-modus."
         },
         "abort": {
             "already_configured": "Apparaat is al geconfigureerd",
@@ -111,11 +112,11 @@
                 "description": "Configureer opties voor uw Rinnai-boiler.",
                 "data": {
                     "maint_interval_enabled": "Onderhoudsgegevens ophalen inschakelen",
-                    "recirculation_duration": "Standaard circulatieduur (minuten)"
+                    "recirculation_duration": "Circulatieduur"
                 },
                 "data_description": {
                     "maint_interval_enabled": "Indien ingeschakeld, worden elke 5 minuten gedetailleerde onderhoudsgegevens van het apparaat opgehaald. Dit kan het API-gebruik verhogen.",
-                    "recirculation_duration": "Standaardduur voor de circulatieschakelaar (5-300 minuten). Wordt gebruikt bij het inschakelen van de circulatieschakelaar."
+                    "recirculation_duration": "Duur in minuten (5-300) gebruikt door de Circulatie-schakelaarentiteit wanneer ingeschakeld."
                 }
             }
         }

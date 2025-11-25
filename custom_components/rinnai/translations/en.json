@@ -1,5 +1,4 @@
 {
-    "title": "Rinnai Control-R",
     "config": {
         "step": {
             "user": {
@@ -16,8 +15,8 @@
                 "title": "Cloud Connection",
                 "description": "Enter your Rinnai Control-R account credentials.",
                 "data": {
-                    "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "email": "Email",
+                    "password": "Password"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
@@ -26,9 +25,9 @@
             },
             "local": {
                 "title": "Local Connection",
-                "description": "Enter the IP address of your Rinnai water heater controller. The controller must be on your local network and accessible on port {port}.",
+                "description": "Enter the IP address of your Rinnai water heater controller. The controller must be on your local network and accessible on port 9798.",
                 "data": {
-                    "host": "[%key:common::config_flow::data::host%]"
+                    "host": "Host"
                 },
                 "data_description": {
                     "host": "IP address of your Rinnai water heater controller (e.g., 192.168.1.100)"
@@ -38,8 +37,8 @@
                 "title": "Hybrid Mode - Cloud Credentials",
                 "description": "First, enter your Rinnai Control-R account credentials for cloud fallback.",
                 "data": {
-                    "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "email": "Email",
+                    "password": "Password"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
@@ -50,7 +49,7 @@
                 "title": "Hybrid Mode - Local Connection",
                 "description": "Now enter the IP address of your Rinnai water heater controller for primary local control.",
                 "data": {
-                    "host": "[%key:common::config_flow::data::host%]"
+                    "host": "Host"
                 },
                 "data_description": {
                     "host": "IP address of your Rinnai water heater controller (e.g., 192.168.1.100)"
@@ -60,8 +59,8 @@
                 "title": "Re-authenticate with Rinnai Control-R",
                 "description": "Your session has expired. Please re-enter your credentials.",
                 "data": {
-                    "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "email": "Email",
+                    "password": "Password"
                 }
             },
             "reconfigure": {
@@ -69,7 +68,7 @@
                 "description": "Change the connection mode or update the local host address.",
                 "data": {
                     "connection_mode": "Connection Mode",
-                    "host": "[%key:common::config_flow::data::host%]"
+                    "host": "Host"
                 },
                 "data_description": {
                     "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback.",
@@ -78,13 +77,14 @@
             }
         },
         "error": {
-            "cannot_connect": "[%key:common::config_flow::error::cannot_connect%]",
-            "invalid_auth": "[%key:common::config_flow::error::invalid_auth%]",
-            "unknown": "[%key:common::config_flow::error::unknown%]",
-            "host_required": "Host IP address is required for Local and Hybrid modes"
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error",
+            "host_required": "Host IP address is required for Local and Hybrid modes",
+            "local_connection_failed": "Unable to connect to Rinnai controller at the specified IP address. Please verify: (1) The IP address is correct, (2) Port 9798 is accessible, (3) The controller is powered on. If local connection is not possible, please use Cloud mode instead."
         },
         "abort": {
-            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+            "already_configured": "Device is already configured",
             "reauth_successful": "Re-authentication was successful",
             "reauth_failed": "Re-authentication failed. Please try again.",
             "reconfigure_successful": "Configuration updated successfully"
@@ -112,11 +112,11 @@
                 "description": "Configure options for your Rinnai water heater.",
                 "data": {
                     "maint_interval_enabled": "Enable maintenance data retrieval",
-                    "recirculation_duration": "Default recirculation duration (minutes)"
+                    "recirculation_duration": "Recirculation Duration"
                 },
                 "data_description": {
                     "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage.",
-                    "recirculation_duration": "Default duration for the recirculation switch (5-300 minutes). Used when toggling the recirculation switch on."
+                    "recirculation_duration": "Duration in minutes (5-300) used by the Recirculation switch entity when turned on."
                 }
             }
         }

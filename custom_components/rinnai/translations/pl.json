@@ -80,7 +80,8 @@
             "cannot_connect": "Nie udało się połączyć",
             "invalid_auth": "Nieprawidłowe uwierzytelnienie",
             "unknown": "Nieoczekiwany błąd",
-            "host_required": "Adres IP hosta jest wymagany dla trybów Lokalnego i Hybrydowego"
+            "host_required": "Adres IP hosta jest wymagany dla trybów Lokalnego i Hybrydowego",
+            "local_connection_failed": "Nie można połączyć się z kontrolerem Rinnai pod podanym adresem IP. Sprawdź: (1) Adres IP jest poprawny, (2) Port 9798 jest dostępny, (3) Kontroler jest włączony. Jeśli połączenie lokalne nie jest możliwe, użyj zamiast tego trybu Chmura."
         },
         "abort": {
             "already_configured": "Urządzenie jest już skonfigurowane",
@@ -111,11 +112,11 @@
                 "description": "Skonfiguruj opcje dla podgrzewacza wody Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Włącz pobieranie danych serwisowych",
-                    "recirculation_duration": "Domyślny czas cyrkulacji (minuty)"
+                    "recirculation_duration": "Czas Cyrkulacji"
                 },
                 "data_description": {
                     "maint_interval_enabled": "Po włączeniu pobiera szczegółowe dane serwisowe z urządzenia co 5 minut. Może to zwiększyć użycie API.",
-                    "recirculation_duration": "Domyślny czas dla przełącznika cyrkulacji (5-300 minut). Używany przy włączaniu przełącznika cyrkulacji."
+                    "recirculation_duration": "Czas w minutach (5-300) używany przez encję przełącznika Cyrkulacji przy włączeniu."
                 }
             }
         }

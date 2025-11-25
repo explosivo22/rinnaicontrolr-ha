@@ -189,8 +189,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error("Cannot connect to Rinnai controller at %s", self.host)
-            errors["base"] = "cannot_connect"
+            LOGGER.error(
+                "Cannot connect to Rinnai controller at %s on port 9798. "
+                "Please verify the IP address is correct and the device is accessible. "
+                "Consider using Cloud mode if local connection is not possible.",
+                self.host,
+            )
+            errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -272,8 +277,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error("Cannot connect to Rinnai controller at %s", self.host)
-            errors["base"] = "cannot_connect"
+            LOGGER.error(
+                "Cannot connect to Rinnai controller at %s on port 9798. "
+                "Please verify the IP address is correct and the device is accessible. "
+                "Consider using Cloud mode if local connection is not possible.",
+                self.host,
+            )
+            errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="hybrid_local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -411,7 +421,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             # Test connection
             client = RinnaiLocalClient(new_host)
             if not await client.test_connection():
-                errors["base"] = "cannot_connect"
+                LOGGER.error(
+                    "Reconfigure: Cannot connect to Rinnai controller at %s on port 9798. "
+                    "Please verify the IP address is correct and the device is accessible. "
+                    "Consider using Cloud mode if local connection is not possible.",
+                    new_host,
+                )
+                errors["base"] = "local_connection_failed"
                 return self.async_show_form(
                     step_id="reconfigure",
                     data_schema=vol.Schema(

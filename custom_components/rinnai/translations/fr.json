@@ -80,7 +80,8 @@
             "cannot_connect": "Échec de connexion",
             "invalid_auth": "Authentification invalide",
             "unknown": "Erreur inattendue",
-            "host_required": "L'adresse IP de l'hôte est requise pour les modes Local et Hybride"
+            "host_required": "L'adresse IP de l'hôte est requise pour les modes Local et Hybride",
+            "local_connection_failed": "Impossible de se connecter au contrôleur Rinnai à l'adresse IP spécifiée. Veuillez vérifier: (1) L'adresse IP est correcte, (2) Le port 9798 est accessible, (3) Le contrôleur est allumé. Si la connexion locale n'est pas possible, veuillez utiliser le mode Cloud à la place."
         },
         "abort": {
             "already_configured": "L'appareil est déjà configuré",
@@ -111,11 +112,11 @@
                 "description": "Configurez les options de votre chauffe-eau Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Activer la récupération des données de maintenance",
-                    "recirculation_duration": "Durée de recirculation par défaut (minutes)"
+                    "recirculation_duration": "Durée de Recirculation"
                 },
                 "data_description": {
                     "maint_interval_enabled": "Lorsqu'activé, récupère les données de maintenance détaillées de l'appareil toutes les 5 minutes. Cela peut augmenter l'utilisation de l'API.",
-                    "recirculation_duration": "Durée par défaut pour l'interrupteur de recirculation (5-300 minutes). Utilisé lors de l'activation de l'interrupteur de recirculation."
+                    "recirculation_duration": "Durée en minutes (5-300) utilisée par l'entité interrupteur de Recirculation lors de l'activation."
                 }
             }
         }

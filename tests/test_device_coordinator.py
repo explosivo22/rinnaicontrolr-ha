@@ -155,7 +155,7 @@ def _ensure_package_modules(repo_root: pathlib.Path):
     sys.modules[cc_name] = cc
 
     pkg = sys.modules.get(pkg_name) or types.ModuleType(pkg_name)
-    pkg.__path__ = [str(repo_root / "custom_components" / "rinnaicontrolr-ha")]
+    pkg.__path__ = [str(repo_root / "custom_components" / "rinnai")]
     sys.modules[pkg_name] = pkg
 
 
@@ -190,7 +190,7 @@ def _load_device_module(monkeypatch):
     _install_fake_aiorinnai(monkeypatch)
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     _ensure_package_modules(repo_root)
-    base_dir = repo_root / "custom_components" / "rinnaicontrolr-ha"
+    base_dir = repo_root / "custom_components" / "rinnai"
 
     _load_module("custom_components.rinnai.const", base_dir / "const.py")
     return _load_module("custom_components.rinnai.device", base_dir / "device.py")

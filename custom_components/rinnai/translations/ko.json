@@ -80,7 +80,8 @@
             "cannot_connect": "연결 실패",
             "invalid_auth": "잘못된 인증",
             "unknown": "예기치 않은 오류",
-            "host_required": "로컬 및 하이브리드 모드에는 호스트 IP 주소가 필요합니다"
+            "host_required": "로컬 및 하이브리드 모드에는 호스트 IP 주소가 필요합니다",
+            "local_connection_failed": "지정된 IP 주소에서 Rinnai 컨트롤러에 연결할 수 없습니다. 확인하세요: (1) IP 주소가 올바른지, (2) 포트 9798에 접근 가능한지, (3) 컨트롤러가 켜져 있는지. 로컬 연결이 불가능한 경우 클라우드 모드를 대신 사용하세요."
         },
         "abort": {
             "already_configured": "기기가 이미 구성되어 있습니다",
@@ -111,11 +112,11 @@
                 "description": "Rinnai 온수기 옵션을 구성하세요.",
                 "data": {
                     "maint_interval_enabled": "유지보수 데이터 검색 활성화",
-                    "recirculation_duration": "기본 순환 시간 (분)"
+                    "recirculation_duration": "순환 시간"
                 },
                 "data_description": {
                     "maint_interval_enabled": "활성화하면 5분마다 기기에서 상세 유지보수 데이터를 검색합니다. API 사용량이 증가할 수 있습니다.",
-                    "recirculation_duration": "순환 스위치의 기본 시간 (5-300분). 순환 스위치를 켤 때 사용됩니다."
+                    "recirculation_duration": "순환 스위치 엔티티를 켤 때 사용되는 시간(분) (5-300)."
                 }
             }
         }

@@ -80,7 +80,8 @@
             "cannot_connect": "连接失败",
             "invalid_auth": "认证无效",
             "unknown": "意外错误",
-            "host_required": "本地和混合模式需要主机 IP 地址"
+            "host_required": "本地和混合模式需要主机 IP 地址",
+            "local_connection_failed": "无法连接到指定 IP 地址的林内控制器。请检查：(1) IP 地址是否正确，(2) 端口 9798 是否可访问，(3) 控制器是否已开机。如果本地连接不可用，请改用云端模式。"
         },
         "abort": {
             "already_configured": "设备已配置",
@@ -111,11 +112,11 @@
                 "description": "配置您的林内热水器选项。",
                 "data": {
                     "maint_interval_enabled": "启用维护数据获取",
-                    "recirculation_duration": "默认循环持续时间（分钟）"
+                    "recirculation_duration": "循环持续时间"
                 },
                 "data_description": {
                     "maint_interval_enabled": "启用后，每 5 分钟从设备获取详细维护数据。这可能会增加 API 使用量。",
-                    "recirculation_duration": "循环开关的默认持续时间（5-300 分钟）。在打开循环开关时使用。"
+                    "recirculation_duration": "循环开关实体开启时使用的时间（分钟）（5-300）。"
                 }
             }
         }

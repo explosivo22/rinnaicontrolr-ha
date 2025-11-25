@@ -88,7 +88,7 @@ def _ensure_package_modules(repo_root: pathlib.Path):
     sys.modules[cc_name] = cc
 
     pkg = sys.modules.get(pkg_name) or types.ModuleType(pkg_name)
-    pkg.__path__ = [str(repo_root / "custom_components" / "rinnaicontrolr-ha")]
+    pkg.__path__ = [str(repo_root / "custom_components" / "rinnai")]
     sys.modules[pkg_name] = pkg
 
 
@@ -104,7 +104,7 @@ def _load(module_name: str, file_path: pathlib.Path):
 def _preload_integration():
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     _ensure_package_modules(repo_root)
-    base = repo_root / "custom_components" / "rinnaicontrolr-ha"
+    base = repo_root / "custom_components" / "rinnai"
     _load("custom_components.rinnai.const", base / "const.py")
     _load("custom_components.rinnai.device", base / "device.py")
     _load("custom_components.rinnai.entity", base / "entity.py")
@@ -139,7 +139,7 @@ def _materialize_custom_component(hass) -> pathlib.Path:
     can discover the integration and read the manifest.
     """
     repo_root = pathlib.Path(__file__).resolve().parents[1]
-    src = repo_root / "custom_components" / "rinnaicontrolr-ha"
+    src = repo_root / "custom_components" / "rinnai"
     dest = pathlib.Path(hass.config.path("custom_components")) / "rinnai"
     dest.parent.mkdir(parents=True, exist_ok=True)
     # Copy the tree, overwriting if it exists
