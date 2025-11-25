@@ -114,7 +114,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
 
     def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
         """Initialize the water heater."""
-        super().__init__("water_heater", "Water Heater", device)
+        super().__init__("water_heater", device)
 
     @property
     def current_operation(self) -> str:

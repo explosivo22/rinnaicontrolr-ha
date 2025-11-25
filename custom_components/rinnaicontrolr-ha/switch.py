@@ -48,7 +48,7 @@ class RinnaiRecirculationSwitch(RinnaiEntity, SwitchEntity):
         self, device: RinnaiDeviceDataUpdateCoordinator, config_entry: RinnaiConfigEntry
     ) -> None:
         """Initialize the switch."""
-        super().__init__("recirculation_switch", "Recirculation", device)
+        super().__init__("recirculation_switch", device)
         self._config_entry = config_entry
         self._optimistic_state: bool | None = None
 

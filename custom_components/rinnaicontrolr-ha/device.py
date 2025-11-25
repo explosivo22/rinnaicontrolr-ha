@@ -335,9 +335,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     return data
             except Exception as error:
                 local_error = error
-                LOGGER.warning(
-                    "Hybrid mode: local failed (%s), trying cloud...", error
-                )
+                LOGGER.warning("Hybrid mode: local failed (%s), trying cloud...", error)
 
         # Fall back to cloud
         if self.api_client is not None:
@@ -805,7 +803,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _maybe_do_maintenance_retrieval(self) -> None:
         """Perform maintenance data retrieval if enough time has passed."""
         now = time.monotonic()
-        if now - self._last_maintenance_retrieval < MIN_TIME_BETWEEN_MAINTENANCE.total_seconds():
+        if (
+            now - self._last_maintenance_retrieval
+            < MIN_TIME_BETWEEN_MAINTENANCE.total_seconds()
+        ):
             return
 
         try:

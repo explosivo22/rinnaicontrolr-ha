@@ -75,9 +75,8 @@ class RinnaiBinarySensor(RinnaiEntity, BinarySensorEntity):
         description: RinnaiBinarySensorEntityDescription,
     ) -> None:
         """Initialize the binary sensor."""
-        super().__init__(description.key, description.key, device)
+        super().__init__(description.key, device)
         self.entity_description = description
-        self._attr_unique_id = f"{device.id}_{description.key}"
 
     @property
     def icon(self) -> str:

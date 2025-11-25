@@ -308,9 +308,7 @@ async def async_remove_config_entry_device(
     Returns:
         True to allow device removal.
     """
-    _LOGGER.info(
-        "Removing device %s from Rinnai integration", device_entry.identifiers
-    )
+    _LOGGER.info("Removing device %s from Rinnai integration", device_entry.identifiers)
     return True
 
 

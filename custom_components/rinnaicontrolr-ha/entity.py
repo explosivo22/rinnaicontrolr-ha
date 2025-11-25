@@ -25,18 +25,15 @@ class RinnaiEntity(CoordinatorEntity["RinnaiDeviceDataUpdateCoordinator"]):
     def __init__(
         self,
         entity_type: str,
-        name: str,
         device: RinnaiDeviceDataUpdateCoordinator,
     ) -> None:
         """Initialize Rinnai entity.
 
         Args:
             entity_type: Type identifier for unique_id generation.
-            name: Display name for the entity.
             device: The device coordinator for this entity.
         """
         super().__init__(device)
-        self._attr_name = name
         self._attr_unique_id = f"{device.id}_{entity_type}"
         self._device: RinnaiDeviceDataUpdateCoordinator = device
 

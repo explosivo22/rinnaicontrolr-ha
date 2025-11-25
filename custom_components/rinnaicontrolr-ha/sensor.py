@@ -154,10 +154,8 @@ class RinnaiSensor(RinnaiEntity, SensorEntity):
         description: RinnaiSensorEntityDescription,
     ) -> None:
         """Initialize the sensor."""
-        super().__init__(description.key, description.key, device)
+        super().__init__(description.key, device)
         self.entity_description = description
-        # Override unique_id to use description key
-        self._attr_unique_id = f"{device.id}_{description.key}"
 
     @property
     def native_value(self) -> float | None:

@@ -159,7 +159,9 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Starting recirculation for %d minutes via local connection", duration)
+        LOGGER.debug(
+            "Starting recirculation for %d minutes via local connection", duration
+        )
 
         # Set duration first
         await self._send_command(f"set recirculation_duration {duration}")
@@ -168,7 +170,9 @@ class RinnaiLocalClient:
         response = await self._send_command("set set_recirculation_enabled true")
         success = self._check_set_response(response, "set_recirculation_enabled")
         if success:
-            LOGGER.debug("Successfully started recirculation for %d minutes via local", duration)
+            LOGGER.debug(
+                "Successfully started recirculation for %d minutes via local", duration
+            )
         else:
             LOGGER.warning("Failed to start recirculation via local")
         return success
