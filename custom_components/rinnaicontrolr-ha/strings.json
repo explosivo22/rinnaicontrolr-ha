@@ -102,14 +102,6 @@
     "issues": {
         "reauth_required": {
             "title": "Rinnai authentication expired",
-            "fix_flow": {
-                "step": {
-                    "confirm": {
-                        "title": "Re-authenticate with Rinnai",
-                        "description": "Your Rinnai session has expired. Click submit to re-authenticate."
-                    }
-                }
-            },
             "description": "Your session has expired and you must re-authenticate to continue using the Rinnai integration. Please reconfigure the integration from the Integrations page."
         }
     },
