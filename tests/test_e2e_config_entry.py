@@ -106,12 +106,14 @@ def _preload_integration():
     _ensure_package_modules(repo_root)
     base = repo_root / "custom_components" / "rinnaicontrolr-ha"
     _load("custom_components.rinnai.const", base / "const.py")
-    _load("custom_components.rinnai.entity", base / "entity.py")
     _load("custom_components.rinnai.device", base / "device.py")
+    _load("custom_components.rinnai.entity", base / "entity.py")
+    # Load __init__ first so RinnaiConfigEntry is available for platform imports
+    init_mod = _load("custom_components.rinnai", base / "__init__.py")
     _load("custom_components.rinnai.binary_sensor", base / "binary_sensor.py")
     _load("custom_components.rinnai.sensor", base / "sensor.py")
     _load("custom_components.rinnai.water_heater", base / "water_heater.py")
-    return _load("custom_components.rinnai", base / "__init__.py")
+    return init_mod
 
 
 def _install_fake_aiorinnai(monkeypatch):
@@ -181,11 +183,10 @@ async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_int
     await hass.config_entries.async_setup(entry.entry_id)
     await hass.async_block_till_done()
 
-    # Assert integration data
-    assert DOMAIN in hass.data
-    assert entry.entry_id in hass.data[DOMAIN]
-    assert "devices" in hass.data[DOMAIN][entry.entry_id]
-    assert len(hass.data[DOMAIN][entry.entry_id]["devices"]) == 1
+    # Assert integration data using runtime_data pattern
+    assert hasattr(entry, "runtime_data")
+    assert entry.runtime_data is not None
+    assert len(entry.runtime_data.devices) == 1
 
     # Assert platform entities were created by checking entity registry
     registry = er.async_get(hass)

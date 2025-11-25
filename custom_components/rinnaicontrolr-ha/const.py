@@ -1,32 +1,31 @@
-"""Constants for Rinnai Water Heater Monitoring"""
+"""Constants for Rinnai Water Heater Monitoring."""
+from __future__ import annotations
+
 import logging
+from typing import Final
 
-LOGGER = logging.getLogger(__package__)
+LOGGER: Final = logging.getLogger(__package__)
 
-DOMAIN = 'rinnai'
-CLIENT = "client"
+DOMAIN: Final = "rinnai"
 
-ATTRIBUTION = "Data provided by Rinnai"
+ATTRIBUTION: Final = "Data provided by Rinnai"
 
-DEFAULT_UNIT = "fahrenheit"
-CONF_UNIT = "units"
+DEFAULT_UNIT: Final = "fahrenheit"
+CONF_UNIT: Final = "units"
 
-CONF_MAINT_INTERVAL_ENABLED = "maint_interval_enabled"
-DEFAULT_MAINT_INTERVAL_ENABLED = True
+CONF_MAINT_INTERVAL_ENABLED: Final = "maint_interval_enabled"
+DEFAULT_MAINT_INTERVAL_ENABLED: Final = True
 
-CONF_UNITS = ["celsius", "fahrenheit"]
+CONF_UNITS: Final[list[str]] = ["celsius", "fahrenheit"]
 
-ATTR_CACHE = 'cache'
-ATTR_COORDINATOR = 'coordinator'
+SIGNAL_UPDATE_RINNAI: Final = "rinnai_temp_update"
 
-SIGNAL_UPDATE_RINNAI = 'rinnai_temp_update'
+ICON_DOMESTIC_TEMP: Final = "mdi:thermometer"
+ICON_RECIRCULATION: Final = "mdi:sync"
+ICON_RECIRCULATION_DISABLED: Final = "mdi:octagon-outline"
 
-ICON_DOMESTIC_TEMP='mdi:thermometer'
-ICON_RECIRCULATION='mdi:sync'
-ICON_RECIRCULATION_DISABLED='mdi:octagon-outline'
+CONF_UNIT_SYSTEM_IMPERIAL: Final = "imperial"
+CONF_UNIT_SYSTEM_METRIC: Final = "metric"
 
-CONF_UNIT_SYSTEM_IMPERIAL = "imperial"
-CONF_UNIT_SYSTEM_METRIC = "metric"
-
-CONF_REFRESH_TOKEN = 'conf_refresh_token'
-CONF_ACCESS_TOKEN = 'conf_access_token'
+CONF_REFRESH_TOKEN: Final = "conf_refresh_token"
+CONF_ACCESS_TOKEN: Final = "conf_access_token"

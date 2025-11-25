@@ -3,8 +3,21 @@
     "config": {
         "step": {
             "user": {
+                "title": "Connect to Rinnai Control-R",
+                "description": "Enter your Rinnai Control-R account credentials.",
                 "data": {
-                    "host": "[%key:common::config_flow::data::host%]",
+                    "email": "[%key:common::config_flow::data::email%]",
+                    "password": "[%key:common::config_flow::data::password%]"
+                },
+                "data_description": {
+                    "email": "The email address used for your Rinnai Control-R account",
+                    "password": "Your Rinnai Control-R account password"
+                }
+            },
+            "reauth": {
+                "title": "Re-authenticate with Rinnai Control-R",
+                "description": "Your session has expired. Please re-enter your credentials.",
+                "data": {
                     "email": "[%key:common::config_flow::data::email%]",
                     "password": "[%key:common::config_flow::data::password%]"
                 }
@@ -16,24 +29,105 @@
             "unknown": "[%key:common::config_flow::error::unknown%]"
         },
         "abort": {
-            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+            "already_configured": "[%key:common::config_flow::abort::already_configured_device%]",
+            "reauth_successful": "Re-authentication was successful",
+            "reauth_failed": "Re-authentication failed. Please try again."
         }
     },
     "issues": {
         "reauth_required": {
-            "title": "Reauthentication required",
+            "title": "Rinnai authentication expired",
+            "fix_flow": {
+                "step": {
+                    "confirm": {
+                        "title": "Re-authenticate with Rinnai",
+                        "description": "Your Rinnai session has expired. Click submit to re-authenticate."
+                    }
+                }
+            },
             "description": "Your session has expired and you must re-authenticate to continue using the Rinnai integration. Please reconfigure the integration from the Integrations page."
         }
     },
     "options": {
         "step": {
             "init": {
-              "data": {
-                "units": "Unit of Temperature",
-                "maint_interval_enabled": "Enable scheduled maintenance retrieval (Every 5 min)"
-              },
-                "description": "Configure rinnai options"
+                "title": "Rinnai Control-R Options",
+                "description": "Configure options for your Rinnai water heater.",
+                "data": {
+                    "maint_interval_enabled": "Enable maintenance data retrieval"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage."
+                }
             }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Water Heater"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Recirculation"
+            },
+            "water_heater_heating": {
+                "name": "Heating"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Outlet Temperature"
+            },
+            "inlet_temperature": {
+                "name": "Inlet Temperature"
+            },
+            "water_flow_rate": {
+                "name": "Water Flow Rate"
+            },
+            "combustion_cycles": {
+                "name": "Combustion Cycles"
+            },
+            "operation_hours": {
+                "name": "Operation Hours"
+            },
+            "pump_hours": {
+                "name": "Pump Hours"
+            },
+            "pump_cycles": {
+                "name": "Pump Cycles"
+            },
+            "fan_current": {
+                "name": "Fan Current"
+            },
+            "fan_frequency": {
+                "name": "Fan Frequency"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Start recirculation",
+            "description": "Start water recirculation for a specified duration.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Duration",
+                    "description": "Duration in minutes (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Stop recirculation",
+            "description": "Stop water recirculation immediately."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "The Rinnai device is currently unavailable"
+        },
+        "action_failed": {
+            "message": "Failed to {action}: {error}"
         }
     }
 }

@@ -1,16 +1,26 @@
-"""Water Heater representing the water heater for the Rinnai integration"""
+"""Water Heater entity for Rinnai Control-R integration."""
 from __future__ import annotations
+
+from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.components.water_heater import WaterHeaterEntity, WaterHeaterEntityFeature, ATTR_TEMPERATURE, STATE_GAS, STATE_OFF, STATE_ON
-from homeassistant.helpers import entity_platform
-from homeassistant.util.unit_system import METRIC_SYSTEM
-from homeassistant.const import (
-    UnitOfTemperature,
+from homeassistant.components.water_heater import (
+    ATTR_TEMPERATURE,
+    STATE_GAS,
+    STATE_OFF,
+    STATE_ON,
+    WaterHeaterEntity,
+    WaterHeaterEntityFeature,
 )
+from homeassistant.const import UnitOfTemperature
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_platform
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+from homeassistant.util.unit_system import METRIC_SYSTEM
 
-from .const import DOMAIN as RINNAI_DOMAIN, LOGGER, CONF_UNIT
+from . import RinnaiConfigEntry
+from .const import LOGGER
 from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
 
@@ -22,17 +32,21 @@ SERVICE_START_RECIRCULATION = "start_recirculation"
 SERVICE_STOP_RECIRCULATION = "stop_recirculation"
 
 # The Rinnai app hardcodes recirculation durations to certain intervals
-RECIRCULATION_MINUTE_OPTIONS = set([5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240, 255, 270, 285, 300])
+RECIRCULATION_MINUTE_OPTIONS = {
+    5, 15, 30, 45, 60, 75, 90, 105, 120, 135, 150, 165, 180, 195, 210, 225, 240,
+    255, 270, 285, 300
+}
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: RinnaiConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Set up the Rinnai Water heater from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
-    entities = []
-    for device in devices:
-        entities.append(RinnaiWaterHeater(device))
-    async_add_entities(entities)
+    async_add_entities(
+        RinnaiWaterHeater(device) for device in config_entry.runtime_data.devices
+    )
 
     platform = entity_platform.async_get_current_platform()
 
@@ -161,10 +175,7 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         self.async_write_ha_state()
 
     async def async_stop_recirculation(self) -> None:
+        """Stop water recirculation."""
         await self._device.async_stop_recirculation()
         LOGGER.debug("Stopped recirculation")
         self.async_write_ha_state()
-
-    async def async_added_to_hass(self) -> None:
-        """When entity is added to hass."""
-        await super().async_added_to_hass()

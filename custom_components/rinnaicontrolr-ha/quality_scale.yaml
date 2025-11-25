@@ -1,0 +1,59 @@
+# Quality Scale tracking for Rinnai Control-R integration
+# https://developers.home-assistant.io/docs/core/integration-quality-scale
+
+rules:
+  # Bronze tier requirements
+  config_flow: done
+  test_before_setup: done
+  unique_config_entry:
+    status: exempt
+    comment: Single account per integration instance is standard
+  has_entity_name: done
+  entity_unique_id: done
+  docs_high_level_description: done
+  docs_installation_instructions: done
+  appropriate_polling: done
+  brands:
+    status: exempt
+    comment: Custom component, not in HA core brands
+
+  # Silver tier requirements
+  config_entry_unloading: done
+  reauthentication_flow: done
+  log_when_unavailable: done
+  parallel_updates: done
+  stale_devices:
+    status: todo
+    comment: Need to implement device removal when devices disappear from account
+  entity_unavailable: done
+  action_exceptions: done
+  common_modules:
+    status: exempt
+    comment: No shared modules with other integrations
+
+  # Gold tier requirements
+  discovery:
+    status: exempt
+    comment: Cloud-based integration, devices cannot be discovered locally
+  reconfiguration_flow: done
+  dynamic_devices:
+    status: todo
+    comment: Need to support adding/removing devices without reload
+  integration_owner: done
+  docs_use_cases:
+    status: todo
+    comment: Add automation examples to documentation
+  docs_supported_devices:
+    status: todo
+    comment: Add list of supported Rinnai water heater models
+  docs_troubleshooting:
+    status: todo
+    comment: Add troubleshooting section for common issues
+
+  # Platinum tier requirements
+  async_dependency: done
+  inject_websession:
+    status: todo
+    comment: aiorinnai library should use HA's aiohttp session
+  strict_typing: done
+  runtime_data: done

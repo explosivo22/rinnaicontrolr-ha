@@ -1,20 +1,20 @@
 """Support for Rinnai Water Heater Monitor sensors."""
 from __future__ import annotations
 
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
 from homeassistant.const import (
-    UnitOfTemperature,
     UnitOfElectricCurrent,
     UnitOfFrequency,
+    UnitOfTemperature,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from homeassistant.components.sensor import (
-    SensorStateClass,
-    SensorDeviceClass,
-    SensorEntity
-)
-
-from .const import DOMAIN as RINNAI_DOMAIN, CONF_UNIT
-from .device import RinnaiDeviceDataUpdateCoordinator
+from . import RinnaiConfigEntry
 from .entity import RinnaiEntity
 
 GAUGE_ICON = "mdi:gauge"
@@ -25,13 +25,15 @@ PUMP_CYCLES_ICON = "mdi:heat-pump-outline"
 FAN_CURRENT_ICON = "mdi:fan-auto"
 FAN_FREQUENCY_ICON = "mdi:fan-chevron-up"
 
-async def async_setup_entry(hass, config_entry, async_add_entities):
+
+async def async_setup_entry(
+    hass: HomeAssistant,
+    config_entry: RinnaiConfigEntry,
+    async_add_entities: AddEntitiesCallback,
+) -> None:
     """Set up the Rinnai sensors from config entry."""
-    devices: list[RinnaiDeviceDataUpdateCoordinator] = hass.data[RINNAI_DOMAIN][
-        config_entry.entry_id
-    ]["devices"]
-    entities = []
-    for device in devices:
+    entities: list[SensorEntity] = []
+    for device in config_entry.runtime_data.devices:
         entities.extend(
             [
                 RinnaiOutletTemperatureSensor(device),
