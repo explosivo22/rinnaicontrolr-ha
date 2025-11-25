@@ -20,15 +20,53 @@ from .const import (
     CONF_CONNECTION_MODE,
     CONF_HOST,
     CONF_MAINT_INTERVAL_ENABLED,
+    CONF_RECIRCULATION_DURATION,
     CONF_REFRESH_TOKEN,
     CONNECTION_MODE_CLOUD,
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
     DEFAULT_MAINT_INTERVAL_ENABLED,
+    DEFAULT_RECIRCULATION_DURATION,
     DOMAIN,
     LOGGER,
 )
 from .local import RinnaiLocalClient
+
+# Common schema components to reduce duplication
+CONNECTION_MODE_OPTIONS = [
+    {"value": CONNECTION_MODE_CLOUD, "label": "Cloud (Rinnai account)"},
+    {"value": CONNECTION_MODE_LOCAL, "label": "Local (direct connection)"},
+    {"value": CONNECTION_MODE_HYBRID, "label": "Hybrid (local + cloud fallback)"},
+]
+
+
+def _get_connection_mode_selector() -> SelectSelector:
+    """Get the connection mode selector."""
+    return SelectSelector(
+        SelectSelectorConfig(
+            options=CONNECTION_MODE_OPTIONS,
+            translation_key=CONF_CONNECTION_MODE,
+        )
+    )
+
+
+def _get_cloud_auth_schema(
+    default_email: str = "",
+) -> vol.Schema:
+    """Get the cloud authentication schema."""
+    return vol.Schema(
+        {
+            vol.Required(CONF_EMAIL, default=default_email): str,
+            vol.Required(CONF_PASSWORD): str,
+        }
+    )
+
+
+def _get_local_schema(default_host: str = "") -> vol.Schema:
+    """Get the local connection schema."""
+    if default_host:
+        return vol.Schema({vol.Required(CONF_HOST, default=default_host): str})
+    return vol.Schema({vol.Required(CONF_HOST): str})
 
 
 class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
@@ -49,6 +87,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle the initial step - choose connection mode."""
+        LOGGER.debug("Config flow: user step initiated")
         if user_input is None:
             return self.async_show_form(
                 step_id="user",
@@ -56,30 +95,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     {
                         vol.Required(
                             CONF_CONNECTION_MODE, default=CONNECTION_MODE_CLOUD
-                        ): SelectSelector(
-                            SelectSelectorConfig(
-                                options=[
-                                    {
-                                        "value": CONNECTION_MODE_CLOUD,
-                                        "label": "Cloud (Rinnai account)",
-                                    },
-                                    {
-                                        "value": CONNECTION_MODE_LOCAL,
-                                        "label": "Local (direct connection)",
-                                    },
-                                    {
-                                        "value": CONNECTION_MODE_HYBRID,
-                                        "label": "Hybrid (local + cloud fallback)",
-                                    },
-                                ],
-                                translation_key=CONF_CONNECTION_MODE,
-                            )
-                        ),
+                        ): _get_connection_mode_selector(),
                     }
                 ),
             )
 
         self.connection_mode = user_input[CONF_CONNECTION_MODE]
+        LOGGER.debug(
+            "Config flow: user selected connection mode '%s'", self.connection_mode
+        )
 
         if self.connection_mode == CONNECTION_MODE_LOCAL:
             return await self.async_step_local()
@@ -92,42 +116,36 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle cloud authentication step."""
+        LOGGER.debug("Config flow: cloud authentication step")
         errors: dict[str, str] = {}
 
         if user_input is None:
             return self.async_show_form(
                 step_id="cloud",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(),
                 errors=errors,
             )
 
         self.username = user_input[CONF_EMAIL]
         self.password = user_input[CONF_PASSWORD]
+        LOGGER.debug("Config flow: attempting cloud login for %s", self.username)
 
         try:
             self.api = API()
             await self.api.async_login(self.username, self.password)
+            LOGGER.debug("Config flow: cloud login successful")
         except RequestError as request_error:
             LOGGER.error("Error connecting to the Rinnai API: %s", request_error)
             errors["base"] = "cannot_connect"
             return self.async_show_form(
                 step_id="cloud",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
                 errors=errors,
             )
 
         user_info = await self.api.user.get_info()
         title = user_info["email"]
+        LOGGER.debug("Config flow: retrieved user info for %s", title)
 
         # Set unique ID based on email to prevent duplicate entries
         await self.async_set_unique_id(self.username.lower())
@@ -140,6 +158,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             CONF_REFRESH_TOKEN: self.api.refresh_token,
         }
 
+        LOGGER.info("Config flow: creating cloud config entry for %s", title)
         return self.async_create_entry(
             title=title,
             data=data,
@@ -152,20 +171,15 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle local connection step."""
+        LOGGER.debug("Config flow: local connection step")
         errors: dict[str, str] = {}
 
         if user_input is None:
             return self.async_show_form(
                 step_id="local",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_HOST): str,
-                    }
-                ),
+                data_schema=_get_local_schema(),
                 errors=errors,
-                description_placeholders={
-                    "port": "9798",
-                },
+                description_placeholders={"port": "9798"},
             )
 
         self.host = user_input[CONF_HOST]
@@ -179,11 +193,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors["base"] = "cannot_connect"
             return self.async_show_form(
                 step_id="local",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_HOST, default=self.host): str,
-                    }
-                ),
+                data_schema=_get_local_schema(default_host=self.host),
                 errors=errors,
             )
 
@@ -219,12 +229,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         if user_input is None:
             return self.async_show_form(
                 step_id="hybrid_cloud",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(),
                 errors=errors,
             )
 
@@ -239,12 +244,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors["base"] = "cannot_connect"
             return self.async_show_form(
                 step_id="hybrid_cloud",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
                 errors=errors,
             )
 
@@ -260,15 +260,9 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         if user_input is None:
             return self.async_show_form(
                 step_id="hybrid_local",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_HOST): str,
-                    }
-                ),
+                data_schema=_get_local_schema(),
                 errors=errors,
-                description_placeholders={
-                    "port": "9798",
-                },
+                description_placeholders={"port": "9798"},
             )
 
         self.host = user_input[CONF_HOST]
@@ -282,11 +276,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors["base"] = "cannot_connect"
             return self.async_show_form(
                 step_id="hybrid_local",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_HOST, default=self.host): str,
-                    }
-                ),
+                data_schema=_get_local_schema(default_host=self.host),
                 errors=errors,
             )
 
@@ -325,17 +315,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
     ) -> ConfigFlowResult:
         """Handle re-authentication with the user."""
         errors: dict[str, str] = {}
+        default_email = self.context.get(CONF_EMAIL, "")
+
         if user_input is None:
             return self.async_show_form(
                 step_id="reauth",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(
-                            CONF_EMAIL, default=self.context.get(CONF_EMAIL, "")
-                        ): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(default_email=default_email),
                 errors=errors,
             )
 
@@ -352,25 +337,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             errors["base"] = "cannot_connect"
             return self.async_show_form(
                 step_id="reauth",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL, default=self.username): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
-                errors=errors,
-            )
-        except Exception as err:
-            LOGGER.error("Reauth: Unexpected error: %s", err)
-            errors["base"] = "unknown"
-            return self.async_show_form(
-                step_id="reauth",
-                data_schema=vol.Schema(
-                    {
-                        vol.Required(CONF_EMAIL, default=self.username): str,
-                        vol.Required(CONF_PASSWORD): str,
-                    }
-                ),
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
                 errors=errors,
             )
 
@@ -379,6 +346,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         if not entry_id:
             LOGGER.error("Reauth: No entry_id in context; cannot update tokens.")
             return self.async_abort(reason="reauth_failed")
+
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if entry:
             self.hass.config_entries.async_update_entry(
@@ -401,6 +369,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         """Handle reconfiguration - allows changing connection mode."""
         errors: dict[str, str] = {}
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
+        assert entry is not None
 
         if user_input is None:
             current_mode = entry.data.get(CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD)
@@ -412,25 +381,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                     {
                         vol.Required(
                             CONF_CONNECTION_MODE, default=current_mode
-                        ): SelectSelector(
-                            SelectSelectorConfig(
-                                options=[
-                                    {
-                                        "value": CONNECTION_MODE_CLOUD,
-                                        "label": "Cloud (Rinnai account)",
-                                    },
-                                    {
-                                        "value": CONNECTION_MODE_LOCAL,
-                                        "label": "Local (direct connection)",
-                                    },
-                                    {
-                                        "value": CONNECTION_MODE_HYBRID,
-                                        "label": "Hybrid (local + cloud fallback)",
-                                    },
-                                ],
-                                translation_key=CONF_CONNECTION_MODE,
-                            )
-                        ),
+                        ): _get_connection_mode_selector(),
                         vol.Optional(CONF_HOST, default=current_host): str,
                     }
                 ),
@@ -450,25 +401,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                         {
                             vol.Required(
                                 CONF_CONNECTION_MODE, default=new_mode
-                            ): SelectSelector(
-                                SelectSelectorConfig(
-                                    options=[
-                                        {
-                                            "value": CONNECTION_MODE_CLOUD,
-                                            "label": "Cloud (Rinnai account)",
-                                        },
-                                        {
-                                            "value": CONNECTION_MODE_LOCAL,
-                                            "label": "Local (direct connection)",
-                                        },
-                                        {
-                                            "value": CONNECTION_MODE_HYBRID,
-                                            "label": "Hybrid (local + cloud fallback)",
-                                        },
-                                    ],
-                                    translation_key=CONF_CONNECTION_MODE,
-                                )
-                            ),
+                            ): _get_connection_mode_selector(),
                             vol.Optional(CONF_HOST, default=new_host): str,
                         }
                     ),
@@ -485,25 +418,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                         {
                             vol.Required(
                                 CONF_CONNECTION_MODE, default=new_mode
-                            ): SelectSelector(
-                                SelectSelectorConfig(
-                                    options=[
-                                        {
-                                            "value": CONNECTION_MODE_CLOUD,
-                                            "label": "Cloud (Rinnai account)",
-                                        },
-                                        {
-                                            "value": CONNECTION_MODE_LOCAL,
-                                            "label": "Local (direct connection)",
-                                        },
-                                        {
-                                            "value": CONNECTION_MODE_HYBRID,
-                                            "label": "Hybrid (local + cloud fallback)",
-                                        },
-                                    ],
-                                    translation_key=CONF_CONNECTION_MODE,
-                                )
-                            ),
+                            ): _get_connection_mode_selector(),
                             vol.Optional(CONF_HOST, default=new_host): str,
                         }
                     ),
@@ -540,6 +455,7 @@ class OptionsFlow(config_entries.OptionsFlow):
     ) -> ConfigFlowResult:
         """Handle options flow."""
         if user_input is not None:
+            LOGGER.debug("Options flow: updating options %s", user_input)
             return self.async_create_entry(title="", data=user_input)
 
         return self.async_show_form(
@@ -552,6 +468,12 @@ class OptionsFlow(config_entries.OptionsFlow):
                             CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
                         ),
                     ): bool,
+                    vol.Optional(
+                        CONF_RECIRCULATION_DURATION,
+                        default=self._config_entry.options.get(
+                            CONF_RECIRCULATION_DURATION, DEFAULT_RECIRCULATION_DURATION
+                        ),
+                    ): vol.All(vol.Coerce(int), vol.Range(min=5, max=300)),
                 }
             ),
         )

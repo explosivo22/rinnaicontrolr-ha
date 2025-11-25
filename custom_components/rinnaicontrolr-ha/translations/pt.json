@@ -1,0 +1,196 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Ligar ao Rinnai Control-R",
+                "description": "Escolha como ligar ao seu esquentador Rinnai.",
+                "data": {
+                    "connection_mode": "Modo de ligação"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador. Híbrido usa local com fallback cloud."
+                }
+            },
+            "cloud": {
+                "title": "Ligação cloud",
+                "description": "Introduza as credenciais da sua conta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Palavra-passe"
+                },
+                "data_description": {
+                    "email": "O endereço de e-mail da sua conta Rinnai Control-R",
+                    "password": "A palavra-passe da sua conta Rinnai Control-R"
+                }
+            },
+            "local": {
+                "title": "Ligação local",
+                "description": "Introduza o endereço IP do controlador do seu esquentador Rinnai. O controlador deve estar na sua rede local e acessível na porta 9798.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Endereço IP do controlador do seu esquentador Rinnai (ex. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Modo híbrido - Credenciais cloud",
+                "description": "Primeiro, introduza as credenciais da sua conta Rinnai Control-R para fallback cloud.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Palavra-passe"
+                },
+                "data_description": {
+                    "email": "O endereço de e-mail da sua conta Rinnai Control-R",
+                    "password": "A palavra-passe da sua conta Rinnai Control-R"
+                }
+            },
+            "hybrid_local": {
+                "title": "Modo híbrido - Ligação local",
+                "description": "Agora introduza o endereço IP do controlador do seu esquentador Rinnai para controlo local principal.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Endereço IP do controlador do seu esquentador Rinnai (ex. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Reautenticar com Rinnai Control-R",
+                "description": "A sua sessão expirou. Por favor, reintroduza as suas credenciais.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Palavra-passe"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigurar Rinnai Control-R",
+                "description": "Altere o modo de ligação ou atualize o endereço do host local.",
+                "data": {
+                    "connection_mode": "Modo de ligação",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador. Híbrido usa local com fallback cloud.",
+                    "host": "Endereço IP do controlador do seu esquentador Rinnai (obrigatório para modos Local e Híbrido)"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Falha ao ligar",
+            "invalid_auth": "Autenticação inválida",
+            "unknown": "Erro inesperado",
+            "host_required": "O endereço IP do host é obrigatório para os modos Local e Híbrido"
+        },
+        "abort": {
+            "already_configured": "O dispositivo já está configurado",
+            "reauth_successful": "Reautenticação bem-sucedida",
+            "reauth_failed": "Reautenticação falhou. Por favor, tente novamente.",
+            "reconfigure_successful": "Configuração atualizada com sucesso"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Cloud (conta Rinnai)",
+                "local": "Local (ligação direta)",
+                "hybrid": "Híbrido (local + fallback cloud)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Autenticação Rinnai expirada",
+            "description": "A sua sessão expirou e deve reautenticar-se para continuar a usar a integração Rinnai. Por favor, reconfigure a integração a partir da página de Integrações."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opções Rinnai Control-R",
+                "description": "Configure opções para o seu esquentador Rinnai.",
+                "data": {
+                    "maint_interval_enabled": "Ativar obtenção de dados de manutenção",
+                    "recirculation_duration": "Duração de recirculação padrão (minutos)"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "Quando ativado, obtém dados de manutenção detalhados do dispositivo a cada 5 minutos. Isto pode aumentar o uso da API.",
+                    "recirculation_duration": "Duração padrão para o interruptor de recirculação (5-300 minutos). Usado ao ligar o interruptor de recirculação."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Esquentador"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Recirculação"
+            },
+            "water_heater_heating": {
+                "name": "Aquecimento"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Recirculação"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Temperatura de saída"
+            },
+            "inlet_temperature": {
+                "name": "Temperatura de entrada"
+            },
+            "water_flow_rate": {
+                "name": "Caudal de água"
+            },
+            "combustion_cycles": {
+                "name": "Ciclos de combustão"
+            },
+            "operation_hours": {
+                "name": "Horas de operação"
+            },
+            "pump_hours": {
+                "name": "Horas da bomba"
+            },
+            "pump_cycles": {
+                "name": "Ciclos da bomba"
+            },
+            "fan_current": {
+                "name": "Corrente do ventilador"
+            },
+            "fan_frequency": {
+                "name": "Frequência do ventilador"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Iniciar recirculação",
+            "description": "Iniciar recirculação de água por uma duração especificada.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Duração",
+                    "description": "Duração em minutos (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Parar recirculação",
+            "description": "Parar imediatamente a recirculação de água."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "O dispositivo Rinnai está atualmente indisponível"
+        },
+        "action_failed": {
+            "message": "Falha em {action}: {error}"
+        }
+    }
+}

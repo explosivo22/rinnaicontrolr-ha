@@ -12,7 +12,6 @@ from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import issue_registry as ir
-from homeassistant.helpers.device_registry import DeviceEntry
 
 from .const import (
     CONF_ACCESS_TOKEN,
@@ -79,7 +78,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         ConfigEntryNotReady: When connection fails or no devices found.
     """
     connection_mode = entry.data.get(CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD)
-    _LOGGER.debug("Setting up Rinnai integration in %s mode", connection_mode)
+    _LOGGER.info(
+        "Setting up Rinnai integration (entry_id=%s) in %s mode",
+        entry.entry_id[:8],
+        connection_mode,
+    )
 
     api_client: API | None = None
     local_client: RinnaiLocalClient | None = None
@@ -95,7 +98,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
             device_ids = [local_device_id]
 
     if not device_ids:
+        _LOGGER.warning("No Rinnai devices found for account")
         raise ConfigEntryNotReady("No Rinnai devices found")
+
+    _LOGGER.debug("Found %d Rinnai device(s): %s", len(device_ids), device_ids)
 
     # Convert MappingProxyType to dict for options
     options = (
@@ -103,6 +109,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
     )
 
     # Create coordinators for each device
+    _LOGGER.debug("Creating coordinators for %d device(s)", len(device_ids))
     coordinators = []
     for device_id in device_ids:
         coordinator = RinnaiDeviceDataUpdateCoordinator(
@@ -115,6 +122,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
             connection_mode=connection_mode,
         )
         coordinators.append(coordinator)
+        _LOGGER.debug("Created coordinator for device %s", device_id)
 
     # Store runtime data using modern pattern
     entry.runtime_data = RinnaiRuntimeData(
@@ -125,16 +133,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
     )
 
     # Initial data fetch for all devices
+    _LOGGER.debug("Performing initial data fetch for %d device(s)", len(coordinators))
     tasks = [coordinator.async_refresh() for coordinator in coordinators]
     await asyncio.gather(*tasks)
 
     if not entry.options:
         await _async_options_updated(hass, entry)
 
+    _LOGGER.debug("Forwarding setup to platforms: %s", [p.value for p in PLATFORMS])
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
 
+    _LOGGER.info(
+        "Rinnai integration setup complete with %d device(s)", len(coordinators)
+    )
     return True
 
 
@@ -271,7 +284,13 @@ async def async_unload_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> b
     Returns:
         True if unload was successful.
     """
-    return await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    _LOGGER.info("Unloading Rinnai integration (entry_id=%s)", entry.entry_id[:8])
+    result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if result:
+        _LOGGER.debug("Successfully unloaded all Rinnai platforms")
+    else:
+        _LOGGER.warning("Failed to unload some Rinnai platforms")
+    return result
 
 
 async def async_remove_config_entry_device(
@@ -289,6 +308,9 @@ async def async_remove_config_entry_device(
     Returns:
         True to allow device removal.
     """
+    _LOGGER.info(
+        "Removing device %s from Rinnai integration", device_entry.identifiers
+    )
     return True
 
 

@@ -139,11 +139,16 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Setting temperature to %d°F", temperature)
+        LOGGER.debug("Setting temperature to %d°F via local connection", temperature)
         response = await self._send_command(
             f"set set_domestic_temperature {temperature}"
         )
-        return self._check_set_response(response, "set_domestic_temperature")
+        success = self._check_set_response(response, "set_domestic_temperature")
+        if success:
+            LOGGER.debug("Successfully set temperature to %d°F via local", temperature)
+        else:
+            LOGGER.warning("Failed to set temperature to %d°F via local", temperature)
+        return success
 
     async def start_recirculation(self, duration: int = 5) -> bool:
         """Start recirculation for the specified duration.
@@ -154,14 +159,19 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Starting recirculation for %d minutes", duration)
+        LOGGER.debug("Starting recirculation for %d minutes via local connection", duration)
 
         # Set duration first
         await self._send_command(f"set recirculation_duration {duration}")
 
         # Then enable recirculation
         response = await self._send_command("set set_recirculation_enabled true")
-        return self._check_set_response(response, "set_recirculation_enabled")
+        success = self._check_set_response(response, "set_recirculation_enabled")
+        if success:
+            LOGGER.debug("Successfully started recirculation for %d minutes via local", duration)
+        else:
+            LOGGER.warning("Failed to start recirculation via local")
+        return success
 
     async def stop_recirculation(self) -> bool:
         """Stop recirculation.
@@ -169,9 +179,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Stopping recirculation")
+        LOGGER.debug("Stopping recirculation via local connection")
         response = await self._send_command("set set_recirculation_enabled false")
-        return self._check_set_response(response, "set_recirculation_enabled")
+        success = self._check_set_response(response, "set_recirculation_enabled")
+        if success:
+            LOGGER.debug("Successfully stopped recirculation via local")
+        else:
+            LOGGER.warning("Failed to stop recirculation via local")
+        return success
 
     async def turn_on(self) -> bool:
         """Turn on the water heater.
@@ -179,9 +194,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Turning on water heater")
+        LOGGER.debug("Turning on water heater via local connection")
         response = await self._send_command("set set_operation_enabled true")
-        return self._check_set_response(response, "set_operation_enabled")
+        success = self._check_set_response(response, "set_operation_enabled")
+        if success:
+            LOGGER.debug("Successfully turned on water heater via local")
+        else:
+            LOGGER.warning("Failed to turn on water heater via local")
+        return success
 
     async def turn_off(self) -> bool:
         """Turn off the water heater.
@@ -189,9 +209,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Turning off water heater")
+        LOGGER.debug("Turning off water heater via local connection")
         response = await self._send_command("set set_operation_enabled false")
-        return self._check_set_response(response, "set_operation_enabled")
+        success = self._check_set_response(response, "set_operation_enabled")
+        if success:
+            LOGGER.debug("Successfully turned off water heater via local")
+        else:
+            LOGGER.warning("Failed to turn off water heater via local")
+        return success
 
     async def enable_vacation_mode(self) -> bool:
         """Enable vacation/holiday mode.
@@ -199,9 +224,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Enabling vacation mode")
+        LOGGER.debug("Enabling vacation mode via local connection")
         response = await self._send_command("set schedule_holiday true")
-        return self._check_set_response(response, "schedule_holiday")
+        success = self._check_set_response(response, "schedule_holiday")
+        if success:
+            LOGGER.debug("Successfully enabled vacation mode via local")
+        else:
+            LOGGER.warning("Failed to enable vacation mode via local")
+        return success
 
     async def disable_vacation_mode(self) -> bool:
         """Disable vacation/holiday mode.
@@ -209,9 +239,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Disabling vacation mode")
+        LOGGER.debug("Disabling vacation mode via local connection")
         response = await self._send_command("set schedule_holiday false")
-        return self._check_set_response(response, "schedule_holiday")
+        success = self._check_set_response(response, "schedule_holiday")
+        if success:
+            LOGGER.debug("Successfully disabled vacation mode via local")
+        else:
+            LOGGER.warning("Failed to disable vacation mode via local")
+        return success
 
     async def do_maintenance_retrieval(self) -> bool:
         """Trigger maintenance data retrieval from the heater.
@@ -219,9 +254,14 @@ class RinnaiLocalClient:
         Returns:
             True if successful, False otherwise.
         """
-        LOGGER.debug("Triggering maintenance retrieval")
+        LOGGER.debug("Triggering maintenance retrieval via local connection")
         response = await self._send_command("set do_maintenance_retrieval true")
-        return self._check_set_response(response, "do_maintenance_retrieval")
+        success = self._check_set_response(response, "do_maintenance_retrieval")
+        if success:
+            LOGGER.debug("Successfully triggered maintenance retrieval via local")
+        else:
+            LOGGER.warning("Failed to trigger maintenance retrieval via local")
+        return success
 
     async def test_connection(self) -> bool:
         """Test if the controller is reachable.

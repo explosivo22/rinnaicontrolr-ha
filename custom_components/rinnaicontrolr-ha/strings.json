@@ -119,10 +119,12 @@
                 "title": "Rinnai Control-R Options",
                 "description": "Configure options for your Rinnai water heater.",
                 "data": {
-                    "maint_interval_enabled": "Enable maintenance data retrieval"
+                    "maint_interval_enabled": "Enable maintenance data retrieval",
+                    "recirculation_duration": "Default recirculation duration (minutes)"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage."
+                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage.",
+                    "recirculation_duration": "Default duration for the recirculation switch (5-300 minutes). Used when toggling the recirculation switch on."
                 }
             }
         }
@@ -139,6 +141,11 @@
             },
             "water_heater_heating": {
                 "name": "Heating"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Recirculation"
             }
         },
         "sensor": {

@@ -1,0 +1,196 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Anslut till Rinnai Control-R",
+                "description": "Välj hur du vill ansluta till din Rinnai-varmvattenberedare.",
+                "data": {
+                    "connection_mode": "Anslutningsläge"
+                },
+                "data_description": {
+                    "connection_mode": "Moln använder ditt Rinnai-konto. Lokal ansluter direkt till varmvattenberedaren. Hybrid använder lokal med moln-fallback."
+                }
+            },
+            "cloud": {
+                "title": "Molnanslutning",
+                "description": "Ange dina Rinnai Control-R-kontouppgifter.",
+                "data": {
+                    "email": "E-post",
+                    "password": "Lösenord"
+                },
+                "data_description": {
+                    "email": "E-postadressen för ditt Rinnai Control-R-konto",
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                }
+            },
+            "local": {
+                "title": "Lokal anslutning",
+                "description": "Ange IP-adressen för din Rinnai-varmvattenberedarens kontroller. Kontrollern måste vara på ditt lokala nätverk och tillgänglig på port 9798.",
+                "data": {
+                    "host": "Värd"
+                },
+                "data_description": {
+                    "host": "IP-adress för din Rinnai-varmvattenberedarens kontroller (t.ex. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Hybridläge - Molnuppgifter",
+                "description": "Ange först dina Rinnai Control-R-kontouppgifter för moln-fallback.",
+                "data": {
+                    "email": "E-post",
+                    "password": "Lösenord"
+                },
+                "data_description": {
+                    "email": "E-postadressen för ditt Rinnai Control-R-konto",
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                }
+            },
+            "hybrid_local": {
+                "title": "Hybridläge - Lokal anslutning",
+                "description": "Ange nu IP-adressen för din Rinnai-varmvattenberedarens kontroller för primär lokal styrning.",
+                "data": {
+                    "host": "Värd"
+                },
+                "data_description": {
+                    "host": "IP-adress för din Rinnai-varmvattenberedarens kontroller (t.ex. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Återautentisera med Rinnai Control-R",
+                "description": "Din session har gått ut. Ange dina uppgifter igen.",
+                "data": {
+                    "email": "E-post",
+                    "password": "Lösenord"
+                }
+            },
+            "reconfigure": {
+                "title": "Omkonfigurera Rinnai Control-R",
+                "description": "Ändra anslutningsläget eller uppdatera den lokala värdadressen.",
+                "data": {
+                    "connection_mode": "Anslutningsläge",
+                    "host": "Värd"
+                },
+                "data_description": {
+                    "connection_mode": "Moln använder ditt Rinnai-konto. Lokal ansluter direkt till varmvattenberedaren. Hybrid använder lokal med moln-fallback.",
+                    "host": "IP-adress för din Rinnai-varmvattenberedarens kontroller (krävs för lokalt och hybridläge)"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Det gick inte att ansluta",
+            "invalid_auth": "Ogiltig autentisering",
+            "unknown": "Oväntat fel",
+            "host_required": "Värd-IP-adress krävs för lokalt och hybridläge"
+        },
+        "abort": {
+            "already_configured": "Enheten är redan konfigurerad",
+            "reauth_successful": "Återautentiseringen lyckades",
+            "reauth_failed": "Återautentiseringen misslyckades. Försök igen.",
+            "reconfigure_successful": "Konfigurationen uppdaterades"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Moln (Rinnai-konto)",
+                "local": "Lokal (direktanslutning)",
+                "hybrid": "Hybrid (lokal + moln-fallback)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Rinnai-autentisering har gått ut",
+            "description": "Din session har gått ut och du måste återautentisera för att fortsätta använda Rinnai-integrationen. Omkonfigurera integrationen från sidan Integrationer."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R-alternativ",
+                "description": "Konfigurera alternativ för din Rinnai-varmvattenberedare.",
+                "data": {
+                    "maint_interval_enabled": "Aktivera hämtning av underhållsdata",
+                    "recirculation_duration": "Standard cirkulationstid (minuter)"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "När aktiverat hämtas detaljerad underhållsdata från enheten var 5:e minut. Detta kan öka API-användningen.",
+                    "recirculation_duration": "Standardtid för cirkulationsbrytaren (5-300 minuter). Används när cirkulationsbrytaren slås på."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Varmvattenberedare"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Cirkulation"
+            },
+            "water_heater_heating": {
+                "name": "Uppvärmning"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Cirkulation"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Utloppstemperatur"
+            },
+            "inlet_temperature": {
+                "name": "Inloppstemperatur"
+            },
+            "water_flow_rate": {
+                "name": "Vattenflöde"
+            },
+            "combustion_cycles": {
+                "name": "Förbränningscykler"
+            },
+            "operation_hours": {
+                "name": "Drifttimmar"
+            },
+            "pump_hours": {
+                "name": "Pumptimmar"
+            },
+            "pump_cycles": {
+                "name": "Pumpcykler"
+            },
+            "fan_current": {
+                "name": "Fläktström"
+            },
+            "fan_frequency": {
+                "name": "Fläktfrekvens"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Starta cirkulation",
+            "description": "Starta vattencirkulation under en angiven tid.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Varaktighet",
+                    "description": "Varaktighet i minuter (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Stoppa cirkulation",
+            "description": "Stoppa vattencirkulation omedelbart."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "Rinnai-enheten är för närvarande inte tillgänglig"
+        },
+        "action_failed": {
+            "message": "Fel vid {action}: {error}"
+        }
+    }
+}

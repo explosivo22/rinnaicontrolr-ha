@@ -11,23 +11,14 @@ DOMAIN: Final = "rinnai"
 
 ATTRIBUTION: Final = "Data provided by Rinnai"
 
-DEFAULT_UNIT: Final = "fahrenheit"
-CONF_UNIT: Final = "units"
-
+# Configuration keys
 CONF_MAINT_INTERVAL_ENABLED: Final = "maint_interval_enabled"
 DEFAULT_MAINT_INTERVAL_ENABLED: Final = True
 
-CONF_UNITS: Final[list[str]] = ["celsius", "fahrenheit"]
+CONF_RECIRCULATION_DURATION: Final = "recirculation_duration"
+DEFAULT_RECIRCULATION_DURATION: Final = 10
 
-SIGNAL_UPDATE_RINNAI: Final = "rinnai_temp_update"
-
-ICON_DOMESTIC_TEMP: Final = "mdi:thermometer"
-ICON_RECIRCULATION: Final = "mdi:sync"
-ICON_RECIRCULATION_DISABLED: Final = "mdi:octagon-outline"
-
-CONF_UNIT_SYSTEM_IMPERIAL: Final = "imperial"
-CONF_UNIT_SYSTEM_METRIC: Final = "metric"
-
+# Token storage keys
 CONF_REFRESH_TOKEN: Final = "conf_refresh_token"
 CONF_ACCESS_TOKEN: Final = "conf_access_token"
 

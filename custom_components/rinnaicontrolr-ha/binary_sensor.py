@@ -2,13 +2,52 @@
 
 from __future__ import annotations
 
-from homeassistant.components.binary_sensor import BinarySensorEntity
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+from homeassistant.components.binary_sensor import (
+    BinarySensorEntity,
+    BinarySensorEntityDescription,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import RinnaiConfigEntry
-from .device import RinnaiDeviceDataUpdateCoordinator
 from .entity import RinnaiEntity
+
+if TYPE_CHECKING:
+    from .device import RinnaiDeviceDataUpdateCoordinator
+
+# Limit concurrent updates per platform
+PARALLEL_UPDATES = 1
+
+
+@dataclass(frozen=True, kw_only=True)
+class RinnaiBinarySensorEntityDescription(BinarySensorEntityDescription):
+    """Describes a Rinnai binary sensor entity."""
+
+    value_fn: Callable[[RinnaiDeviceDataUpdateCoordinator], bool | None]
+    icon_on: str
+    icon_off: str
+
+
+BINARY_SENSOR_DESCRIPTIONS: tuple[RinnaiBinarySensorEntityDescription, ...] = (
+    RinnaiBinarySensorEntityDescription(
+        key="water_heater_heating",
+        translation_key="water_heater_heating",
+        value_fn=lambda device: device.is_heating,
+        icon_on="mdi:fire",
+        icon_off="mdi:fire-off",
+    ),
+    RinnaiBinarySensorEntityDescription(
+        key="recirculation",
+        translation_key="recirculation",
+        value_fn=lambda device: device.is_recirculating,
+        icon_on="mdi:sync",
+        icon_off="mdi:sync-off",
+    ),
+)
 
 
 async def async_setup_entry(
@@ -17,29 +56,37 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai binary sensors from config entry."""
-    entities: list[BinarySensorEntity] = []
-    for device in config_entry.runtime_data.devices:
-        entities.append(RinnaiIsHeatingBinarySensor(device))
+    entities: list[RinnaiBinarySensor] = [
+        RinnaiBinarySensor(device, description)
+        for device in config_entry.runtime_data.devices
+        for description in BINARY_SENSOR_DESCRIPTIONS
+    ]
     async_add_entities(entities)
 
 
-class RinnaiIsHeatingBinarySensor(RinnaiEntity, BinarySensorEntity):
-    """Binary sensor that reports if the water heater is heating."""
+class RinnaiBinarySensor(RinnaiEntity, BinarySensorEntity):
+    """Rinnai binary sensor entity."""
 
-    _attr_translation_key = "water_heater_heating"
+    entity_description: RinnaiBinarySensorEntityDescription
 
-    def __init__(self, device: RinnaiDeviceDataUpdateCoordinator) -> None:
+    def __init__(
+        self,
+        device: RinnaiDeviceDataUpdateCoordinator,
+        description: RinnaiBinarySensorEntityDescription,
+    ) -> None:
         """Initialize the binary sensor."""
-        super().__init__("water_heater_heating", "Heating", device)
+        super().__init__(description.key, description.key, device)
+        self.entity_description = description
+        self._attr_unique_id = f"{device.id}_{description.key}"
 
     @property
     def icon(self) -> str:
-        """Return the icon."""
+        """Return the icon based on state."""
         if self.is_on:
-            return "mdi:fire"
-        return "mdi:fire-off"
+            return self.entity_description.icon_on
+        return self.entity_description.icon_off
 
     @property
     def is_on(self) -> bool | None:
-        """Return true if the Rinnai device is heating water."""
-        return self._device.is_heating
+        """Return the binary sensor state."""
+        return self.entity_description.value_fn(self._device)

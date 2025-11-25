@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
+    SensorEntityDescription,
     SensorStateClass,
 )
 from homeassistant.const import (
@@ -18,13 +23,110 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import RinnaiConfigEntry
 from .entity import RinnaiEntity
 
-GAUGE_ICON = "mdi:gauge"
-COMBUSTION_ICON = "mdi:fire-circle"
-OPERATION_ICON = "mdi:home-lightning-bolt-outline"
-PUMP_ICON = "mdi:pump"
-PUMP_CYCLES_ICON = "mdi:heat-pump-outline"
-FAN_CURRENT_ICON = "mdi:fan-auto"
-FAN_FREQUENCY_ICON = "mdi:fan-chevron-up"
+if TYPE_CHECKING:
+    from .device import RinnaiDeviceDataUpdateCoordinator
+
+# Limit concurrent updates per platform
+PARALLEL_UPDATES = 1
+
+
+@dataclass(frozen=True, kw_only=True)
+class RinnaiSensorEntityDescription(SensorEntityDescription):
+    """Describes a Rinnai sensor entity."""
+
+    value_fn: Callable[[RinnaiDeviceDataUpdateCoordinator], float | None]
+    value_multiplier: float = 1.0
+    round_digits: int = 1
+
+
+SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
+    RinnaiSensorEntityDescription(
+        key="outlet_temperature",
+        translation_key="outlet_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
+        value_fn=lambda device: device.outlet_temperature,
+    ),
+    RinnaiSensorEntityDescription(
+        key="inlet_temperature",
+        translation_key="inlet_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement=UnitOfTemperature.FAHRENHEIT,
+        value_fn=lambda device: device.inlet_temperature,
+    ),
+    RinnaiSensorEntityDescription(
+        key="water_flow_rate",
+        translation_key="water_flow_rate",
+        icon="mdi:gauge",
+        state_class=SensorStateClass.MEASUREMENT,
+        native_unit_of_measurement="gpm",
+        value_fn=lambda device: device.water_flow_rate,
+        value_multiplier=0.1,
+    ),
+    RinnaiSensorEntityDescription(
+        key="combustion_cycles",
+        translation_key="combustion_cycles",
+        icon="mdi:fire-circle",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement="cycles",
+        value_fn=lambda device: device.combustion_cycles,
+        value_multiplier=100.0,
+        round_digits=0,
+    ),
+    RinnaiSensorEntityDescription(
+        key="operation_hours",
+        translation_key="operation_hours",
+        icon="mdi:home-lightning-bolt-outline",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="h",
+        value_fn=lambda device: device.operation_hours,
+        value_multiplier=100.0,
+        round_digits=0,
+    ),
+    RinnaiSensorEntityDescription(
+        key="pump_hours",
+        translation_key="pump_hours",
+        icon="mdi:pump",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement="h",
+        value_fn=lambda device: device.pump_hours,
+        value_multiplier=100.0,
+        round_digits=0,
+    ),
+    RinnaiSensorEntityDescription(
+        key="pump_cycles",
+        translation_key="pump_cycles",
+        icon="mdi:heat-pump-outline",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        native_unit_of_measurement="cycles",
+        value_fn=lambda device: device.pump_cycles,
+        value_multiplier=100.0,
+        round_digits=0,
+    ),
+    RinnaiSensorEntityDescription(
+        key="fan_current",
+        translation_key="fan_current",
+        icon="mdi:fan-auto",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.CURRENT,
+        native_unit_of_measurement=UnitOfElectricCurrent.MILLIAMPERE,
+        value_fn=lambda device: device.fan_current,
+        value_multiplier=10.0,
+    ),
+    RinnaiSensorEntityDescription(
+        key="fan_frequency",
+        translation_key="fan_frequency",
+        icon="mdi:fan-chevron-up",
+        state_class=SensorStateClass.MEASUREMENT,
+        device_class=SensorDeviceClass.FREQUENCY,
+        native_unit_of_measurement=UnitOfFrequency.HERTZ,
+        value_fn=lambda device: device.fan_frequency,
+    ),
+)
 
 
 async def async_setup_entry(
@@ -33,230 +135,36 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai sensors from config entry."""
-    entities: list[SensorEntity] = []
-    for device in config_entry.runtime_data.devices:
-        entities.extend(
-            [
-                RinnaiOutletTemperatureSensor(device),
-                RinnaiInletTemperatureSensor(device),
-                RinnaiWaterFlowRateSensor(device),
-                RinnaiCombustionCyclesSensor(device),
-                RinnaiOperationHoursSensor(device),
-                RinnaiPumpHoursSensor(device),
-                RinnaiPumpCyclesSensor(device),
-                RinnaiFanCurrentSensor(device),
-                RinnaiFanFrequencySensor(device),
-            ]
-        )
+    entities: list[RinnaiSensor] = [
+        RinnaiSensor(device, description)
+        for device in config_entry.runtime_data.devices
+        for description in SENSOR_DESCRIPTIONS
+    ]
     async_add_entities(entities)
 
 
-class RinnaiOutletTemperatureSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
+class RinnaiSensor(RinnaiEntity, SensorEntity):
+    """Rinnai sensor entity."""
 
-    def __init__(self, device):
-        """Initialize the temperature sensor."""
-        super().__init__("outlet_temperature", "Outlet Temperature", device)
+    entity_description: RinnaiSensorEntityDescription
 
-    @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return SensorDeviceClass.TEMPERATURE
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfTemperature.FAHRENHEIT
+    def __init__(
+        self,
+        device: RinnaiDeviceDataUpdateCoordinator,
+        description: RinnaiSensorEntityDescription,
+    ) -> None:
+        """Initialize the sensor."""
+        super().__init__(description.key, description.key, device)
+        self.entity_description = description
+        # Override unique_id to use description key
+        self._attr_unique_id = f"{device.id}_{description.key}"
 
     @property
-    def native_value(self):
-        """Return the current temperature."""
-        if self._device.outlet_temperature is None:
+    def native_value(self) -> float | None:
+        """Return the sensor value."""
+        value = self.entity_description.value_fn(self._device)
+        if value is None:
             return None
-        return round(self._device.outlet_temperature, 1)
-
-
-class RinnaiInletTemperatureSensor(RinnaiEntity, SensorEntity):
-    """Monitors the temperature."""
-
-    def __init__(self, device):
-        """Initialize the temperature sensor."""
-        super().__init__("inlet_temperature", "Inlet Temperature", device)
-
-    @property
-    def device_class(self):
-        """Return the device class of the sensor."""
-        return SensorDeviceClass.TEMPERATURE
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfTemperature.FAHRENHEIT
-
-    @property
-    def native_value(self):
-        """Return the current temperature."""
-        if self._device.inlet_temperature is None:
-            return None
-        return round(self._device.inlet_temperature, 1)
-
-
-class RinnaiWaterFlowRateSensor(RinnaiEntity, SensorEntity):
-    """Monitors the water flow rate."""
-
-    _attr_icon = GAUGE_ICON
-    _attr_native_unit_of_measurement = "gpm"
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
-
-    def __init__(self, device):
-        """Initialize the water flow rate sensor."""
-        super().__init__("water_flow_rate", "Water Flow Rate", device)
-
-    @property
-    def native_value(self):
-        """Return the current water flow rate."""
-        if self._device.water_flow_rate is None:
-            return None
-        return round(self._device.water_flow_rate * 0.1, 1)
-
-
-class RinnaiCombustionCyclesSensor(RinnaiEntity, SensorEntity):
-    """Monitors the combustion cycles."""
-
-    _attr_icon = COMBUSTION_ICON
-    _attr_native_unit_of_measurement = "cycles"
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
-
-    def __init__(self, device):
-        """Initialize the combustion cycles sensor."""
-        super().__init__("combustion_cycles", "Combustion Cycles x100", device)
-
-    @property
-    def native_value(self):
-        """Return the current combustion cycles."""
-        if self._device.combustion_cycles is None:
-            return None
-        return round(self._device.combustion_cycles, 1)
-
-
-class RinnaiOperationHoursSensor(RinnaiEntity, SensorEntity):
-    """Monitors the operation hours."""
-
-    _attr_icon = OPERATION_ICON
-
-    def __init__(self, device):
-        """Initialize the operation hours sensor."""
-        super().__init__("operation_hours", "Operation Hours x100", device)
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_value(self):
-        """Return the current operation hours."""
-        if self._device.operation_hours is None:
-            return None
-        return round(self._device.operation_hours, 1)
-
-
-class RinnaiPumpHoursSensor(RinnaiEntity, SensorEntity):
-    """Monitors the pump hours."""
-
-    _attr_icon = PUMP_ICON
-
-    def __init__(self, device):
-        """Initialize the pump hours sensor."""
-        super().__init__("pump_hours", "Pump Hours x100", device)
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_value(self):
-        """Return the current pump hours."""
-        if self._device.pump_hours is None:
-            return None
-        return round(self._device.pump_hours, 1)
-
-
-class RinnaiPumpCyclesSensor(RinnaiEntity, SensorEntity):
-    """Monitors the pump cycles."""
-
-    _attr_icon = PUMP_CYCLES_ICON
-    _attr_native_unit_of_measurement = "cycles"
-    _attr_state_class: SensorStateClass = SensorStateClass.MEASUREMENT
-
-    def __init__(self, device):
-        """Initialize the pump cycles sensor."""
-        super().__init__("pump_cycles", "Pump Cycles x100", device)
-
-    @property
-    def native_value(self):
-        """Return the current pump cycles."""
-        if self._device.pump_cycles is None:
-            return None
-        return round(self._device.pump_cycles, 1)
-
-
-class RinnaiFanCurrentSensor(RinnaiEntity, SensorEntity):
-    """Monitors the fan current."""
-
-    _attr_icon = FAN_CURRENT_ICON
-
-    def __init__(self, device):
-        """Initialize the fan current sensor."""
-        super().__init__("fan_current", "Fan Current x10", device)
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfElectricCurrent.MILLIAMPERE
-
-    @property
-    def native_value(self):
-        """Return the current fan current."""
-        if self._device.fan_current is None:
-            return None
-        return round(self._device.fan_current, 1)
-
-
-class RinnaiFanFrequencySensor(RinnaiEntity, SensorEntity):
-    """Monitors the fan frequency"""
-
-    _attr_icon = FAN_FREQUENCY_ICON
-
-    def __init__(self, device):
-        """Initialize the fan frequency sensor."""
-        super().__init__("fan_frequency", "Fan Frequency", device)
-
-    @property
-    def state_class(self):
-        """Return the state class of the sensor."""
-        return SensorStateClass.MEASUREMENT
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        return UnitOfFrequency.HERTZ
-
-    @property
-    def native_value(self):
-        """Return the current fan frequency."""
-        if self._device.fan_frequency is None:
-            return None
-        return round(self._device.fan_frequency, 1)
+        # Apply multiplier and round
+        adjusted_value = value * self.entity_description.value_multiplier
+        return round(adjusted_value, self.entity_description.round_digits)
