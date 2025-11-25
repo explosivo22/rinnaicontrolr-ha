@@ -73,6 +73,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai Water heater from config entry."""
+    # Store callback for dynamic device support
+    from homeassistant.const import Platform
+
+    config_entry.runtime_data.entity_adders[Platform.WATER_HEATER] = async_add_entities
+
     LOGGER.debug("Setting up Rinnai water heater entities")
     entities = [
         RinnaiWaterHeater(device) for device in config_entry.runtime_data.devices

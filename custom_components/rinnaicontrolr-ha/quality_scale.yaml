@@ -36,15 +36,15 @@ rules:
     comment: No shared modules with other integrations
 
   # ============================================================================
-  # Gold tier requirements (6/7 complete)
+  # Gold tier requirements (7/7 complete)
   # ============================================================================
   discovery:
     status: exempt
     comment: Cloud-based integration, devices cannot be discovered locally
   reconfiguration_flow: done
   dynamic_devices:
-    status: todo
-    comment: Need to support adding/removing devices without reload
+    status: done
+    comment: Periodic device discovery adds/removes devices without reload
   integration_owner: done
   docs_use_cases:
     status: done

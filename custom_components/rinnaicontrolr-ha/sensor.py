@@ -135,6 +135,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai sensors from config entry."""
+    # Store callback for dynamic device support
+    from homeassistant.const import Platform
+
+    config_entry.runtime_data.entity_adders[Platform.SENSOR] = async_add_entities
+
     entities: list[RinnaiSensor] = [
         RinnaiSensor(device, description)
         for device in config_entry.runtime_data.devices

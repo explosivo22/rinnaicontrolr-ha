@@ -5,13 +5,14 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, issue_registry as ir
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     CONF_ACCESS_TOKEN,
@@ -44,6 +45,10 @@ class RinnaiRuntimeData:
     local_client: RinnaiLocalClient | None = None
     connection_mode: str = CONNECTION_MODE_CLOUD
     known_device_ids: set[str] = field(default_factory=set)
+    # Callbacks for adding entities dynamically (set by platforms)
+    entity_adders: dict[Platform, AddEntitiesCallback] = field(default_factory=dict)
+    # Config entry options for creating new coordinators
+    options: dict = field(default_factory=dict)
 
 
 # Type alias for config entry with runtime data
@@ -132,6 +137,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         local_client=local_client,
         connection_mode=connection_mode,
         known_device_ids=set(device_ids),
+        options=options,
     )
 
     # Initial data fetch for all devices
@@ -147,10 +153,37 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
 
     entry.async_on_unload(entry.add_update_listener(_async_options_updated))
 
+    # Set up periodic device discovery for cloud/hybrid modes
+    if connection_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID):
+        _setup_device_discovery_listener(hass, entry)
+
     _LOGGER.info(
         "Rinnai integration setup complete with %d device(s)", len(coordinators)
     )
     return True
+
+
+def _setup_device_discovery_listener(
+    hass: HomeAssistant,
+    entry: RinnaiConfigEntry,
+) -> None:
+    """Set up a listener to periodically check for new devices.
+
+    Checks for device additions/removals every 10 minutes.
+    """
+    from homeassistant.helpers.event import async_track_time_interval
+    from datetime import timedelta
+
+    async def _check_devices(now: Any = None) -> None:  # noqa: ANN401
+        """Check for device changes."""
+        await async_check_device_changes(hass, entry)
+
+    # Check for new devices every 10 minutes
+    cancel_listener = async_track_time_interval(
+        hass, _check_devices, timedelta(minutes=10)
+    )
+    entry.async_on_unload(cancel_listener)
+    _LOGGER.debug("Set up periodic device discovery (every 10 minutes)")
 
 
 async def _setup_cloud_client(
@@ -366,6 +399,165 @@ async def async_check_and_remove_stale_devices(
     entry.runtime_data.devices = [
         coord for coord in entry.runtime_data.devices if coord.id not in stale_ids
     ]
+
+
+async def async_discover_and_add_new_devices(
+    hass: HomeAssistant,
+    entry: RinnaiConfigEntry,
+    current_device_ids: set[str],
+) -> None:
+    """Discover and add new devices that appeared in the account.
+
+    This implements the HA Quality Scale 'dynamic_devices' requirement.
+    Called periodically to discover and add new devices without reload.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: Config entry with runtime data.
+        current_device_ids: Set of device IDs currently known to exist.
+    """
+    if not hasattr(entry, "runtime_data") or entry.runtime_data is None:
+        return
+
+    runtime_data = entry.runtime_data
+    known_ids = runtime_data.known_device_ids
+    new_ids = current_device_ids - known_ids
+
+    if not new_ids:
+        return
+
+    _LOGGER.info(
+        "Discovered %d new device(s) to add: %s",
+        len(new_ids),
+        new_ids,
+    )
+
+    # Create coordinators for new devices
+    new_coordinators = []
+    for device_id in new_ids:
+        coordinator = RinnaiDeviceDataUpdateCoordinator(
+            hass,
+            device_id,
+            runtime_data.options,
+            entry,
+            api_client=runtime_data.client,
+            local_client=runtime_data.local_client,
+            connection_mode=runtime_data.connection_mode,
+        )
+        new_coordinators.append(coordinator)
+        runtime_data.devices.append(coordinator)
+        _LOGGER.info("Created coordinator for new device %s", device_id)
+
+    # Update known device IDs
+    runtime_data.known_device_ids = current_device_ids
+
+    # Perform initial data fetch for new devices
+    tasks = [coordinator.async_refresh() for coordinator in new_coordinators]
+    await asyncio.gather(*tasks, return_exceptions=True)
+
+    # Add entities for new devices using stored callbacks
+    await _async_add_entities_for_new_devices(hass, entry, new_coordinators)
+
+
+async def _async_add_entities_for_new_devices(
+    hass: HomeAssistant,
+    entry: RinnaiConfigEntry,
+    new_coordinators: list[RinnaiDeviceDataUpdateCoordinator],
+) -> None:
+    """Add entities for newly discovered devices.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: Config entry with runtime data.
+        new_coordinators: List of new device coordinators.
+    """
+    from .binary_sensor import BINARY_SENSOR_DESCRIPTIONS, RinnaiBinarySensor
+    from .sensor import SENSOR_DESCRIPTIONS, RinnaiSensor
+    from .switch import RinnaiRecirculationSwitch
+    from .water_heater import RinnaiWaterHeater
+
+    runtime_data = entry.runtime_data
+
+    # Add water heater entities
+    if Platform.WATER_HEATER in runtime_data.entity_adders:
+        water_heater_entities = [
+            RinnaiWaterHeater(device) for device in new_coordinators
+        ]
+        runtime_data.entity_adders[Platform.WATER_HEATER](water_heater_entities)
+        _LOGGER.debug(
+            "Added %d water heater entities for new devices", len(water_heater_entities)
+        )
+
+    # Add sensor entities
+    if Platform.SENSOR in runtime_data.entity_adders:
+        sensor_entities = [
+            RinnaiSensor(device, description)
+            for device in new_coordinators
+            for description in SENSOR_DESCRIPTIONS
+        ]
+        runtime_data.entity_adders[Platform.SENSOR](sensor_entities)
+        _LOGGER.debug("Added %d sensor entities for new devices", len(sensor_entities))
+
+    # Add binary sensor entities
+    if Platform.BINARY_SENSOR in runtime_data.entity_adders:
+        binary_sensor_entities = [
+            RinnaiBinarySensor(device, description)
+            for device in new_coordinators
+            for description in BINARY_SENSOR_DESCRIPTIONS
+        ]
+        runtime_data.entity_adders[Platform.BINARY_SENSOR](binary_sensor_entities)
+        _LOGGER.debug(
+            "Added %d binary sensor entities for new devices",
+            len(binary_sensor_entities),
+        )
+
+    # Add switch entities
+    if Platform.SWITCH in runtime_data.entity_adders:
+        switch_entities = [
+            RinnaiRecirculationSwitch(device, entry) for device in new_coordinators
+        ]
+        runtime_data.entity_adders[Platform.SWITCH](switch_entities)
+        _LOGGER.debug("Added %d switch entities for new devices", len(switch_entities))
+
+
+async def async_check_device_changes(
+    hass: HomeAssistant,
+    entry: RinnaiConfigEntry,
+) -> None:
+    """Check for device additions and removals.
+
+    This is called periodically to sync devices with the cloud account.
+    Implements both stale_devices and dynamic_devices requirements.
+
+    Args:
+        hass: Home Assistant instance.
+        entry: Config entry with runtime data.
+    """
+    if not hasattr(entry, "runtime_data") or entry.runtime_data is None:
+        return
+
+    runtime_data = entry.runtime_data
+
+    # Only check for cloud/hybrid modes (local mode has fixed devices)
+    if runtime_data.connection_mode == CONNECTION_MODE_LOCAL:
+        return
+
+    if runtime_data.client is None:
+        return
+
+    try:
+        user_info = await runtime_data.client.user.get_info()
+        devices = user_info.get("devices", {}).get("items", [])
+        current_device_ids = {device["id"] for device in devices}
+
+        # Check for stale devices first
+        await async_check_and_remove_stale_devices(hass, entry, current_device_ids)
+
+        # Then check for new devices
+        await async_discover_and_add_new_devices(hass, entry, current_device_ids)
+
+    except Exception as err:
+        _LOGGER.warning("Failed to check for device changes: %s", err)
 
 
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:

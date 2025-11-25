@@ -27,6 +27,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the Rinnai switches from config entry."""
+    # Store callback for dynamic device support
+    from homeassistant.const import Platform
+
+    config_entry.runtime_data.entity_adders[Platform.SWITCH] = async_add_entities
+
     LOGGER.debug("Setting up Rinnai switch entities")
     entities: list[SwitchEntity] = []
     for device in config_entry.runtime_data.devices:

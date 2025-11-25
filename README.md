@@ -348,8 +348,10 @@ This integration targets Home Assistant Integration Quality Scale:
 |------|--------|
 | Bronze | ✅ Complete (9/9) |
 | Silver | ✅ Complete (7/7) |
-| Gold | ⚠️ Partial (4/7) |
+| Gold | ✅ Complete (7/7) |
 | Platinum | ⚠️ Partial (3/4) |
+
+**Platinum Blocker**: The `aiorinnai` library doesn't support HA's aiohttp session injection (requires upstream changes).
 
 See [CHANGELOG.md](CHANGELOG.md) for detailed compliance information.
 

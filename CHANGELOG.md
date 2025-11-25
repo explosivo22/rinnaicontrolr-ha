@@ -7,6 +7,9 @@ This fork ([joyfulhouse/rinnaicontrolr-ha](https://github.com/joyfulhouse/rinnai
 ## [Unreleased]
 
 ### Added
+- Dynamic device discovery (Gold tier requirement) - devices added/removed without reload
+- Stale device removal - automatically removes devices that disappear from account
+- Comprehensive documentation with use cases, troubleshooting, and supported devices
 - Multi-language translations (14 languages: German, Spanish, French, Italian, Japanese, Korean, Dutch, Polish, Portuguese, Portuguese (Brazil), Russian, Swedish, Chinese Simplified, Chinese Traditional)
 - Recirculation switch entity for easy on/off control without service calls
 - Hybrid connection mode (local TCP with cloud fallback)
