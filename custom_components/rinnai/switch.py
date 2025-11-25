@@ -12,6 +12,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from . import RinnaiConfigEntry
 from .const import (
     CONF_RECIRCULATION_DURATION,
+    CONNECTION_MODE_LOCAL,
     DEFAULT_RECIRCULATION_DURATION,
     LOGGER,
 )
@@ -22,7 +23,9 @@ from .entity import RinnaiEntity
 PARALLEL_UPDATES = 1
 
 # Timeout for optimistic state (seconds) - after this, fall back to device state
-OPTIMISTIC_STATE_TIMEOUT = 30
+# Cloud needs >60s since polling interval is 60s; local is much faster
+OPTIMISTIC_STATE_TIMEOUT_CLOUD = 90
+OPTIMISTIC_STATE_TIMEOUT_LOCAL = 10
 
 
 async def async_setup_entry(
@@ -70,6 +73,13 @@ class RinnaiRecirculationSwitch(RinnaiEntity, SwitchEntity):
         )
 
     @property
+    def _optimistic_timeout(self) -> int:
+        """Get the optimistic state timeout based on connection mode."""
+        if self._device.connection_mode == CONNECTION_MODE_LOCAL:
+            return OPTIMISTIC_STATE_TIMEOUT_LOCAL
+        return OPTIMISTIC_STATE_TIMEOUT_CLOUD
+
+    @property
     def icon(self) -> str:
         """Return the icon."""
         if self.is_on:
@@ -91,7 +101,7 @@ class RinnaiRecirculationSwitch(RinnaiEntity, SwitchEntity):
 
         Only clear optimistic state when device state matches our expectation,
         preventing bounce-back when the cloud API returns stale data.
-        Times out after OPTIMISTIC_STATE_TIMEOUT seconds to prevent getting stuck.
+        Times out based on connection mode (90s cloud, 10s local).
         """
         if self._optimistic_state is None:
             super()._handle_coordinator_update()
@@ -99,6 +109,7 @@ class RinnaiRecirculationSwitch(RinnaiEntity, SwitchEntity):
 
         device_state = self._device.is_recirculating
         elapsed = time.monotonic() - self._optimistic_state_set_at
+        timeout = self._optimistic_timeout
 
         if device_state == self._optimistic_state:
             # Device state matches our expectation, safe to clear optimistic state
@@ -107,7 +118,7 @@ class RinnaiRecirculationSwitch(RinnaiEntity, SwitchEntity):
                 "ON" if device_state else "OFF",
             )
             self._optimistic_state = None
-        elif elapsed > OPTIMISTIC_STATE_TIMEOUT:
+        elif elapsed > timeout:
             # Timeout exceeded, fall back to device state
             LOGGER.warning(
                 "Optimistic state timeout after %.1fs - expected %s but device reports %s",
