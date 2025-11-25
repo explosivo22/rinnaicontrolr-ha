@@ -124,6 +124,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self._consecutive_errors: int = 0
         self._last_error: Exception | None = None
         self._last_maintenance_retrieval: float = 0.0
+        # Cache cloud device name for hybrid mode (persists even when using local data)
+        self._cached_cloud_device_name: str | None = None
 
         super().__init__(
             hass,
@@ -288,6 +290,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     info.get("domestic_combustion"),
                 )
                 self._device_information = device_info
+                # Cache cloud device name for hybrid mode
+                cloud_name = device_data.get("device_name")
+                if cloud_name:
+                    self._cached_cloud_device_name = cloud_name
                 return device_info
 
             except Unauthenticated as error:
@@ -332,6 +338,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     self._consecutive_errors = 0
                     self._last_error = None
                     LOGGER.debug("Hybrid mode: using local data")
+                    # Fetch cloud device name once for user-friendly naming
+                    if not self._cached_cloud_device_name and self.api_client:
+                        await self._cache_cloud_device_name()
                     return data
             except Exception as error:
                 local_error = error
@@ -356,6 +365,32 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 raise
 
         raise UpdateFailed("No connection method available")
+
+    async def _cache_cloud_device_name(self) -> None:
+        """Fetch and cache the cloud device name for hybrid mode.
+
+        This is called once when hybrid mode uses local data, to get the
+        user-friendly device name from the cloud API.
+        """
+        if self.api_client is None:
+            return
+
+        try:
+            await self._ensure_valid_token()
+            async with asyncio.timeout(10):
+                device_info = await self.api_client.device.get_info(
+                    self._rinnai_device_id
+                )
+            device_data = device_info.get("data", {}).get("getDevice", {})
+            cloud_name = device_data.get("device_name")
+            if cloud_name:
+                self._cached_cloud_device_name = cloud_name
+                LOGGER.debug(
+                    "Cached cloud device name '%s' for hybrid mode", cloud_name
+                )
+        except Exception as error:
+            # Non-fatal - we'll just use the serial number fallback
+            LOGGER.debug("Could not fetch cloud device name: %s", error)
 
     async def _persist_tokens_if_changed(self) -> None:
         """Persist tokens to config entry if they've been refreshed."""
@@ -432,11 +467,19 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     @property
     def device_name(self) -> str | None:
-        """Return device name."""
+        """Return device name.
+
+        Prioritizes cloud name (user-friendly) over local serial number.
+        In hybrid mode, uses cached cloud name even when local data is active.
+        """
+        # Try current cloud data first
         cloud_name = self._get_cloud_value("data", "getDevice", "device_name")
         if cloud_name:
             return cloud_name
-        # For local mode, use serial number as name
+        # Use cached cloud name (for hybrid mode when using local data)
+        if self._cached_cloud_device_name:
+            return self._cached_cloud_device_name
+        # Fall back to serial number for local-only mode
         serial = self._get_local_value("serial_number") or self._rinnai_device_id
         return f"Rinnai {serial}"
 
