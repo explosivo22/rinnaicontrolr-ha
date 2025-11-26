@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Połącz z Rinnai Control-R",
+                "description": "Wybierz sposób połączenia z podgrzewaczem wody Rinnai.",
+                "data": {
+                    "connection_mode": "Tryb połączenia"
+                },
+                "data_description": {
+                    "connection_mode": "Chmura używa konta Rinnai. Lokalnie łączy się bezpośrednio z podgrzewaczem. Hybrydowy używa lokalnego z awaryjnym połączeniem chmurowym."
+                }
+            },
+            "cloud": {
+                "title": "Połączenie chmurowe",
+                "description": "Wprowadź dane logowania do konta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Hasło"
+                },
+                "data_description": {
+                    "email": "Adres e-mail konta Rinnai Control-R",
+                    "password": "Hasło do konta Rinnai Control-R"
+                }
+            },
+            "local": {
+                "title": "Połączenie lokalne",
+                "description": "Wprowadź adres IP kontrolera podgrzewacza wody Rinnai. Kontroler musi być w sieci lokalnej i dostępny na porcie 9798.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Adres IP kontrolera podgrzewacza wody Rinnai (np. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Tryb hybrydowy - Dane chmury",
+                "description": "Najpierw wprowadź dane logowania do konta Rinnai Control-R dla awaryjnego połączenia chmurowego.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Hasło"
+                },
+                "data_description": {
+                    "email": "Adres e-mail konta Rinnai Control-R",
+                    "password": "Hasło do konta Rinnai Control-R"
+                }
+            },
+            "hybrid_local": {
+                "title": "Tryb hybrydowy - Połączenie lokalne",
+                "description": "Teraz wprowadź adres IP kontrolera podgrzewacza wody Rinnai dla głównego sterowania lokalnego.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "Adres IP kontrolera podgrzewacza wody Rinnai (np. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Ponowne uwierzytelnienie w Rinnai Control-R",
+                "description": "Sesja wygasła. Wprowadź ponownie dane logowania.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Hasło"
+                }
+            },
+            "reconfigure": {
+                "title": "Rekonfiguruj Rinnai Control-R",
+                "description": "Zmień tryb połączenia lub zaktualizuj adres hosta lokalnego.",
+                "data": {
+                    "connection_mode": "Tryb połączenia",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "connection_mode": "Chmura używa konta Rinnai. Lokalnie łączy się bezpośrednio z podgrzewaczem. Hybrydowy używa lokalnego z awaryjnym połączeniem chmurowym.",
+                    "host": "Adres IP kontrolera podgrzewacza wody Rinnai (wymagany dla trybów Lokalnego i Hybrydowego)"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "Wymagane dane chmury",
+                "description": "Wybrany tryb wymaga dostępu do chmury. Wprowadź dane logowania do konta Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Hasło"
+                },
+                "data_description": {
+                    "email": "Adres e-mail konta Rinnai Control-R",
+                    "password": "Hasło do konta Rinnai Control-R"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Nie udało się połączyć",
+            "invalid_auth": "Nieprawidłowe uwierzytelnienie",
+            "unknown": "Nieoczekiwany błąd",
+            "host_required": "Adres IP hosta jest wymagany dla trybów Lokalnego i Hybrydowego",
+            "local_connection_failed": "Nie można połączyć się z kontrolerem Rinnai pod podanym adresem IP. Sprawdź: (1) Adres IP jest poprawny, (2) Port 9798 jest dostępny, (3) Kontroler jest włączony. Jeśli połączenie lokalne nie jest możliwe, użyj zamiast tego trybu Chmura."
+        },
+        "abort": {
+            "already_configured": "Urządzenie jest już skonfigurowane",
+            "reauth_successful": "Ponowne uwierzytelnienie powiodło się",
+            "reauth_failed": "Ponowne uwierzytelnienie nie powiodło się. Spróbuj ponownie.",
+            "reconfigure_successful": "Konfiguracja zaktualizowana pomyślnie"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Chmura (konto Rinnai)",
+                "local": "Lokalne (bezpośrednie połączenie)",
+                "hybrid": "Hybrydowe (lokalne + chmura awaryjna)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Uwierzytelnienie Rinnai wygasło",
+            "description": "Sesja wygasła i musisz się ponownie uwierzytelnić, aby kontynuować korzystanie z integracji Rinnai. Proszę ponownie skonfigurować integrację ze strony Integracje."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Opcje Rinnai Control-R",
+                "description": "Skonfiguruj opcje dla podgrzewacza wody Rinnai.",
+                "data": {
+                    "maint_interval_enabled": "Włącz pobieranie danych serwisowych",
+                    "recirculation_duration": "Czas Cyrkulacji"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "Po włączeniu pobiera szczegółowe dane serwisowe z urządzenia co 5 minut. Może to zwiększyć użycie API.",
+                    "recirculation_duration": "Czas w minutach (5-300) używany przez encję przełącznika Cyrkulacji przy włączeniu."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Podgrzewacz wody"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Cyrkulacja"
+            },
+            "water_heater_heating": {
+                "name": "Grzanie"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Cyrkulacja"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Temperatura wyjściowa"
+            },
+            "inlet_temperature": {
+                "name": "Temperatura wejściowa"
+            },
+            "water_flow_rate": {
+                "name": "Przepływ wody"
+            },
+            "combustion_cycles": {
+                "name": "Cykle spalania"
+            },
+            "operation_hours": {
+                "name": "Godziny pracy"
+            },
+            "pump_hours": {
+                "name": "Godziny pompy"
+            },
+            "pump_cycles": {
+                "name": "Cykle pompy"
+            },
+            "fan_current": {
+                "name": "Prąd wentylatora"
+            },
+            "fan_frequency": {
+                "name": "Częstotliwość wentylatora"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Rozpocznij cyrkulację",
+            "description": "Rozpocznij cyrkulację wody na określony czas.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Czas trwania",
+                    "description": "Czas trwania w minutach (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Zatrzymaj cyrkulację",
+            "description": "Natychmiast zatrzymaj cyrkulację wody."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "Urządzenie Rinnai jest obecnie niedostępne"
+        },
+        "action_failed": {
+            "message": "Błąd {action}: {error}"
+        }
+    }
+}

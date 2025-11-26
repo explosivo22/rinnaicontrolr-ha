@@ -10,6 +10,43 @@ on:
   workflow_dispatch:
 
 jobs:
+  # Lint and type check the code
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system ruff mypy homeassistant
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
+
+      - name: Run ruff check
+        run: |
+          ruff check custom_components/rinnai/ --output-format=github
+
+      - name: Run ruff format check
+        run: |
+          ruff format custom_components/rinnai/ --check
+
+      - name: Run mypy
+        run: |
+          mypy custom_components/rinnai/ --ignore-missing-imports --no-error-summary || true
+
   # Validate the component using Home Assistant's official hassfest action
   validate-hassfest:
     name: Validate with Hassfest
@@ -21,10 +58,9 @@ jobs:
       - name: Prepare component structure for validation
         run: |
           # Hassfest requires the directory name to match the domain in manifest.json
-          # The domain is 'rinnai', so we need to rename the directory
-          mkdir -p custom_components/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* custom_components/rinnai/
-          rm -rf custom_components/rinnaicontrolr-ha
+          # The domain is 'rinnai' and our directory is already named 'rinnai'
+          echo "Component structure:"
+          ls -la custom_components/rinnai/
 
       - name: Run Hassfest validation
         uses: home-assistant/actions/hassfest@master
@@ -55,7 +91,7 @@ jobs:
   test:
     name: Test Component (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs]
+    needs: [lint, validate-hassfest, validate-hacs]
     strategy:
       fail-fast: false
       matrix:
@@ -70,34 +106,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Home Assistant
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install homeassistant
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Install pytest and testing tools
+      - name: Install dependencies
         run: |
-          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
-
-      - name: Get component requirements from manifest
-        id: requirements
-        run: |
-          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
-          echo "requirements=$REQS" >> $GITHUB_OUTPUT
-          echo "Component requires: $REQS"
-
-      - name: Install component requirements
-        if: steps.requirements.outputs.requirements != ''
-        run: |
-          pip install ${{ steps.requirements.outputs.requirements }}
+          uv pip install --system homeassistant pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
 
       - name: Create Home Assistant config directory
         run: |
-          mkdir -p config/custom_components/rinnai
-          
-      - name: Install custom component to 'rinnai' folder
+          mkdir -p config/custom_components
+
+      - name: Install custom component
         run: |
-          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          cp -r custom_components/rinnai config/custom_components/
           echo "Installed component files:"
           ls -la config/custom_components/rinnai/
 
@@ -147,7 +174,7 @@ jobs:
   integration-test:
     name: Integration Test - Boot HA
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs]
+    needs: [lint, validate-hassfest, validate-hacs]
     
     steps:
       - name: Checkout repository
@@ -158,23 +185,22 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Home Assistant and dependencies
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install homeassistant home-assistant-frontend colorlog
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Install pytest tools
+      - name: Install dependencies
         run: |
-          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
-
-      - name: Get and install component requirements
-        run: |
-          python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
+          uv pip install --system homeassistant home-assistant-frontend colorlog pytest pytest-asyncio pytest-homeassistant-custom-component
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
 
       - name: Prepare Home Assistant environment
         run: |
-          mkdir -p config/custom_components/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          mkdir -p config/custom_components
+          cp -r custom_components/rinnai config/custom_components/
           
           # Create configuration that loads the component
           cat > config/configuration.yaml <<'EOF'
@@ -283,11 +309,15 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs, test, integration-test]
+    needs: [lint, validate-hassfest, validate-hacs, test, integration-test]
     if: always()
     steps:
       - name: Check test results
         run: |
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "❌ Lint & type check failed"
+            exit 1
+          fi
           if [ "${{ needs.validate-hassfest.result }}" != "success" ]; then
             echo "❌ Hassfest validation failed"
             exit 1
@@ -304,7 +334,7 @@ jobs:
             echo "❌ Integration tests failed"
             exit 1
           fi
-          echo "✅ All tests passed!"
+          echo "✅ All checks passed!"
 
   # Create release when a tag is pushed to master
   release:
@@ -324,7 +354,7 @@ jobs:
       - name: Get version from manifest
         id: version
         run: |
-          VERSION=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); print(json.load(f)['version'])")
+          VERSION=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); print(json.load(f)['version'])")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Component version: $VERSION"
           
@@ -382,8 +412,8 @@ jobs:
       - name: Create release archive
         run: |
           # Create a clean archive of just the component
-          mkdir -p release/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* release/rinnai/
+          mkdir -p release
+          cp -r custom_components/rinnai release/
           cd release
           zip -r ../rinnai-${{ steps.version.outputs.version }}.zip rinnai/
           cd ..

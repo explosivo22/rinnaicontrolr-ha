@@ -35,19 +35,58 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 ### Features
 
-- water heater:
-    * water temperature (&deg;F)
-    * set operating temperature
-    * start recirculation (on capable models)(via [service](#special-rinnai-services))
-- multiple Rinnai devices
-- reduced polling of Rinnai webservice to avoid unintentional DDoS
+- **Connection Modes:**
+    * Cloud - Uses Rinnai Control-R cloud API (default)
+    * Local - Direct TCP connection to water heater (port 9798) for faster, more reliable control
+    * Hybrid - Local primary with automatic cloud fallback
+
+- **Water Heater Control:**
+    * Water temperature (&deg;F)
+    * Set operating temperature (110-140&deg;F)
+    * Operation mode (on/off)
+    * Vacation/away mode
+    * Start/stop recirculation (on capable models)(via [service](#special-rinnai-services))
+
+- **Sensors:**
+
+    | Sensor | Description |
+    |--------|-------------|
+    | Outlet Temperature | Current hot water outlet temperature |
+    | Inlet Temperature | Cold water inlet temperature |
+    | Water Flow Rate | Current water flow in GPM |
+    | Combustion Cycles | Total burner ignition cycles |
+    | Operation Hours | Total burner operation hours |
+    | Pump Hours | Recirculation pump run hours |
+    | Pump Cycles | Recirculation pump cycle count |
+    | Fan Current | Combustion fan current (mA) |
+    | Fan Frequency | Combustion fan speed (Hz) |
+
+- **Binary Sensors:**
+
+    | Sensor | Description |
+    |--------|-------------|
+    | Heating | On when water heater is actively heating |
+    | Recirculation | On when recirculation pump is running |
+
+- **Switch:**
+
+    | Switch | Description |
+    |--------|-------------|
+    | Recirculation | Toggle to start/stop recirculation with configurable duration |
+
+- **Additional Features:**
+    * Multiple Rinnai devices support
+    * Reduced polling of Rinnai webservice to avoid unintentional DDoS
+    * Multi-language support (14 languages)
+    * Proactive token refresh before expiration
+    * Dynamic device discovery without reload
 
 ## Special Rinnai Services
 The Integration adds specific *Rinnai* services. Below is a list of the *Rinnai* specific services:
 
 Service | Parameters | Description
 :------------ | :------------ | :-------------
-`rinnai.start_recirculation` | `entity_id` - Name of entity to start recirculation on.<br>`recirculation_minutes` - How long to run recirculation | Start recirculation for the amount of time specified
+`rinnai.start_recirculation` | `entity_id` - Name of entity to start recirculation on.<br>`recirculation_minutes` - How long to run recirculation (5-300) | Start recirculation for the amount of time specified
 `rinnai.stop_recirculation` | `entity_id` - Name of entity to stop recirculation on. | Stop recirculation on the specified entity
 
 ## Installation
@@ -77,3 +116,19 @@ Please make sure to use one of the official release branches when installing usi
 > 1. Navigate to the Home Assistant Integrations page `(Settings --> Devices & Services)`
 > 2. Click the `+ ADD INTEGRATION` button in the lower right-hand corner
 > 3. Search for `Rinnai Control-R Water Heater`
+
+### Configuration Options
+
+After setup, configure options via the integration's **Configure** button:
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| Enable maintenance data | Retrieves detailed sensor data every 5 minutes | Off |
+| Recirculation duration | Default duration for recirculation switch (5-300 min) | 10 min |
+
+### Local Mode Requirements
+
+For local/hybrid connection modes:
+- Control-R module must be accessible on your local network
+- Port 9798 must not be blocked by firewall
+- Static IP or DHCP reservation recommended

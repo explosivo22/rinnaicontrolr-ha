@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "连接到 Rinnai Control-R",
+                "description": "选择如何连接到您的林内热水器。",
+                "data": {
+                    "connection_mode": "连接模式"
+                },
+                "data_description": {
+                    "connection_mode": "云端使用您的林内账户。本地直接连接到热水器。混合模式使用本地连接，云端作为后备。"
+                }
+            },
+            "cloud": {
+                "title": "云端连接",
+                "description": "输入您的 Rinnai Control-R 账户凭据。",
+                "data": {
+                    "email": "电子邮件",
+                    "password": "密码"
+                },
+                "data_description": {
+                    "email": "您的 Rinnai Control-R 账户电子邮件地址",
+                    "password": "您的 Rinnai Control-R 账户密码"
+                }
+            },
+            "local": {
+                "title": "本地连接",
+                "description": "输入您的林内热水器控制器的 IP 地址。控制器必须在您的本地网络中，并且可通过端口 9798 访问。",
+                "data": {
+                    "host": "主机"
+                },
+                "data_description": {
+                    "host": "您的林内热水器控制器的 IP 地址（例如 192.168.1.100）"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "混合模式 - 云端凭据",
+                "description": "首先，输入您的 Rinnai Control-R 账户凭据用于云端后备。",
+                "data": {
+                    "email": "电子邮件",
+                    "password": "密码"
+                },
+                "data_description": {
+                    "email": "您的 Rinnai Control-R 账户电子邮件地址",
+                    "password": "您的 Rinnai Control-R 账户密码"
+                }
+            },
+            "hybrid_local": {
+                "title": "混合模式 - 本地连接",
+                "description": "现在输入您的林内热水器控制器的 IP 地址用于主要本地控制。",
+                "data": {
+                    "host": "主机"
+                },
+                "data_description": {
+                    "host": "您的林内热水器控制器的 IP 地址（例如 192.168.1.100）"
+                }
+            },
+            "reauth": {
+                "title": "重新认证 Rinnai Control-R",
+                "description": "您的会话已过期。请重新输入您的凭据。",
+                "data": {
+                    "email": "电子邮件",
+                    "password": "密码"
+                }
+            },
+            "reconfigure": {
+                "title": "重新配置 Rinnai Control-R",
+                "description": "更改连接模式或更新本地主机地址。",
+                "data": {
+                    "connection_mode": "连接模式",
+                    "host": "主机"
+                },
+                "data_description": {
+                    "connection_mode": "云端使用您的林内账户。本地直接连接到热水器。混合模式使用本地连接，云端作为后备。",
+                    "host": "您的林内热水器控制器的 IP 地址（本地和混合模式必需）"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "需要云端凭据",
+                "description": "所选模式需要云端访问。请输入您的 Rinnai Control-R 账户凭据。",
+                "data": {
+                    "email": "电子邮件",
+                    "password": "密码"
+                },
+                "data_description": {
+                    "email": "您的 Rinnai Control-R 账户电子邮件地址",
+                    "password": "您的 Rinnai Control-R 账户密码"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "连接失败",
+            "invalid_auth": "认证无效",
+            "unknown": "意外错误",
+            "host_required": "本地和混合模式需要主机 IP 地址",
+            "local_connection_failed": "无法连接到指定 IP 地址的林内控制器。请检查：(1) IP 地址是否正确，(2) 端口 9798 是否可访问，(3) 控制器是否已开机。如果本地连接不可用，请改用云端模式。"
+        },
+        "abort": {
+            "already_configured": "设备已配置",
+            "reauth_successful": "重新认证成功",
+            "reauth_failed": "重新认证失败。请重试。",
+            "reconfigure_successful": "配置更新成功"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "云端（林内账户）",
+                "local": "本地（直接连接）",
+                "hybrid": "混合（本地 + 云端后备）"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "林内认证已过期",
+            "description": "您的会话已过期，必须重新认证才能继续使用林内集成。请从集成页面重新配置集成。"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R 选项",
+                "description": "配置您的林内热水器选项。",
+                "data": {
+                    "maint_interval_enabled": "启用维护数据获取",
+                    "recirculation_duration": "循环持续时间"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "启用后，每 5 分钟从设备获取详细维护数据。这可能会增加 API 使用量。",
+                    "recirculation_duration": "循环开关实体开启时使用的时间（分钟）（5-300）。"
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "热水器"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "循环"
+            },
+            "water_heater_heating": {
+                "name": "加热中"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "循环"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "出水温度"
+            },
+            "inlet_temperature": {
+                "name": "进水温度"
+            },
+            "water_flow_rate": {
+                "name": "水流量"
+            },
+            "combustion_cycles": {
+                "name": "燃烧次数"
+            },
+            "operation_hours": {
+                "name": "运行小时"
+            },
+            "pump_hours": {
+                "name": "泵运行小时"
+            },
+            "pump_cycles": {
+                "name": "泵运行次数"
+            },
+            "fan_current": {
+                "name": "风扇电流"
+            },
+            "fan_frequency": {
+                "name": "风扇频率"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "启动循环",
+            "description": "启动指定时长的水循环。",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "持续时间",
+                    "description": "持续时间（分钟）（5-300）"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "停止循环",
+            "description": "立即停止水循环。"
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "林内设备当前不可用"
+        },
+        "action_failed": {
+            "message": "{action} 失败：{error}"
+        }
+    }
+}

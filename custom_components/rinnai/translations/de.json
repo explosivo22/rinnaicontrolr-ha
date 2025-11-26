@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Mit Rinnai Control-R verbinden",
+                "description": "Wählen Sie aus, wie Sie sich mit Ihrem Rinnai-Warmwasserbereiter verbinden möchten.",
+                "data": {
+                    "connection_mode": "Verbindungsmodus"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter. Hybrid verwendet lokal mit Cloud-Fallback."
+                }
+            },
+            "cloud": {
+                "title": "Cloud-Verbindung",
+                "description": "Geben Sie Ihre Rinnai Control-R Kontodaten ein.",
+                "data": {
+                    "email": "E-Mail",
+                    "password": "Passwort"
+                },
+                "data_description": {
+                    "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
+                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                }
+            },
+            "local": {
+                "title": "Lokale Verbindung",
+                "description": "Geben Sie die IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers ein. Der Controller muss in Ihrem lokalen Netzwerk sein und über Port 9798 erreichbar sein.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers (z.B. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Hybridmodus - Cloud-Anmeldedaten",
+                "description": "Geben Sie zunächst Ihre Rinnai Control-R Kontodaten für den Cloud-Fallback ein.",
+                "data": {
+                    "email": "E-Mail",
+                    "password": "Passwort"
+                },
+                "data_description": {
+                    "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
+                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                }
+            },
+            "hybrid_local": {
+                "title": "Hybridmodus - Lokale Verbindung",
+                "description": "Geben Sie nun die IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers für die primäre lokale Steuerung ein.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers (z.B. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Bei Rinnai Control-R erneut authentifizieren",
+                "description": "Ihre Sitzung ist abgelaufen. Bitte geben Sie Ihre Anmeldedaten erneut ein.",
+                "data": {
+                    "email": "E-Mail",
+                    "password": "Passwort"
+                }
+            },
+            "reconfigure": {
+                "title": "Rinnai Control-R neu konfigurieren",
+                "description": "Ändern Sie den Verbindungsmodus oder aktualisieren Sie die lokale Host-Adresse.",
+                "data": {
+                    "connection_mode": "Verbindungsmodus",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter. Hybrid verwendet lokal mit Cloud-Fallback.",
+                    "host": "IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers (erforderlich für Lokal- und Hybridmodus)"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud-Anmeldedaten erforderlich",
+                "description": "Der ausgewählte Modus erfordert Cloud-Zugriff. Geben Sie Ihre Rinnai Control-R Kontodaten ein.",
+                "data": {
+                    "email": "E-Mail",
+                    "password": "Passwort"
+                },
+                "data_description": {
+                    "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
+                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Verbindung fehlgeschlagen",
+            "invalid_auth": "Ungültige Authentifizierung",
+            "unknown": "Unerwarteter Fehler",
+            "host_required": "Host-IP-Adresse ist für Lokal- und Hybridmodus erforderlich",
+            "local_connection_failed": "Verbindung zum Rinnai-Controller unter der angegebenen IP-Adresse nicht möglich. Bitte überprüfen Sie: (1) Die IP-Adresse ist korrekt, (2) Port 9798 ist erreichbar, (3) Der Controller ist eingeschaltet. Wenn eine lokale Verbindung nicht möglich ist, verwenden Sie bitte stattdessen den Cloud-Modus."
+        },
+        "abort": {
+            "already_configured": "Gerät ist bereits konfiguriert",
+            "reauth_successful": "Erneute Authentifizierung war erfolgreich",
+            "reauth_failed": "Erneute Authentifizierung fehlgeschlagen. Bitte versuchen Sie es erneut.",
+            "reconfigure_successful": "Konfiguration erfolgreich aktualisiert"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Cloud (Rinnai-Konto)",
+                "local": "Lokal (direkte Verbindung)",
+                "hybrid": "Hybrid (lokal + Cloud-Fallback)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Rinnai-Authentifizierung abgelaufen",
+            "description": "Ihre Sitzung ist abgelaufen und Sie müssen sich erneut authentifizieren, um die Rinnai-Integration weiter zu verwenden. Bitte konfigurieren Sie die Integration über die Integrationsseite neu."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R Optionen",
+                "description": "Konfigurieren Sie Optionen für Ihren Rinnai-Warmwasserbereiter.",
+                "data": {
+                    "maint_interval_enabled": "Wartungsdatenabruf aktivieren",
+                    "recirculation_duration": "Zirkulationsdauer"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "Wenn aktiviert, werden alle 5 Minuten detaillierte Wartungsdaten vom Gerät abgerufen. Dies kann die API-Nutzung erhöhen.",
+                    "recirculation_duration": "Dauer in Minuten (5-300), die von der Zirkulations-Schalter-Entität beim Einschalten verwendet wird."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Warmwasserbereiter"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Zirkulation"
+            },
+            "water_heater_heating": {
+                "name": "Heizung"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Zirkulation"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Auslasstemperatur"
+            },
+            "inlet_temperature": {
+                "name": "Einlasstemperatur"
+            },
+            "water_flow_rate": {
+                "name": "Wasserdurchflussrate"
+            },
+            "combustion_cycles": {
+                "name": "Verbrennungszyklen"
+            },
+            "operation_hours": {
+                "name": "Betriebsstunden"
+            },
+            "pump_hours": {
+                "name": "Pumpenstunden"
+            },
+            "pump_cycles": {
+                "name": "Pumpenzyklen"
+            },
+            "fan_current": {
+                "name": "Lüfterstrom"
+            },
+            "fan_frequency": {
+                "name": "Lüfterfrequenz"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Zirkulation starten",
+            "description": "Wasserzirkulation für eine bestimmte Dauer starten.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Dauer",
+                    "description": "Dauer in Minuten (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Zirkulation stoppen",
+            "description": "Wasserzirkulation sofort stoppen."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "Das Rinnai-Gerät ist derzeit nicht verfügbar"
+        },
+        "action_failed": {
+            "message": "Fehler bei {action}: {error}"
+        }
+    }
+}

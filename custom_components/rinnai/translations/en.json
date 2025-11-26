@@ -1,0 +1,209 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connect to Rinnai Control-R",
+                "description": "Choose how to connect to your Rinnai water heater.",
+                "data": {
+                    "connection_mode": "Connection Mode"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback."
+                }
+            },
+            "cloud": {
+                "title": "Cloud Connection",
+                "description": "Enter your Rinnai Control-R account credentials.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                },
+                "data_description": {
+                    "email": "The email address used for your Rinnai Control-R account",
+                    "password": "Your Rinnai Control-R account password"
+                }
+            },
+            "local": {
+                "title": "Local Connection",
+                "description": "Enter the IP address of your Rinnai water heater controller. The controller must be on your local network and accessible on port 9798.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP address of your Rinnai water heater controller (e.g., 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Hybrid Mode - Cloud Credentials",
+                "description": "First, enter your Rinnai Control-R account credentials for cloud fallback.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                },
+                "data_description": {
+                    "email": "The email address used for your Rinnai Control-R account",
+                    "password": "Your Rinnai Control-R account password"
+                }
+            },
+            "hybrid_local": {
+                "title": "Hybrid Mode - Local Connection",
+                "description": "Now enter the IP address of your Rinnai water heater controller for primary local control.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP address of your Rinnai water heater controller (e.g., 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Re-authenticate with Rinnai Control-R",
+                "description": "Your session has expired. Please re-enter your credentials.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigure Rinnai Control-R",
+                "description": "Change the connection mode or update the local host address.",
+                "data": {
+                    "connection_mode": "Connection Mode",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback.",
+                    "host": "IP address of your Rinnai water heater controller (required for Local and Hybrid modes)"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud Credentials Required",
+                "description": "The selected mode requires cloud access. Enter your Rinnai Control-R account credentials.",
+                "data": {
+                    "email": "Email",
+                    "password": "Password"
+                },
+                "data_description": {
+                    "email": "The email address used for your Rinnai Control-R account",
+                    "password": "Your Rinnai Control-R account password"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Failed to connect",
+            "invalid_auth": "Invalid authentication",
+            "unknown": "Unexpected error",
+            "host_required": "Host IP address is required for Local and Hybrid modes",
+            "local_connection_failed": "Unable to connect to Rinnai controller at the specified IP address. Please verify: (1) The IP address is correct, (2) Port 9798 is accessible, (3) The controller is powered on. If local connection is not possible, please use Cloud mode instead."
+        },
+        "abort": {
+            "already_configured": "Device is already configured",
+            "reauth_successful": "Re-authentication was successful",
+            "reauth_failed": "Re-authentication failed. Please try again.",
+            "reconfigure_successful": "Configuration updated successfully"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Cloud (Rinnai account)",
+                "local": "Local (direct connection)",
+                "hybrid": "Hybrid (local + cloud fallback)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Rinnai authentication expired",
+            "description": "Your session has expired and you must re-authenticate to continue using the Rinnai integration. Please reconfigure the integration from the Integrations page."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R Options",
+                "description": "Configure options for your Rinnai water heater.",
+                "data": {
+                    "maint_interval_enabled": "Enable maintenance data retrieval",
+                    "recirculation_duration": "Recirculation Duration"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage.",
+                    "recirculation_duration": "Duration in minutes (5-300) used by the Recirculation switch entity when turned on."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Water Heater"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Recirculation"
+            },
+            "water_heater_heating": {
+                "name": "Heating"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Recirculation"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Outlet Temperature"
+            },
+            "inlet_temperature": {
+                "name": "Inlet Temperature"
+            },
+            "water_flow_rate": {
+                "name": "Water Flow Rate"
+            },
+            "combustion_cycles": {
+                "name": "Combustion Cycles"
+            },
+            "operation_hours": {
+                "name": "Operation Hours"
+            },
+            "pump_hours": {
+                "name": "Pump Hours"
+            },
+            "pump_cycles": {
+                "name": "Pump Cycles"
+            },
+            "fan_current": {
+                "name": "Fan Current"
+            },
+            "fan_frequency": {
+                "name": "Fan Frequency"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Start recirculation",
+            "description": "Start water recirculation for a specified duration.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Duration",
+                    "description": "Duration in minutes (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Stop recirculation",
+            "description": "Stop water recirculation immediately."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "The Rinnai device is currently unavailable"
+        },
+        "action_failed": {
+            "message": "Failed to {action}: {error}"
+        }
+    }
+}
