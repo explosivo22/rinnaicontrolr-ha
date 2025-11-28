@@ -36,15 +36,40 @@ Please make sure to use one of the official release branches when installing usi
 {% if prerelease %}
 ### NB!: This is a Beta version!
 
+## ⚠️ Breaking Change in v2.0.0 - Migration Required
+
+Version 2.0.0 includes a **breaking change**: the integration directory has been renamed from `rinnaicontrolr-ha` to `rinnai`.
+
+**You MUST perform a clean install:**
+
+1. **Remove the integration** from Settings → Devices & Services
+2. **Remove via HACS** → Integrations → Rinnai → Remove
+3. **Manually delete** the old folder: `custom_components/rinnaicontrolr-ha/`
+4. **Restart Home Assistant**
+5. **Install v2.0.0** via HACS
+6. **Restart Home Assistant** again
+7. **Re-add the integration** via Settings → Add Integration
+
+📖 **Full migration guide:** [MIGRATION.md](https://github.com/explosivo22/rinnaicontrolr-ha/blob/2.0.0-beta/MIGRATION.md)
+
+> **Note:** Your entity IDs will be preserved since the domain (`rinnai`) has not changed.
+
 {% else %}
 
-Version 1.0.33 is a total rewrite of the Rinnai Control-R Integration, and no longer supports configuration through Yaml. So if you upgrade to this version from a 1.0.32 release, then you need to do the following:
+## ⚠️ Upgrading to v2.0.0 - Migration Required
 
-1. You must remove all references to *rinnai* from your configuration files, and restart HA to clear it.
-2. Go back to HACS, and install the latest release. After the installation, you will have the option of entering the Integrations page to configure *Rinnai Control-R Water Heater*.
-3. Go to *Settings* and then *Integration* and search for Rinnai Control-R Water Heater
-4. Select the Integration, fill out the form and press Save. Once this is done, you should now have all Entities of Rinnai Control-R present in Home Assistance.
+If you are upgrading from v1.x.x to v2.0.0, you **must** follow the migration guide due to a directory rename.
 
-Go to [Github](https://github.com/explosivo22/rinnaicontrolr-ha) for Pre-requisites and Setup Instructions.
+📖 **Full migration guide:** [MIGRATION.md](https://github.com/explosivo22/rinnaicontrolr-ha/blob/master/MIGRATION.md)
+
+**Quick Steps:**
+1. Remove the integration from Settings → Devices & Services
+2. Remove via HACS
+3. Delete `custom_components/rinnaicontrolr-ha/` manually
+4. Restart Home Assistant
+5. Install v2.0.0 via HACS
+6. Restart and re-add the integration
+
+Go to [Github](https://github.com/explosivo22/rinnaicontrolr-ha) for full documentation.
 
 {% endif %}

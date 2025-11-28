@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_EMAIL, CONF_PASSWORD, Platform
+from homeassistant.const import CONF_EMAIL, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr, issue_registry as ir
@@ -577,6 +577,10 @@ async def async_check_device_changes(
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old config entry to new version.
 
+    Handles migration from two different legacy versions:
+    - v1.5.9 (Cloud): Has email, conf_access_token, conf_refresh_token
+    - v2.1.9 (Local-only): Has only host (IP address)
+
     Args:
         hass: Home Assistant instance.
         config_entry: Config entry being migrated.
@@ -590,7 +594,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError, UserNotFound, UserNotConfirmed
+    from aiorinnai.errors import RequestError
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Migrating from version %s", config_entry.version)
@@ -598,34 +602,77 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     if config_entry.version == 1:
         data = {**config_entry.data}
 
-        # Set default values if keys are missing
-        data.setdefault(CONF_ACCESS_TOKEN, "")
-        data.setdefault(CONF_REFRESH_TOKEN, "")
-        # Default to cloud mode for existing entries
-        data.setdefault(CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD)
+        # Detect which legacy version we're migrating from
+        existing_host = data.get(CONF_HOST, "")
+        existing_email = data.get(CONF_EMAIL, "")
+        existing_access = data.get(CONF_ACCESS_TOKEN, "")
+        existing_refresh = data.get(CONF_REFRESH_TOKEN, "")
 
-        if not data[CONF_ACCESS_TOKEN] or not data[CONF_REFRESH_TOKEN]:
-            # Fetch new tokens from the API using existing credentials
-            # Use Home Assistant's shared session for connection pooling
-            session = async_get_clientsession(hass)
-            client = API(session=session)
-            try:
-                await client.async_login(
-                    config_entry.data[CONF_EMAIL],
-                    config_entry.data[CONF_PASSWORD],
+        if existing_host and not existing_email:
+            # v2.1.9 (Local-only) migration: has host but no email
+            # This was a local-only setup, migrate to local mode
+            _LOGGER.info(
+                "Migrating from local-only version (v2.1.x) with host: %s",
+                existing_host,
+            )
+            data[CONF_CONNECTION_MODE] = CONNECTION_MODE_LOCAL
+            # Ensure no cloud credentials are set
+            data.pop(CONF_EMAIL, None)
+            data.pop(CONF_ACCESS_TOKEN, None)
+            data.pop(CONF_REFRESH_TOKEN, None)
+
+        elif existing_email:
+            # v1.5.9 (Cloud) migration: has email and tokens
+            _LOGGER.info("Migrating from cloud version (v1.5.x) with email: %s", existing_email)
+            data[CONF_CONNECTION_MODE] = CONNECTION_MODE_CLOUD
+
+            if existing_access and existing_refresh:
+                # Try to renew tokens using existing credentials
+                session = async_get_clientsession(hass)
+                client = API(session=session)
+                try:
+                    await client.async_renew_access_token(
+                        existing_email,
+                        existing_access,
+                        existing_refresh,
+                    )
+                    _LOGGER.debug("Successfully renewed tokens during migration")
+
+                    # Update tokens in data with refreshed values
+                    data[CONF_ACCESS_TOKEN] = client.access_token
+                    data[CONF_REFRESH_TOKEN] = client.refresh_token
+                except Unauthenticated as err:
+                    # Tokens expired or invalid - user needs to re-authenticate
+                    _LOGGER.warning(
+                        "Existing tokens are invalid, re-authentication required: %s",
+                        err,
+                    )
+                    raise ConfigEntryAuthFailed(
+                        "Migration requires re-authentication. "
+                        "Please reconfigure the integration with your Rinnai credentials."
+                    ) from err
+                except RequestError as err:
+                    _LOGGER.error("Request error during migration: %s", err)
+                    raise ConfigEntryNotReady(
+                        f"Unable to connect to Rinnai API during migration: {err}"
+                    ) from err
+            else:
+                # We have email but no valid tokens - need re-authentication
+                _LOGGER.warning(
+                    "No valid tokens found for migration, re-authentication required"
                 )
-                user_info = await client.user.get_info()
-                _LOGGER.debug("User info retrieved during migration: %s", user_info)
-
-                # Update tokens in data
-                data[CONF_ACCESS_TOKEN] = client.access_token
-                data[CONF_REFRESH_TOKEN] = client.refresh_token
-            except Unauthenticated as err:
-                _LOGGER.error("Authentication error during migration: %s", err)
-                raise ConfigEntryAuthFailed from err
-            except RequestError as err:
-                _LOGGER.error("Request error during migration: %s", err)
-                raise ConfigEntryNotReady from err
+                raise ConfigEntryAuthFailed(
+                    "Migration requires re-authentication. "
+                    "Please reconfigure the integration with your Rinnai credentials."
+                )
+        else:
+            # No recognizable config - entry is corrupted
+            _LOGGER.error(
+                "Config entry has neither email nor host - cannot determine migration path"
+            )
+            raise ConfigEntryAuthFailed(
+                "Config entry format not recognized. Please remove and re-add the integration."
+            )
 
         hass.config_entries.async_update_entry(config_entry, data=data, version=2)
 

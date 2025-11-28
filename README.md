@@ -10,6 +10,20 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
 
 <a href="https://www.buymeacoffee.com/Explosivo22" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
+> [!CAUTION]
+> ## ⚠️ Upgrading from v1.x.x? Migration Required!
+> 
+> Version 2.0.0 renamed the integration folder from `rinnaicontrolr-ha` to `rinnai`. **HACS cannot handle this automatically.**
+> 
+> **You must:**
+> 1. Remove the integration from Home Assistant
+> 2. Remove via HACS
+> 3. **Manually delete** `custom_components/rinnaicontrolr-ha/`
+> 4. Restart Home Assistant
+> 5. Install v2.0.0 fresh
+> 
+> 📖 **[Full Migration Guide](MIGRATION.md)**
+
 ## KNOWN ISSUES
 
 * **Rinnai currently has a known bug that will cause recirculation to only run for 5 minutes.**
