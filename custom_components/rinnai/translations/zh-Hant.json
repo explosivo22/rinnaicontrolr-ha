@@ -90,10 +90,12 @@
         },
         "error": {
             "cannot_connect": "連接失敗",
-            "invalid_auth": "驗證無效",
+            "invalid_auth": "認證無效",
             "unknown": "意外錯誤",
-            "host_required": "本地和混合模式需要主機 IP 地址",
-            "local_connection_failed": "無法連接到指定 IP 地址的林內控制器。請檢查：(1) IP 地址是否正確，(2) 連接埠 9798 是否可存取，(3) 控制器是否已開機。如果本地連接不可用，請改用雲端模式。"
+            "host_required": "本地和混合模式需要主機IP地址",
+            "local_connection_failed": "無法連接到指定IP地址的Rinnai控制器。請檢查：(1) IP地址是否正確，(2) 端口9798是否可訪問，(3) 控制器是否已開啟。如果無法進行本地連接，請改用雲端模式。",
+            "user_not_confirmed": "您的電子郵件地址尚未確認。請在繼續之前檢查您的電子郵件並確認您的Rinnai帳戶。",
+            "password_change_required": "您必須在Rinnai應用中更改密碼才能繼續。請更新密碼後重試。"
         },
         "abort": {
             "already_configured": "裝置已設定",

@@ -93,7 +93,9 @@
             "invalid_auth": "Autenticación inválida",
             "unknown": "Error inesperado",
             "host_required": "La dirección IP del host es requerida para los modos Local e Híbrido",
-            "local_connection_failed": "No se puede conectar al controlador Rinnai en la dirección IP especificada. Por favor verifique: (1) La dirección IP es correcta, (2) El puerto 9798 es accesible, (3) El controlador está encendido. Si la conexión local no es posible, por favor use el modo Nube en su lugar."
+            "local_connection_failed": "No se puede conectar al controlador Rinnai en la dirección IP especificada. Por favor verifique: (1) La dirección IP es correcta, (2) El puerto 9798 es accesible, (3) El controlador está encendido. Si la conexión local no es posible, por favor use el modo Nube en su lugar.",
+            "user_not_confirmed": "Su dirección de correo electrónico no ha sido confirmada. Por favor revise su correo electrónico y confirme su cuenta Rinnai antes de continuar.",
+            "password_change_required": "Debe cambiar su contraseña en la aplicación Rinnai antes de continuar. Por favor actualice su contraseña e intente de nuevo."
         },
         "abort": {
             "already_configured": "El dispositivo ya está configurado",

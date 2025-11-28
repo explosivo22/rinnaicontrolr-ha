@@ -92,8 +92,10 @@
             "cannot_connect": "连接失败",
             "invalid_auth": "认证无效",
             "unknown": "意外错误",
-            "host_required": "本地和混合模式需要主机 IP 地址",
-            "local_connection_failed": "无法连接到指定 IP 地址的林内控制器。请检查：(1) IP 地址是否正确，(2) 端口 9798 是否可访问，(3) 控制器是否已开机。如果本地连接不可用，请改用云端模式。"
+            "host_required": "本地和混合模式需要主机IP地址",
+            "local_connection_failed": "无法连接到指定IP地址的林内控制器。请检查：(1) IP地址是否正确，(2) 端口9798是否可访问，(3) 控制器是否已开启。如果无法进行本地连接，请改用云端模式。",
+            "user_not_confirmed": "您的电子邮件地址尚未确认。请在继续之前检查您的电子邮件并确认您的林内账户。",
+            "password_change_required": "您必须在林内应用中更改密码才能继续。请更新密码后重试。"
         },
         "abort": {
             "already_configured": "设备已配置",

@@ -93,7 +93,9 @@
             "invalid_auth": "Ungültige Authentifizierung",
             "unknown": "Unerwarteter Fehler",
             "host_required": "Host-IP-Adresse ist für Lokal- und Hybridmodus erforderlich",
-            "local_connection_failed": "Verbindung zum Rinnai-Controller unter der angegebenen IP-Adresse nicht möglich. Bitte überprüfen Sie: (1) Die IP-Adresse ist korrekt, (2) Port 9798 ist erreichbar, (3) Der Controller ist eingeschaltet. Wenn eine lokale Verbindung nicht möglich ist, verwenden Sie bitte stattdessen den Cloud-Modus."
+            "local_connection_failed": "Verbindung zum Rinnai-Controller unter der angegebenen IP-Adresse nicht möglich. Bitte überprüfen Sie: (1) Die IP-Adresse ist korrekt, (2) Port 9798 ist erreichbar, (3) Der Controller ist eingeschaltet. Wenn eine lokale Verbindung nicht möglich ist, verwenden Sie bitte stattdessen den Cloud-Modus.",
+            "user_not_confirmed": "Ihre E-Mail-Adresse wurde noch nicht bestätigt. Bitte überprüfen Sie Ihre E-Mails und bestätigen Sie Ihr Rinnai-Konto, bevor Sie fortfahren.",
+            "password_change_required": "Sie müssen Ihr Passwort in der Rinnai-App ändern, bevor Sie fortfahren können. Bitte aktualisieren Sie Ihr Passwort und versuchen Sie es erneut."
         },
         "abort": {
             "already_configured": "Gerät ist bereits konfiguriert",

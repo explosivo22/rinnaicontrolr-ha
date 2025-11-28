@@ -89,11 +89,13 @@
             }
         },
         "error": {
-            "cannot_connect": "Échec de connexion",
+            "cannot_connect": "Échec de la connexion",
             "invalid_auth": "Authentification invalide",
             "unknown": "Erreur inattendue",
             "host_required": "L'adresse IP de l'hôte est requise pour les modes Local et Hybride",
-            "local_connection_failed": "Impossible de se connecter au contrôleur Rinnai à l'adresse IP spécifiée. Veuillez vérifier: (1) L'adresse IP est correcte, (2) Le port 9798 est accessible, (3) Le contrôleur est allumé. Si la connexion locale n'est pas possible, veuillez utiliser le mode Cloud à la place."
+            "local_connection_failed": "Impossible de se connecter au contrôleur Rinnai à l'adresse IP spécifiée. Veuillez vérifier : (1) L'adresse IP est correcte, (2) Le port 9798 est accessible, (3) Le contrôleur est allumé. Si la connexion locale n'est pas possible, veuillez utiliser le mode Cloud à la place.",
+            "user_not_confirmed": "Votre adresse e-mail n'a pas été confirmée. Veuillez vérifier vos e-mails et confirmer votre compte Rinnai avant de continuer.",
+            "password_change_required": "Vous devez changer votre mot de passe dans l'application Rinnai avant de continuer. Veuillez mettre à jour votre mot de passe et réessayer."
         },
         "abort": {
             "already_configured": "L'appareil est déjà configuré",

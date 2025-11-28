@@ -57,11 +57,11 @@ rules:
     comment: README.md includes comprehensive troubleshooting section
 
   # ============================================================================
-  # Platinum tier requirements (3/4 complete)
+  # Platinum tier requirements (4/4 complete)
   # ============================================================================
   async_dependency: done
   inject_websession:
-    status: todo
-    comment: aiorinnai library doesn't accept HA's aiohttp session; requires upstream changes
+    status: done
+    comment: aiorinnai library accepts HA's aiohttp session via API(session=session)
   strict_typing: done
   runtime_data: done

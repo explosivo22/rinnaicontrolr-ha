@@ -89,11 +89,13 @@
             }
         },
         "error": {
-            "cannot_connect": "Falha ao ligar",
+            "cannot_connect": "Falha na ligação",
             "invalid_auth": "Autenticação inválida",
             "unknown": "Erro inesperado",
-            "host_required": "O endereço IP do host é obrigatório para os modos Local e Híbrido",
-            "local_connection_failed": "Não é possível ligar ao controlador Rinnai no endereço IP especificado. Verifique: (1) O endereço IP está correto, (2) A porta 9798 está acessível, (3) O controlador está ligado. Se a ligação local não for possível, utilize o modo Cloud em vez disso."
+            "host_required": "O endereço IP do anfitrião é necessário para os modos Local e Híbrido",
+            "local_connection_failed": "Não foi possível ligar ao controlador Rinnai no endereço IP especificado. Verifique: (1) O endereço IP está correto, (2) A porta 9798 está acessível, (3) O controlador está ligado. Se a ligação local não for possível, utilize o modo Nuvem.",
+            "user_not_confirmed": "O seu endereço de e-mail não foi confirmado. Verifique o seu e-mail e confirme a sua conta Rinnai antes de continuar.",
+            "password_change_required": "Deve alterar a sua palavra-passe na aplicação Rinnai antes de continuar. Atualize a sua palavra-passe e tente novamente."
         },
         "abort": {
             "already_configured": "O dispositivo já está configurado",

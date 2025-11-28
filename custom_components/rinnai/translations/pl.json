@@ -93,7 +93,9 @@
             "invalid_auth": "Nieprawidłowe uwierzytelnienie",
             "unknown": "Nieoczekiwany błąd",
             "host_required": "Adres IP hosta jest wymagany dla trybów Lokalnego i Hybrydowego",
-            "local_connection_failed": "Nie można połączyć się z kontrolerem Rinnai pod podanym adresem IP. Sprawdź: (1) Adres IP jest poprawny, (2) Port 9798 jest dostępny, (3) Kontroler jest włączony. Jeśli połączenie lokalne nie jest możliwe, użyj zamiast tego trybu Chmura."
+            "local_connection_failed": "Nie można połączyć się z kontrolerem Rinnai pod podanym adresem IP. Sprawdź: (1) Adres IP jest poprawny, (2) Port 9798 jest dostępny, (3) Kontroler jest włączony. Jeśli połączenie lokalne nie jest możliwe, użyj trybu Chmury.",
+            "user_not_confirmed": "Twój adres e-mail nie został potwierdzony. Sprawdź swoją pocztę e-mail i potwierdź konto Rinnai przed kontynuowaniem.",
+            "password_change_required": "Musisz zmienić hasło w aplikacji Rinnai przed kontynuowaniem. Zaktualizuj hasło i spróbuj ponownie."
         },
         "abort": {
             "already_configured": "Urządzenie jest już skonfigurowane",

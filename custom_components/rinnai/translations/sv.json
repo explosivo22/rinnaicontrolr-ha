@@ -93,7 +93,9 @@
             "invalid_auth": "Ogiltig autentisering",
             "unknown": "Oväntat fel",
             "host_required": "Värd-IP-adress krävs för lokalt och hybridläge",
-            "local_connection_failed": "Kan inte ansluta till Rinnai-kontrollern på den angivna IP-adressen. Kontrollera: (1) IP-adressen är korrekt, (2) Port 9798 är tillgänglig, (3) Kontrollern är påslagen. Om lokal anslutning inte är möjlig, använd molnläge istället."
+            "local_connection_failed": "Kan inte ansluta till Rinnai-kontrollern på den angivna IP-adressen. Kontrollera: (1) IP-adressen är korrekt, (2) Port 9798 är tillgänglig, (3) Kontrollern är påslagen. Om lokal anslutning inte är möjlig, använd molnläge istället.",
+            "user_not_confirmed": "Din e-postadress har inte bekräftats. Kontrollera din e-post och bekräfta ditt Rinnai-konto innan du fortsätter.",
+            "password_change_required": "Du måste ändra ditt lösenord i Rinnai-appen innan du kan fortsätta. Uppdatera ditt lösenord och försök igen."
         },
         "abort": {
             "already_configured": "Enheten är redan konfigurerad",

@@ -89,11 +89,13 @@
             }
         },
         "error": {
-            "cannot_connect": "Verbinden mislukt",
-            "invalid_auth": "Ongeldige verificatie",
+            "cannot_connect": "Verbinding mislukt",
+            "invalid_auth": "Ongeldige authenticatie",
             "unknown": "Onverwachte fout",
             "host_required": "Host IP-adres is vereist voor Lokale en Hybride modi",
-            "local_connection_failed": "Kan geen verbinding maken met de Rinnai-controller op het opgegeven IP-adres. Controleer: (1) Het IP-adres is correct, (2) Poort 9798 is toegankelijk, (3) De controller is ingeschakeld. Als lokale verbinding niet mogelijk is, gebruik dan de Cloud-modus."
+            "local_connection_failed": "Kan geen verbinding maken met Rinnai-controller op het opgegeven IP-adres. Controleer: (1) Het IP-adres is correct, (2) Poort 9798 is toegankelijk, (3) De controller staat aan. Als lokale verbinding niet mogelijk is, gebruik dan de Cloud-modus.",
+            "user_not_confirmed": "Uw e-mailadres is niet bevestigd. Controleer uw e-mail en bevestig uw Rinnai-account voordat u doorgaat.",
+            "password_change_required": "U moet uw wachtwoord wijzigen in de Rinnai-app voordat u kunt doorgaan. Werk uw wachtwoord bij en probeer het opnieuw."
         },
         "abort": {
             "already_configured": "Apparaat is al geconfigureerd",
