@@ -131,7 +131,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "Po włączeniu pobiera szczegółowe dane serwisowe z urządzenia w określonym interwale. Może to zwiększyć użycie API.",
-                    "maint_interval_minutes": "Jak często pobierać dane serwisowe z urządzenia (w minutach). Niższe wartości zapewniają częstsze aktualizacje, ale zwiększają użycie API.",
+                    "maint_interval_minutes": "Jak często pobierać dane serwisowe z urządzenia (w minutach). Niższe wartości zapewniają częstsze aktualizacje, ale zwiększają użycie API. Dostępne tylko dla trybów połączenia Lokalnego i Hybrydowego.",
                     "recirculation_duration": "Czas w minutach (5-300) używany przez encję przełącznika Cyrkulacji przy włączeniu."
                 }
             }

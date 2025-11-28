@@ -651,44 +651,64 @@ class OptionsFlow(config_entries.OptionsFlow):
         """Initialize options flow."""
         self._config_entry = config_entry
 
+    def _supports_maintenance_interval(self) -> bool:
+        """Check if the connection mode supports configurable maintenance interval.
+
+        Only local and hybrid modes support configurable maintenance intervals.
+        Cloud mode uses the default interval.
+        """
+        connection_mode = self._config_entry.data.get(
+            CONF_CONNECTION_MODE, CONNECTION_MODE_CLOUD
+        )
+        return connection_mode in (CONNECTION_MODE_LOCAL, CONNECTION_MODE_HYBRID)
+
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Handle options flow."""
         if user_input is not None:
             LOGGER.debug("Options flow: updating options %s", user_input)
+            # For cloud mode, ensure default maintenance interval is used
+            if not self._supports_maintenance_interval():
+                user_input[CONF_MAINT_INTERVAL_MINUTES] = DEFAULT_MAINT_INTERVAL_MINUTES
             return self.async_create_entry(title="", data=user_input)
+
+        # Build schema based on connection mode
+        schema_dict: dict[vol.Optional, Any] = {
+            vol.Optional(
+                CONF_MAINT_INTERVAL_ENABLED,
+                default=self._config_entry.options.get(
+                    CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
+                ),
+            ): bool,
+        }
+
+        # Only show maintenance interval slider for local and hybrid modes
+        if self._supports_maintenance_interval():
+            schema_dict[vol.Optional(
+                CONF_MAINT_INTERVAL_MINUTES,
+                default=self._config_entry.options.get(
+                    CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
+                ),
+            )] = NumberSelector(
+                NumberSelectorConfig(
+                    min=MIN_MAINT_INTERVAL_MINUTES,
+                    max=MAX_MAINT_INTERVAL_MINUTES,
+                    step=1,
+                    mode=NumberSelectorMode.SLIDER,
+                    unit_of_measurement="minutes",
+                )
+            )
+
+        # Add recirculation duration option
+        schema_dict[vol.Optional(
+            CONF_RECIRCULATION_DURATION,
+            default=self._config_entry.options.get(
+                CONF_RECIRCULATION_DURATION, DEFAULT_RECIRCULATION_DURATION
+            ),
+        )] = vol.All(vol.Coerce(int), vol.Range(min=5, max=300))
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Optional(
-                        CONF_MAINT_INTERVAL_ENABLED,
-                        default=self._config_entry.options.get(
-                            CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
-                        ),
-                    ): bool,
-                    vol.Optional(
-                        CONF_MAINT_INTERVAL_MINUTES,
-                        default=self._config_entry.options.get(
-                            CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
-                        ),
-                    ): NumberSelector(
-                        NumberSelectorConfig(
-                            min=MIN_MAINT_INTERVAL_MINUTES,
-                            max=MAX_MAINT_INTERVAL_MINUTES,
-                            step=1,
-                            mode=NumberSelectorMode.SLIDER,
-                            unit_of_measurement="minutes",
-                        )
-                    ),
-                    vol.Optional(
-                        CONF_RECIRCULATION_DURATION,
-                        default=self._config_entry.options.get(
-                            CONF_RECIRCULATION_DURATION, DEFAULT_RECIRCULATION_DURATION
-                        ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=5, max=300)),
-                }
-            ),
+            data_schema=vol.Schema(schema_dict),
         )

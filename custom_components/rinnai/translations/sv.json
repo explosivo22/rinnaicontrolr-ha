@@ -131,7 +131,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "När aktiverat hämtas detaljerad underhållsdata från enheten med det angivna intervallet. Detta kan öka API-användningen.",
-                    "maint_interval_minutes": "Hur ofta underhållsdata hämtas från enheten (i minuter). Lägre värden ger mer frekventa uppdateringar men ökar API-användningen.",
+                    "maint_interval_minutes": "Hur ofta underhållsdata hämtas från enheten (i minuter). Lägre värden ger mer frekventa uppdateringar men ökar API-användningen. Endast tillgängligt för lokalt och hybridanslutningsläge.",
                     "recirculation_duration": "Tid i minuter (5-300) som används av cirkulationsbrytarentiteten när den slås på."
                 }
             }

@@ -132,7 +132,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device at the specified interval. This may increase API usage.",
-                    "maint_interval_minutes": "How often to retrieve maintenance data from the device (in minutes). Lower values provide more frequent updates but increase API usage.",
+                    "maint_interval_minutes": "How often to retrieve maintenance data from the device (in minutes). Lower values provide more frequent updates but increase API usage. Only available for Local and Hybrid connection modes.",
                     "recirculation_duration": "Duration in minutes (5-300) used by the Recirculation switch entity when turned on."
                 }
             }

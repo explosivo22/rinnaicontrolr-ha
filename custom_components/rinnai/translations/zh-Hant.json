@@ -131,7 +131,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "啟用後，按指定間隔從裝置擷取詳細維護資料。這可能會增加 API 使用量。",
-                    "maint_interval_minutes": "從裝置擷取維護資料的頻率（分鐘）。較低的值提供更頻繁的更新，但會增加 API 使用量。",
+                    "maint_interval_minutes": "從裝置擷取維護資料的頻率（分鐘）。較低的值提供更頻繁的更新，但會增加 API 使用量。僅適用於本地和混合連接模式。",
                     "recirculation_duration": "循環開關實體開啟時使用的時間（分鐘）（5-300）。"
                 }
             }

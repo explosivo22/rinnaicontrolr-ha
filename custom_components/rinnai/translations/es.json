@@ -131,7 +131,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "Cuando está habilitado, recupera datos detallados de mantenimiento del dispositivo en el intervalo especificado. Esto puede aumentar el uso de la API.",
-                    "maint_interval_minutes": "Con qué frecuencia recuperar datos de mantenimiento del dispositivo (en minutos). Valores más bajos proporcionan actualizaciones más frecuentes pero aumentan el uso de la API.",
+                    "maint_interval_minutes": "Con qué frecuencia recuperar datos de mantenimiento del dispositivo (en minutos). Valores más bajos proporcionan actualizaciones más frecuentes pero aumentan el uso de la API. Solo disponible para los modos de conexión Local e Híbrido.",
                     "recirculation_duration": "Duración en minutos (5-300) utilizada por la entidad del interruptor de Recirculación al encenderlo."
                 }
             }

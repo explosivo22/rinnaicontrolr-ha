@@ -131,7 +131,7 @@
                 },
                 "data_description": {
                     "maint_interval_enabled": "Indien ingeschakeld, worden gedetailleerde onderhoudsgegevens van het apparaat opgehaald met het opgegeven interval. Dit kan het API-gebruik verhogen.",
-                    "maint_interval_minutes": "Hoe vaak onderhoudsgegevens van het apparaat worden opgehaald (in minuten). Lagere waarden bieden frequentere updates maar verhogen het API-gebruik.",
+                    "maint_interval_minutes": "Hoe vaak onderhoudsgegevens van het apparaat worden opgehaald (in minuten). Lagere waarden bieden frequentere updates maar verhogen het API-gebruik. Alleen beschikbaar voor Lokale en Hybride verbindingsmodi.",
                     "recirculation_duration": "Duur in minuten (5-300) gebruikt door de Circulatie-schakelaarentiteit wanneer ingeschakeld."
                 }
             }
