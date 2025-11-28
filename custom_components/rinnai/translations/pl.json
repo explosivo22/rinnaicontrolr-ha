@@ -124,10 +124,12 @@
                 "description": "Skonfiguruj opcje dla podgrzewacza wody Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Włącz pobieranie danych serwisowych",
+                    "maint_interval_minutes": "Interwał pobierania danych serwisowych",
                     "recirculation_duration": "Czas Cyrkulacji"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Po włączeniu pobiera szczegółowe dane serwisowe z urządzenia co 5 minut. Może to zwiększyć użycie API.",
+                    "maint_interval_enabled": "Po włączeniu pobiera szczegółowe dane serwisowe z urządzenia w określonym interwale. Może to zwiększyć użycie API.",
+                    "maint_interval_minutes": "Jak często pobierać dane serwisowe z urządzenia (w minutach). Niższe wartości zapewniają częstsze aktualizacje, ale zwiększają użycie API.",
                     "recirculation_duration": "Czas w minutach (5-300) używany przez encję przełącznika Cyrkulacji przy włączeniu."
                 }
             }

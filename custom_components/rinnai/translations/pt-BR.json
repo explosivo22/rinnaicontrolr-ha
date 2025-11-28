@@ -124,10 +124,12 @@
                 "description": "Configure opções para o seu aquecedor de água Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Habilitar recuperação de dados de manutenção",
+                    "maint_interval_minutes": "Intervalo de recuperação de manutenção",
                     "recirculation_duration": "Duração de Recirculação"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Quando habilitado, recupera dados de manutenção detalhados do dispositivo a cada 5 minutos. Isso pode aumentar o uso da API.",
+                    "maint_interval_enabled": "Quando habilitado, recupera dados de manutenção detalhados do dispositivo no intervalo especificado. Isso pode aumentar o uso da API.",
+                    "maint_interval_minutes": "Com que frequência recuperar dados de manutenção do dispositivo (em minutos). Valores mais baixos fornecem atualizações mais frequentes, mas aumentam o uso da API.",
                     "recirculation_duration": "Duração em minutos (5-300) usada pela entidade interruptor de Recirculação quando ligado."
                 }
             }

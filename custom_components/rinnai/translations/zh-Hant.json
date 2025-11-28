@@ -124,10 +124,12 @@
                 "description": "設定您的林內熱水器選項。",
                 "data": {
                     "maint_interval_enabled": "啟用維護資料擷取",
+                    "maint_interval_minutes": "維護資料擷取間隔",
                     "recirculation_duration": "循環持續時間"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "啟用後，每 5 分鐘從裝置擷取詳細維護資料。這可能會增加 API 使用量。",
+                    "maint_interval_enabled": "啟用後，按指定間隔從裝置擷取詳細維護資料。這可能會增加 API 使用量。",
+                    "maint_interval_minutes": "從裝置擷取維護資料的頻率（分鐘）。較低的值提供更頻繁的更新，但會增加 API 使用量。",
                     "recirculation_duration": "循環開關實體開啟時使用的時間（分鐘）（5-300）。"
                 }
             }

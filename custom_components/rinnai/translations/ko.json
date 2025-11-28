@@ -124,10 +124,12 @@
                 "description": "Rinnai 온수기 옵션을 구성하세요.",
                 "data": {
                     "maint_interval_enabled": "유지보수 데이터 검색 활성화",
+                    "maint_interval_minutes": "유지보수 검색 간격",
                     "recirculation_duration": "순환 시간"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "활성화하면 5분마다 기기에서 상세 유지보수 데이터를 검색합니다. API 사용량이 증가할 수 있습니다.",
+                    "maint_interval_enabled": "활성화하면 지정된 간격으로 기기에서 상세 유지보수 데이터를 검색합니다. API 사용량이 증가할 수 있습니다.",
+                    "maint_interval_minutes": "기기에서 유지보수 데이터를 검색하는 빈도(분). 낮은 값은 더 자주 업데이트되지만 API 사용량이 증가합니다.",
                     "recirculation_duration": "순환 스위치 엔티티를 켤 때 사용되는 시간(분) (5-300)."
                 }
             }

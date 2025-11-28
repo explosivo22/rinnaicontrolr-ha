@@ -124,10 +124,12 @@
                 "description": "Konfigurera alternativ för din Rinnai-varmvattenberedare.",
                 "data": {
                     "maint_interval_enabled": "Aktivera hämtning av underhållsdata",
+                    "maint_interval_minutes": "Underhållshämtningsintervall",
                     "recirculation_duration": "Cirkulationstid"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "När aktiverat hämtas detaljerad underhållsdata från enheten var 5:e minut. Detta kan öka API-användningen.",
+                    "maint_interval_enabled": "När aktiverat hämtas detaljerad underhållsdata från enheten med det angivna intervallet. Detta kan öka API-användningen.",
+                    "maint_interval_minutes": "Hur ofta underhållsdata hämtas från enheten (i minuter). Lägre värden ger mer frekventa uppdateringar men ökar API-användningen.",
                     "recirculation_duration": "Tid i minuter (5-300) som används av cirkulationsbrytarentiteten när den slås på."
                 }
             }

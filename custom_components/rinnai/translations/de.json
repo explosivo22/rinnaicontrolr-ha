@@ -124,10 +124,12 @@
                 "description": "Konfigurieren Sie Optionen für Ihren Rinnai-Warmwasserbereiter.",
                 "data": {
                     "maint_interval_enabled": "Wartungsdatenabruf aktivieren",
+                    "maint_interval_minutes": "Wartungsabrufintervall",
                     "recirculation_duration": "Zirkulationsdauer"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Wenn aktiviert, werden alle 5 Minuten detaillierte Wartungsdaten vom Gerät abgerufen. Dies kann die API-Nutzung erhöhen.",
+                    "maint_interval_enabled": "Wenn aktiviert, werden detaillierte Wartungsdaten vom Gerät im angegebenen Intervall abgerufen. Dies kann die API-Nutzung erhöhen.",
+                    "maint_interval_minutes": "Wie oft Wartungsdaten vom Gerät abgerufen werden sollen (in Minuten). Niedrigere Werte liefern häufigere Updates, erhöhen aber die API-Nutzung.",
                     "recirculation_duration": "Dauer in Minuten (5-300), die von der Zirkulations-Schalter-Entität beim Einschalten verwendet wird."
                 }
             }

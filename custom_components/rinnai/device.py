@@ -18,10 +18,12 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     CONF_ACCESS_TOKEN,
     CONF_MAINT_INTERVAL_ENABLED,
+    CONF_MAINT_INTERVAL_MINUTES,
     CONF_REFRESH_TOKEN,
     CONNECTION_MODE_CLOUD,
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
+    DEFAULT_MAINT_INTERVAL_MINUTES,
     DOMAIN as RINNAI_DOMAIN,
     LOGGER,
 )
@@ -30,9 +32,6 @@ if TYPE_CHECKING:
     from aiorinnai.api import API
 
     from .local import RinnaiLocalClient
-
-# Minimum time between maintenance retrievals
-MIN_TIME_BETWEEN_MAINTENANCE = timedelta(minutes=5)
 # Limit concurrent API calls per device
 PARALLEL_UPDATES = 1
 # Maximum retry attempts for transient errors
@@ -846,9 +845,15 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _maybe_do_maintenance_retrieval(self) -> None:
         """Perform maintenance data retrieval if enough time has passed."""
         now = time.monotonic()
+        # Get configurable interval from options, default to 5 minutes
+        interval_minutes = self.options.get(
+            CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
+        )
+        min_time_between_maintenance = timedelta(minutes=interval_minutes)
+        
         if (
             now - self._last_maintenance_retrieval
-            < MIN_TIME_BETWEEN_MAINTENANCE.total_seconds()
+            < min_time_between_maintenance.total_seconds()
         ):
             return
 

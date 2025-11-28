@@ -124,10 +124,12 @@
                 "description": "Configureer opties voor uw Rinnai-boiler.",
                 "data": {
                     "maint_interval_enabled": "Onderhoudsgegevens ophalen inschakelen",
+                    "maint_interval_minutes": "Onderhoud ophaalinterval",
                     "recirculation_duration": "Circulatieduur"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Indien ingeschakeld, worden elke 5 minuten gedetailleerde onderhoudsgegevens van het apparaat opgehaald. Dit kan het API-gebruik verhogen.",
+                    "maint_interval_enabled": "Indien ingeschakeld, worden gedetailleerde onderhoudsgegevens van het apparaat opgehaald met het opgegeven interval. Dit kan het API-gebruik verhogen.",
+                    "maint_interval_minutes": "Hoe vaak onderhoudsgegevens van het apparaat worden opgehaald (in minuten). Lagere waarden bieden frequentere updates maar verhogen het API-gebruik.",
                     "recirculation_duration": "Duur in minuten (5-300) gebruikt door de Circulatie-schakelaarentiteit wanneer ingeschakeld."
                 }
             }

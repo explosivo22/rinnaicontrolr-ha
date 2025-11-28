@@ -125,10 +125,12 @@
                 "description": "Configure options for your Rinnai water heater.",
                 "data": {
                     "maint_interval_enabled": "Enable maintenance data retrieval",
+                    "maint_interval_minutes": "Maintenance retrieval interval",
                     "recirculation_duration": "Recirculation Duration"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device every 5 minutes. This may increase API usage.",
+                    "maint_interval_enabled": "When enabled, retrieves detailed maintenance data from the device at the specified interval. This may increase API usage.",
+                    "maint_interval_minutes": "How often to retrieve maintenance data from the device (in minutes). Lower values provide more frequent updates but increase API usage.",
                     "recirculation_duration": "Duration in minutes (5-300) used by the Recirculation switch entity when turned on."
                 }
             }

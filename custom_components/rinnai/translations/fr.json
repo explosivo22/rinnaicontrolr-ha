@@ -124,10 +124,12 @@
                 "description": "Configurez les options de votre chauffe-eau Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Activer la récupération des données de maintenance",
+                    "maint_interval_minutes": "Intervalle de récupération de maintenance",
                     "recirculation_duration": "Durée de Recirculation"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Lorsqu'activé, récupère les données de maintenance détaillées de l'appareil toutes les 5 minutes. Cela peut augmenter l'utilisation de l'API.",
+                    "maint_interval_enabled": "Lorsqu'activé, récupère les données de maintenance détaillées de l'appareil à l'intervalle spécifié. Cela peut augmenter l'utilisation de l'API.",
+                    "maint_interval_minutes": "Fréquence de récupération des données de maintenance de l'appareil (en minutes). Des valeurs plus basses fournissent des mises à jour plus fréquentes mais augmentent l'utilisation de l'API.",
                     "recirculation_duration": "Durée en minutes (5-300) utilisée par l'entité interrupteur de Recirculation lors de l'activation."
                 }
             }

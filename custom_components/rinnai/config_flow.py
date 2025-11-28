@@ -14,6 +14,9 @@ from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.helpers.selector import (
+    NumberSelector,
+    NumberSelectorConfig,
+    NumberSelectorMode,
     SelectOptionDict,
     SelectSelector,
     SelectSelectorConfig,
@@ -24,15 +27,19 @@ from .const import (
     CONF_CONNECTION_MODE,
     CONF_HOST,
     CONF_MAINT_INTERVAL_ENABLED,
+    CONF_MAINT_INTERVAL_MINUTES,
     CONF_RECIRCULATION_DURATION,
     CONF_REFRESH_TOKEN,
     CONNECTION_MODE_CLOUD,
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
     DEFAULT_MAINT_INTERVAL_ENABLED,
+    DEFAULT_MAINT_INTERVAL_MINUTES,
     DEFAULT_RECIRCULATION_DURATION,
     DOMAIN,
     LOGGER,
+    MAX_MAINT_INTERVAL_MINUTES,
+    MIN_MAINT_INTERVAL_MINUTES,
 )
 from .local import RinnaiLocalClient
 
@@ -549,6 +556,20 @@ class OptionsFlow(config_entries.OptionsFlow):
                             CONF_MAINT_INTERVAL_ENABLED, DEFAULT_MAINT_INTERVAL_ENABLED
                         ),
                     ): bool,
+                    vol.Optional(
+                        CONF_MAINT_INTERVAL_MINUTES,
+                        default=self._config_entry.options.get(
+                            CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
+                        ),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=MIN_MAINT_INTERVAL_MINUTES,
+                            max=MAX_MAINT_INTERVAL_MINUTES,
+                            step=1,
+                            mode=NumberSelectorMode.SLIDER,
+                            unit_of_measurement="minutes",
+                        )
+                    ),
                     vol.Optional(
                         CONF_RECIRCULATION_DURATION,
                         default=self._config_entry.options.get(

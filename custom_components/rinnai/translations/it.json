@@ -124,10 +124,12 @@
                 "description": "Configura le opzioni per il tuo scaldabagno Rinnai.",
                 "data": {
                     "maint_interval_enabled": "Abilita recupero dati di manutenzione",
+                    "maint_interval_minutes": "Intervallo di recupero manutenzione",
                     "recirculation_duration": "Durata Ricircolo"
                 },
                 "data_description": {
-                    "maint_interval_enabled": "Quando abilitato, recupera dati di manutenzione dettagliati dal dispositivo ogni 5 minuti. Questo può aumentare l'uso dell'API.",
+                    "maint_interval_enabled": "Quando abilitato, recupera dati di manutenzione dettagliati dal dispositivo all'intervallo specificato. Questo può aumentare l'uso dell'API.",
+                    "maint_interval_minutes": "Frequenza di recupero dei dati di manutenzione dal dispositivo (in minuti). Valori più bassi forniscono aggiornamenti più frequenti ma aumentano l'uso dell'API.",
                     "recirculation_duration": "Durata in minuti (5-300) utilizzata dall'entità interruttore Ricircolo quando attivato."
                 }
             }
