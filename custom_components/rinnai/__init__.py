@@ -203,11 +203,14 @@ async def _setup_cloud_client(
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError
+    from aiorinnai.errors import RequestError, UserNotFound, UserNotConfirmed
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Setting up cloud client for %s", entry.data.get(CONF_EMAIL))
 
-    client = API()
+    # Use Home Assistant's shared session for connection pooling
+    session = async_get_clientsession(hass)
+    client = API(session=session)
 
     try:
         await client.async_renew_access_token(
@@ -587,7 +590,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError
+    from aiorinnai.errors import RequestError, UserNotFound, UserNotConfirmed
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Migrating from version %s", config_entry.version)
 
@@ -602,7 +606,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         if not data[CONF_ACCESS_TOKEN] or not data[CONF_REFRESH_TOKEN]:
             # Fetch new tokens from the API using existing credentials
-            client = API()
+            # Use Home Assistant's shared session for connection pooling
+            session = async_get_clientsession(hass)
+            client = API(session=session)
             try:
                 await client.async_login(
                     config_entry.data[CONF_EMAIL],

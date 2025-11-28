@@ -7,7 +7,12 @@ from typing import Any
 import voluptuous as vol
 
 from aiorinnai import API
-from aiorinnai.errors import RequestError
+from aiorinnai.errors import (
+    RequestError,
+    UserNotFound,
+    UserNotConfirmed,
+    PasswordChangeRequired,
+)
 
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
@@ -142,9 +147,36 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         LOGGER.debug("Config flow: attempting cloud login for %s", self.username)
 
         try:
-            self.api = API()
+            # Use Home Assistant's shared session for connection pooling
+            from homeassistant.helpers.aiohttp_client import async_get_clientsession
+            session = async_get_clientsession(self.hass)
+            self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
             LOGGER.debug("Config flow: cloud login successful")
+        except UserNotFound:
+            LOGGER.error("User account not found for %s", self.username)
+            errors["base"] = "invalid_auth"
+            return self.async_show_form(
+                step_id="cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except UserNotConfirmed:
+            LOGGER.error("User email not confirmed for %s", self.username)
+            errors["base"] = "user_not_confirmed"
+            return self.async_show_form(
+                step_id="cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except PasswordChangeRequired:
+            LOGGER.error("Password change required for %s", self.username)
+            errors["base"] = "password_change_required"
+            return self.async_show_form(
+                step_id="cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
         except RequestError as request_error:
             LOGGER.error("Error connecting to the Rinnai API: %s", request_error)
             errors["base"] = "cannot_connect"
@@ -253,8 +285,35 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.password = user_input[CONF_PASSWORD]
 
         try:
-            self.api = API()
+            # Use Home Assistant's shared session for connection pooling
+            from homeassistant.helpers.aiohttp_client import async_get_clientsession
+            session = async_get_clientsession(self.hass)
+            self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
+        except UserNotFound:
+            LOGGER.error("User account not found for %s", self.username)
+            errors["base"] = "invalid_auth"
+            return self.async_show_form(
+                step_id="hybrid_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except UserNotConfirmed:
+            LOGGER.error("User email not confirmed for %s", self.username)
+            errors["base"] = "user_not_confirmed"
+            return self.async_show_form(
+                step_id="hybrid_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except PasswordChangeRequired:
+            LOGGER.error("Password change required for %s", self.username)
+            errors["base"] = "password_change_required"
+            return self.async_show_form(
+                step_id="hybrid_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
         except RequestError as request_error:
             LOGGER.error("Error connecting to the Rinnai API: %s", request_error)
             errors["base"] = "cannot_connect"
@@ -349,8 +408,35 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.password = user_input[CONF_PASSWORD]
 
         try:
-            self.api = API()
+            # Use Home Assistant's shared session for connection pooling
+            from homeassistant.helpers.aiohttp_client import async_get_clientsession
+            session = async_get_clientsession(self.hass)
+            self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
+        except UserNotFound:
+            LOGGER.error("Reauth: User account not found for %s", self.username)
+            errors["base"] = "invalid_auth"
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except UserNotConfirmed:
+            LOGGER.error("Reauth: User email not confirmed for %s", self.username)
+            errors["base"] = "user_not_confirmed"
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except PasswordChangeRequired:
+            LOGGER.error("Reauth: Password change required for %s", self.username)
+            errors["base"] = "password_change_required"
+            return self.async_show_form(
+                step_id="reauth",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
         except RequestError as request_error:
             LOGGER.error(
                 "Reauth: Error connecting to the Rinnai API: %s", request_error
@@ -494,8 +580,35 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.password = user_input[CONF_PASSWORD]
 
         try:
-            self.api = API()
+            # Use Home Assistant's shared session for connection pooling
+            from homeassistant.helpers.aiohttp_client import async_get_clientsession
+            session = async_get_clientsession(self.hass)
+            self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
+        except UserNotFound:
+            LOGGER.error("Reconfigure: User account not found for %s", self.username)
+            errors["base"] = "invalid_auth"
+            return self.async_show_form(
+                step_id="reconfigure_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except UserNotConfirmed:
+            LOGGER.error("Reconfigure: User email not confirmed for %s", self.username)
+            errors["base"] = "user_not_confirmed"
+            return self.async_show_form(
+                step_id="reconfigure_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
+        except PasswordChangeRequired:
+            LOGGER.error("Reconfigure: Password change required for %s", self.username)
+            errors["base"] = "password_change_required"
+            return self.async_show_form(
+                step_id="reconfigure_cloud",
+                data_schema=_get_cloud_auth_schema(default_email=self.username),
+                errors=errors,
+            )
         except RequestError as request_error:
             LOGGER.error(
                 "Reconfigure: Error connecting to the Rinnai API: %s", request_error

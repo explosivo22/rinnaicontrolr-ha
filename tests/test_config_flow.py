@@ -17,6 +17,21 @@ class _RequestError(Exception):
     pass
 
 
+class _UserNotFound(Exception):
+    """Fake UserNotFound."""
+    pass
+
+
+class _UserNotConfirmed(Exception):
+    """Fake UserNotConfirmed."""
+    pass
+
+
+class _PasswordChangeRequired(Exception):
+    """Fake PasswordChangeRequired."""
+    pass
+
+
 class _FakeUser:
     """Fake user API."""
     async def get_info(self):
@@ -42,13 +57,15 @@ class _FakeDevice:
 
 class _FakeAPI:
     """Fake aiorinnai API."""
-    def __init__(self):
+    def __init__(self, session=None, timeout=30):
         self.user = _FakeUser()
         self.device = _FakeDevice()
         self.access_token = "test_access_token"
         self.refresh_token = "test_refresh_token"
         self._should_fail = False
         self._fail_with_request_error = False
+        self._session = session
+        self._timeout = timeout
 
     async def async_login(self, email: str, password: str):
         if self._fail_with_request_error:
@@ -90,6 +107,9 @@ def _install_fake_aiorinnai(monkeypatch):
     mod_aiorinnai.API = _FakeAPI
     mod_ai.API = _FakeAPI
     mod_err.RequestError = _RequestError
+    mod_err.UserNotFound = _UserNotFound
+    mod_err.UserNotConfirmed = _UserNotConfirmed
+    mod_err.PasswordChangeRequired = _PasswordChangeRequired
 
     monkeypatch.setitem(sys.modules, "aiorinnai", mod_aiorinnai)
     monkeypatch.setitem(sys.modules, "aiorinnai.api", mod_ai)
