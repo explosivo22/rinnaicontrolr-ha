@@ -197,8 +197,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         data = {
             CONF_CONNECTION_MODE: CONNECTION_MODE_CLOUD,
             CONF_EMAIL: self.username,
-            CONF_ACCESS_TOKEN: self.api.access_token,
-            CONF_REFRESH_TOKEN: self.api.refresh_token,
+            CONF_ACCESS_TOKEN: self.api._access_token,
+            CONF_REFRESH_TOKEN: self.api._refresh_token,
         }
 
         LOGGER.info("Config flow: creating cloud config entry for %s", title)
@@ -377,8 +377,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         data = {
             CONF_CONNECTION_MODE: CONNECTION_MODE_HYBRID,
             CONF_EMAIL: self.username,
-            CONF_ACCESS_TOKEN: self.api.access_token,
-            CONF_REFRESH_TOKEN: self.api.refresh_token,
+            CONF_ACCESS_TOKEN: self.api._access_token,
+            CONF_REFRESH_TOKEN: self.api._refresh_token,
             CONF_HOST: self.host,
         }
 
@@ -461,8 +461,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
                 data={
                     **entry.data,
                     CONF_EMAIL: self.username,
-                    CONF_ACCESS_TOKEN: self.api.access_token,
-                    CONF_REFRESH_TOKEN: self.api.refresh_token,
+                    CONF_ACCESS_TOKEN: self.api._access_token,
+                    CONF_REFRESH_TOKEN: self.api._refresh_token,
                 },
             )
             self.hass.async_create_task(
@@ -625,8 +625,8 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             **entry.data,
             CONF_CONNECTION_MODE: self.connection_mode,
             CONF_EMAIL: self.username,
-            CONF_ACCESS_TOKEN: self.api.access_token,
-            CONF_REFRESH_TOKEN: self.api.refresh_token,
+            CONF_ACCESS_TOKEN: self.api._access_token,
+            CONF_REFRESH_TOKEN: self.api._refresh_token,
         }
         if self.host:
             new_data[CONF_HOST] = self.host
