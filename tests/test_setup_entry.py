@@ -48,19 +48,75 @@ class _FakeDevice:
 
 
 class _FakeAPI:
-    def __init__(self):
+    """Fake aiorinnai API matching real aiorinnai.API signature."""
+    def __init__(
+        self,
+        session=None,
+        timeout: float = 30.0,
+        retry_count: int = 3,
+        retry_delay: float = 1.0,
+        retry_multiplier: float = 2.0,
+        executor_timeout: float = 30.0,
+    ):
+        # Match real API attributes
+        self.session = session
+        self.timeout = timeout
+        self.retry_count = retry_count
+        self.retry_delay = retry_delay
+        self.retry_multiplier = retry_multiplier
+        self.executor_timeout = executor_timeout
+        self.username = None
+        self.is_connected = False
+        
+        # Private token attributes (real API only has private ones)
+        self._access_token = None
+        self._refresh_token = None
+        self._id_token = None
+        
+        # Sub-objects (populated immediately for setup tests)
         self.user = _FakeUser()
         self.device = _FakeDevice()
-        self.access_token = "access"
-        self.refresh_token = "refresh"
+    
+    @property
+    def access_token(self):
+        """Public accessor for access token (for config_flow.py compatibility)."""
+        return self._access_token
+    
+    @property
+    def refresh_token(self):
+        """Public accessor for refresh token (for config_flow.py compatibility)."""
+        return self._refresh_token
 
-    async def async_renew_access_token(self, email: str, access: str, refresh: str):
+    async def async_renew_access_token(
+        self,
+        email: str | None = None,
+        access_token: str | None = None,
+        refresh_token: str | None = None,
+    ):
+        """Simulate token renewal."""
+        self.username = email
+        self.is_connected = True
+        self._access_token = "renewed_access_token"
+        self._refresh_token = "renewed_refresh_token"
+        self._id_token = "renewed_id_token"
         return None
 
     async def async_login(self, email: str, password: str):
-        self.access_token = "new_access"
-        self.refresh_token = "new_refresh"
+        """Simulate login."""
+        self.username = email
+        self.is_connected = True
+        self._access_token = "new_access"
+        self._refresh_token = "new_refresh"
+        self._id_token = "new_id_token"
         return None
+
+    async def async_check_token(self):
+        """Check if token is valid."""
+        pass
+
+    def close(self):
+        """Close the session."""
+        pass
 
 
 def _ensure_package_modules(repo_root: pathlib.Path):
@@ -121,7 +177,8 @@ def _load_integration_module(monkeypatch):
     return _load_module("custom_components.rinnai", base_dir / "__init__.py")
 
 
-def _load_config_flow_module():
+def _load_config_flow_module(monkeypatch):
+    _install_fake_aiorinnai(monkeypatch)
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     _ensure_package_modules(repo_root)
     base_dir = repo_root / "custom_components" / "rinnai"
@@ -214,7 +271,7 @@ async def test_async_setup_entry_auth_failed(hass, monkeypatch):
 @pytest.mark.asyncio
 async def test_config_flow_reauth_success(hass, monkeypatch):
     _install_fake_aiorinnai(monkeypatch)
-    cf_mod = _load_config_flow_module()
+    cf_mod = _load_config_flow_module(monkeypatch)
 
     # Create an existing entry that needs reauth
     entry = MockConfigEntry(
