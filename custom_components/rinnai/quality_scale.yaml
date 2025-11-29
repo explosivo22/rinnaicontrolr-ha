@@ -3,65 +3,173 @@
 
 rules:
   # ============================================================================
-  # Bronze tier requirements (9/9 complete)
+  # Bronze tier requirements
   # ============================================================================
-  config_flow: done
-  test_before_setup: done
-  unique_config_entry:
-    status: exempt
-    comment: Uses async_set_unique_id() with email (cloud) or serial (local)
-  has_entity_name: done
-  entity_unique_id: done
-  docs_high_level_description: done
-  docs_installation_instructions: done
-  appropriate_polling: done
+  action-setup:
+    status: done
+    comment: Services registered in water_heater.py async_setup_entry via entity_platform
+  appropriate-polling:
+    status: done
+    comment: 60-second polling interval in coordinator
   brands:
     status: exempt
     comment: Custom component, not in HA core brands
-
-  # ============================================================================
-  # Silver tier requirements (7/7 complete)
-  # ============================================================================
-  config_entry_unloading: done
-  reauthentication_flow: done
-  log_when_unavailable: done
-  parallel_updates: done
-  stale_devices:
+  common-modules:
     status: done
-    comment: async_check_and_remove_stale_devices() removes disappeared devices
-  entity_unavailable: done
-  action_exceptions: done
-  common_modules:
+    comment: entity.py contains shared RinnaiEntity base class
+  config-flow:
+    status: done
+    comment: Full UI config flow with cloud/local/hybrid modes
+  config-flow-test-coverage:
+    status: done
+    comment: Tests in test_config_flow.py cover all flow paths
+  dependency-transparency:
+    status: done
+    comment: aiorinnai is a public PyPI package
+  docs-actions:
+    status: done
+    comment: README.md documents start_recirculation and stop_recirculation services
+  docs-high-level-description:
+    status: done
+    comment: README.md has comprehensive description
+  docs-installation-instructions:
+    status: done
+    comment: README.md has HACS and manual installation steps
+  docs-removal-instructions:
+    status: done
+    comment: Standard HA integration removal via Integrations page
+  entity-event-setup:
     status: exempt
-    comment: No shared modules with other integrations
+    comment: No event subscriptions, uses polling coordinator
+  entity-unique-id:
+    status: done
+    comment: All entities have unique_id set in entity.py base class
+  has-entity-name:
+    status: done
+    comment: _attr_has_entity_name = True in entity.py
+  runtime-data:
+    status: done
+    comment: Uses ConfigEntry.runtime_data with RinnaiRuntimeData dataclass
+  test-before-configure:
+    status: done
+    comment: Config flow validates credentials and tests connection
+  test-before-setup:
+    status: done
+    comment: _setup_cloud_client and _setup_local_client validate before setup
+  unique-config-entry:
+    status: done
+    comment: Uses async_set_unique_id() with email (cloud) or serial (local)
 
   # ============================================================================
-  # Gold tier requirements (7/7 complete)
+  # Silver tier requirements
   # ============================================================================
+  action-exceptions:
+    status: done
+    comment: Actions raise ServiceValidationError, HomeAssistantError
+  config-entry-unloading:
+    status: done
+    comment: async_unload_entry properly cleans up platforms and listeners
+  docs-configuration-parameters:
+    status: done
+    comment: README.md documents all configuration options
+  docs-installation-parameters:
+    status: done
+    comment: README.md documents email, password, host, connection mode
+  entity-unavailable:
+    status: done
+    comment: available property combines coordinator and device availability
+  integration-owner:
+    status: done
+    comment: "@explosivo22 in manifest.json codeowners"
+  log-when-unavailable:
+    status: done
+    comment: Coordinator logs connection errors and recovery
+  parallel-updates:
+    status: done
+    comment: PARALLEL_UPDATES = 1 in all entity platforms
+  reauthentication-flow:
+    status: done
+    comment: async_step_reauth in config_flow.py
+  test-coverage:
+    status: todo
+    comment: Need to verify >95% coverage with pytest-homeassistant-custom-component
+
+  # ============================================================================
+  # Gold tier requirements
+  # ============================================================================
+  devices:
+    status: done
+    comment: Device registry entries created via device_info in entity.py
+  diagnostics:
+    status: done
+    comment: diagnostics.py implements config entry and device diagnostics
   discovery:
     status: exempt
     comment: Cloud-based integration, devices cannot be discovered locally
-  reconfiguration_flow: done
-  dynamic_devices:
+  discovery-update-info:
+    status: exempt
+    comment: No discovery mechanism available
+  docs-data-update:
     status: done
-    comment: Periodic device discovery adds/removes devices without reload
-  integration_owner: done
-  docs_use_cases:
+    comment: README.md explains polling and maintenance data retrieval
+  docs-examples:
     status: done
-    comment: README.md includes automation examples for common use cases
-  docs_supported_devices:
+    comment: README.md includes service call examples
+  docs-known-limitations:
     status: done
-    comment: README.md lists compatible Rinnai models and requirements
-  docs_troubleshooting:
+    comment: README.md documents Rinnai 5-minute recirculation bug
+  docs-supported-devices:
     status: done
-    comment: README.md includes comprehensive troubleshooting section
+    comment: README.md lists compatible Rinnai Control-R models
+  docs-supported-functions:
+    status: done
+    comment: README.md has detailed entity and feature tables
+  docs-troubleshooting:
+    status: done
+    comment: README.md has troubleshooting section
+  docs-use-cases:
+    status: done
+    comment: README.md includes automation examples
+  dynamic-devices:
+    status: done
+    comment: async_discover_and_add_new_devices adds devices without reload
+  entity-category:
+    status: done
+    comment: Diagnostic sensors have EntityCategory.DIAGNOSTIC
+  entity-device-class:
+    status: done
+    comment: All applicable sensors have device_class set
+  entity-disabled-by-default:
+    status: done
+    comment: Noisy diagnostic sensors disabled by default
+  entity-translations:
+    status: done
+    comment: All entities have translation_key in strings.json
+  exception-translations:
+    status: done
+    comment: exceptions section in strings.json
+  icon-translations:
+    status: done
+    comment: Icon translations in strings.json for all entities and services
+  reconfiguration-flow:
+    status: done
+    comment: async_step_reconfigure allows changing connection mode
+  repair-issues:
+    status: done
+    comment: ir.async_create_issue used for auth failures
+  stale-devices:
+    status: done
+    comment: async_check_and_remove_stale_devices removes disappeared devices
 
   # ============================================================================
-  # Platinum tier requirements (4/4 complete)
+  # Platinum tier requirements
   # ============================================================================
-  async_dependency: done
-  inject_websession:
+  async-dependency:
     status: done
-    comment: aiorinnai library accepts HA's aiohttp session via API(session=session)
-  strict_typing: done
-  runtime_data: done
+    comment: Uses aiorinnai async library
+  inject-websession:
+    status: done
+    comment: async_get_clientsession(hass) passed to API(session=session)
+  strict-typing:
+    status: done
+    comment: py.typed marker present, full type annotations throughout

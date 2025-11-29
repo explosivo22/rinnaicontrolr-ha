@@ -22,6 +22,18 @@ class _RequestError(Exception):
     pass
 
 
+class _UserNotFound(Exception):
+    pass
+
+
+class _UserNotConfirmed(Exception):
+    pass
+
+
+class _PasswordChangeRequired(Exception):
+    pass
+
+
 class _FakeUser:
     async def get_info(self):
         return {
@@ -85,6 +97,9 @@ def _install_fake_aiorinnai(monkeypatch):
 
     mod_ai.Unauthenticated = _Unauthenticated  # type: ignore[attr-defined]
     mod_err.RequestError = _RequestError  # type: ignore[attr-defined]
+    mod_err.UserNotFound = _UserNotFound  # type: ignore[attr-defined]
+    mod_err.UserNotConfirmed = _UserNotConfirmed  # type: ignore[attr-defined]
+    mod_err.PasswordChangeRequired = _PasswordChangeRequired  # type: ignore[attr-defined]
 
     # Register in sys.modules so import statements in the integration resolve
     monkeypatch.setitem(sys.modules, "aiorinnai", mod_aiorinnai)

@@ -13,6 +13,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.const import (
+    EntityCategory,
     UnitOfElectricCurrent,
     UnitOfFrequency,
     UnitOfTemperature,
@@ -37,6 +38,10 @@ class RinnaiSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[RinnaiDeviceDataUpdateCoordinator], float | None]
     value_multiplier: float = 1.0
     round_digits: int = 1
+    # Whether this is a diagnostic sensor (less commonly used)
+    is_diagnostic: bool = False
+    # Whether to disable this entity by default
+    disabled_by_default: bool = False
 
 
 SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
@@ -74,6 +79,8 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         value_fn=lambda device: device.combustion_cycles,
         value_multiplier=100.0,
         round_digits=0,
+        is_diagnostic=True,
+        disabled_by_default=True,
     ),
     RinnaiSensorEntityDescription(
         key="operation_hours",
@@ -85,6 +92,7 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         value_fn=lambda device: device.operation_hours,
         value_multiplier=100.0,
         round_digits=0,
+        is_diagnostic=True,
     ),
     RinnaiSensorEntityDescription(
         key="pump_hours",
@@ -96,6 +104,7 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         value_fn=lambda device: device.pump_hours,
         value_multiplier=100.0,
         round_digits=0,
+        is_diagnostic=True,
     ),
     RinnaiSensorEntityDescription(
         key="pump_cycles",
@@ -106,6 +115,8 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         value_fn=lambda device: device.pump_cycles,
         value_multiplier=100.0,
         round_digits=0,
+        is_diagnostic=True,
+        disabled_by_default=True,
     ),
     RinnaiSensorEntityDescription(
         key="fan_current",
@@ -116,6 +127,8 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         native_unit_of_measurement=UnitOfElectricCurrent.MILLIAMPERE,
         value_fn=lambda device: device.fan_current,
         value_multiplier=10.0,
+        is_diagnostic=True,
+        disabled_by_default=True,
     ),
     RinnaiSensorEntityDescription(
         key="fan_frequency",
@@ -125,6 +138,8 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         device_class=SensorDeviceClass.FREQUENCY,
         native_unit_of_measurement=UnitOfFrequency.HERTZ,
         value_fn=lambda device: device.fan_frequency,
+        is_diagnostic=True,
+        disabled_by_default=True,
     ),
 )
 
@@ -161,6 +176,14 @@ class RinnaiSensor(RinnaiEntity, SensorEntity):
         """Initialize the sensor."""
         super().__init__(description.key, device)
         self.entity_description = description
+
+        # Set entity category for diagnostic sensors
+        if description.is_diagnostic:
+            self._attr_entity_category = EntityCategory.DIAGNOSTIC
+
+        # Disable noisy sensors by default
+        if description.disabled_by_default:
+            self._attr_entity_registry_enabled_default = False
 
     @property
     def native_value(self) -> float | None:
