@@ -291,8 +291,9 @@ async def _persist_tokens_if_changed(
     current_access = entry.data.get(CONF_ACCESS_TOKEN)
     current_refresh = entry.data.get(CONF_REFRESH_TOKEN)
 
-    new_access = getattr(client, "access_token", None)
-    new_refresh = getattr(client, "refresh_token", None)
+    # Use public properties documented by aiorinnai API
+    new_access = client.access_token
+    new_refresh = client.refresh_token
 
     if (
         new_access

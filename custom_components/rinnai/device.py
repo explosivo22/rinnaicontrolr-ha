@@ -165,7 +165,8 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         from aiorinnai.api import Unauthenticated
         from aiorinnai.errors import RequestError
 
-        access_token = getattr(self.api_client, "access_token", None)
+        # Use public property documented by aiorinnai API
+        access_token = self.api_client.access_token
 
         if not _is_token_expired(access_token):
             LOGGER.debug("Access token is still valid")
@@ -399,8 +400,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         current_access = self._config_entry.data.get(CONF_ACCESS_TOKEN)
         current_refresh = self._config_entry.data.get(CONF_REFRESH_TOKEN)
 
-        new_access = getattr(self.api_client, "access_token", None)
-        new_refresh = getattr(self.api_client, "refresh_token", None)
+        # Use public properties documented by aiorinnai API
+        new_access = self.api_client.access_token
+        new_refresh = self.api_client.refresh_token
 
         if (
             new_access
