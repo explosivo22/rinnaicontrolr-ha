@@ -624,7 +624,9 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
         elif existing_email:
             # v1.5.9 (Cloud) migration: has email and tokens
-            _LOGGER.info("Migrating from cloud version (v1.5.x) with email: %s", existing_email)
+            _LOGGER.info(
+                "Migrating from cloud version (v1.5.x) with email: %s", existing_email
+            )
             data[CONF_CONNECTION_MODE] = CONNECTION_MODE_CLOUD
 
             if existing_access and existing_refresh:

@@ -149,6 +149,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         try:
             # Use Home Assistant's shared session for connection pooling
             from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
             session = async_get_clientsession(self.hass)
             self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
@@ -287,6 +288,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         try:
             # Use Home Assistant's shared session for connection pooling
             from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
             session = async_get_clientsession(self.hass)
             self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
@@ -410,6 +412,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         try:
             # Use Home Assistant's shared session for connection pooling
             from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
             session = async_get_clientsession(self.hass)
             self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
@@ -582,6 +585,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         try:
             # Use Home Assistant's shared session for connection pooling
             from homeassistant.helpers.aiohttp_client import async_get_clientsession
+
             session = async_get_clientsession(self.hass)
             self.api = API(session=session)
             await self.api.async_login(self.username, self.password)
@@ -685,12 +689,14 @@ class OptionsFlow(config_entries.OptionsFlow):
 
         # Only show maintenance interval slider for local and hybrid modes
         if self._supports_maintenance_interval():
-            schema_dict[vol.Optional(
-                CONF_MAINT_INTERVAL_MINUTES,
-                default=self._config_entry.options.get(
-                    CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
-                ),
-            )] = NumberSelector(
+            schema_dict[
+                vol.Optional(
+                    CONF_MAINT_INTERVAL_MINUTES,
+                    default=self._config_entry.options.get(
+                        CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
+                    ),
+                )
+            ] = NumberSelector(
                 NumberSelectorConfig(
                     min=MIN_MAINT_INTERVAL_MINUTES,
                     max=MAX_MAINT_INTERVAL_MINUTES,
@@ -701,12 +707,14 @@ class OptionsFlow(config_entries.OptionsFlow):
             )
 
         # Add recirculation duration option
-        schema_dict[vol.Optional(
-            CONF_RECIRCULATION_DURATION,
-            default=self._config_entry.options.get(
-                CONF_RECIRCULATION_DURATION, DEFAULT_RECIRCULATION_DURATION
-            ),
-        )] = vol.All(vol.Coerce(int), vol.Range(min=5, max=300))
+        schema_dict[
+            vol.Optional(
+                CONF_RECIRCULATION_DURATION,
+                default=self._config_entry.options.get(
+                    CONF_RECIRCULATION_DURATION, DEFAULT_RECIRCULATION_DURATION
+                ),
+            )
+        ] = vol.All(vol.Coerce(int), vol.Range(min=5, max=300))
 
         return self.async_show_form(
             step_id="init",

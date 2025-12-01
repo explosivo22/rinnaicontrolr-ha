@@ -852,7 +852,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             CONF_MAINT_INTERVAL_MINUTES, DEFAULT_MAINT_INTERVAL_MINUTES
         )
         min_time_between_maintenance = timedelta(minutes=interval_minutes)
-        
+
         if (
             now - self._last_maintenance_retrieval
             < min_time_between_maintenance.total_seconds()
