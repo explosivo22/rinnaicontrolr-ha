@@ -141,74 +141,49 @@
     "entity": {
         "water_heater": {
             "water_heater": {
-                "name": "Water Heater",
-                "default": "mdi:water-boiler"
+                "name": "Water Heater"
             }
         },
         "binary_sensor": {
             "recirculation": {
-                "name": "Recirculation",
-                "default": "mdi:sync-off",
-                "state": {
-                    "on": "mdi:sync",
-                    "off": "mdi:sync-off"
-                }
+                "name": "Recirculation"
             },
             "water_heater_heating": {
-                "name": "Heating",
-                "default": "mdi:fire-off",
-                "state": {
-                    "on": "mdi:fire",
-                    "off": "mdi:fire-off"
-                }
+                "name": "Heating"
             }
         },
         "switch": {
             "recirculation_switch": {
-                "name": "Recirculation",
-                "default": "mdi:sync-off",
-                "state": {
-                    "on": "mdi:autorenew",
-                    "off": "mdi:sync-off"
-                }
+                "name": "Recirculation"
             }
         },
         "sensor": {
             "outlet_temperature": {
-                "name": "Outlet Temperature",
-                "default": "mdi:thermometer-water"
+                "name": "Outlet Temperature"
             },
             "inlet_temperature": {
-                "name": "Inlet Temperature",
-                "default": "mdi:thermometer-water"
+                "name": "Inlet Temperature"
             },
             "water_flow_rate": {
-                "name": "Water Flow Rate",
-                "default": "mdi:gauge"
+                "name": "Water Flow Rate"
             },
             "combustion_cycles": {
-                "name": "Combustion Cycles",
-                "default": "mdi:fire-circle"
+                "name": "Combustion Cycles"
             },
             "operation_hours": {
-                "name": "Operation Hours",
-                "default": "mdi:home-lightning-bolt-outline"
+                "name": "Operation Hours"
             },
             "pump_hours": {
-                "name": "Pump Hours",
-                "default": "mdi:pump"
+                "name": "Pump Hours"
             },
             "pump_cycles": {
-                "name": "Pump Cycles",
-                "default": "mdi:heat-pump-outline"
+                "name": "Pump Cycles"
             },
             "fan_current": {
-                "name": "Fan Current",
-                "default": "mdi:fan-auto"
+                "name": "Fan Current"
             },
             "fan_frequency": {
-                "name": "Fan Frequency",
-                "default": "mdi:fan-chevron-up"
+                "name": "Fan Frequency"
             }
         }
     },
@@ -216,7 +191,6 @@
         "start_recirculation": {
             "name": "Start recirculation",
             "description": "Start water recirculation for a specified duration.",
-            "service": "mdi:sync",
             "fields": {
                 "recirculation_minutes": {
                     "name": "Duration",
@@ -226,8 +200,7 @@
         },
         "stop_recirculation": {
             "name": "Stop recirculation",
-            "description": "Stop water recirculation immediately.",
-            "service": "mdi:sync-off"
+            "description": "Stop water recirculation immediately."
         }
     },
     "exceptions": {

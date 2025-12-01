@@ -10,7 +10,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from . import RinnaiConfigEntry
-from .const import CONF_ACCESS_TOKEN, CONF_HOST, CONF_REFRESH_TOKEN
+from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN
 
 # Keys to redact from diagnostics output for privacy
 TO_REDACT = {

@@ -203,7 +203,7 @@ async def _setup_cloud_client(
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError, UserNotFound, UserNotConfirmed
+    from aiorinnai.errors import RequestError
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Setting up cloud client for %s", entry.data.get(CONF_EMAIL))
