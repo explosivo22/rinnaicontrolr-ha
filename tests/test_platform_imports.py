@@ -20,7 +20,7 @@ def _load_module(module_name: str, file_path: pathlib.Path):
 
 def test_platform_modules_importable():
     repo_root = pathlib.Path(__file__).resolve().parents[1]
-    base_dir = repo_root / "custom_components" / "rinnaicontrolr-ha"
+    base_dir = repo_root / "custom_components" / "rinnai"
 
     # Load const first to satisfy relative imports
     _load_module("custom_components.rinnai.const", base_dir / "const.py")

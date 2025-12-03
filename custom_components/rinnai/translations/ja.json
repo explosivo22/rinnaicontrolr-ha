@@ -1,0 +1,213 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Rinnai Control-Rに接続",
+                "description": "Rinnai給湯器への接続方法を選択してください。",
+                "data": {
+                    "connection_mode": "接続モード"
+                },
+                "data_description": {
+                    "connection_mode": "クラウドはRinnaiアカウントを使用します。ローカルは給湯器に直接接続します。ハイブリッドはローカルとクラウドフォールバックを使用します。"
+                }
+            },
+            "cloud": {
+                "title": "クラウド接続",
+                "description": "Rinnai Control-Rアカウントの認証情報を入力してください。",
+                "data": {
+                    "email": "メールアドレス",
+                    "password": "パスワード"
+                },
+                "data_description": {
+                    "email": "Rinnai Control-Rアカウントのメールアドレス",
+                    "password": "Rinnai Control-Rアカウントのパスワード"
+                }
+            },
+            "local": {
+                "title": "ローカル接続",
+                "description": "Rinnai給湯器コントローラーのIPアドレスを入力してください。コントローラーはローカルネットワーク上にあり、ポート9798でアクセス可能である必要があります。",
+                "data": {
+                    "host": "ホスト"
+                },
+                "data_description": {
+                    "host": "Rinnai給湯器コントローラーのIPアドレス（例：192.168.1.100）"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "ハイブリッドモード - クラウド認証情報",
+                "description": "まず、クラウドフォールバック用のRinnai Control-Rアカウント認証情報を入力してください。",
+                "data": {
+                    "email": "メールアドレス",
+                    "password": "パスワード"
+                },
+                "data_description": {
+                    "email": "Rinnai Control-Rアカウントのメールアドレス",
+                    "password": "Rinnai Control-Rアカウントのパスワード"
+                }
+            },
+            "hybrid_local": {
+                "title": "ハイブリッドモード - ローカル接続",
+                "description": "次に、プライマリローカル制御用のRinnai給湯器コントローラーのIPアドレスを入力してください。",
+                "data": {
+                    "host": "ホスト"
+                },
+                "data_description": {
+                    "host": "Rinnai給湯器コントローラーのIPアドレス（例：192.168.1.100）"
+                }
+            },
+            "reauth": {
+                "title": "Rinnai Control-Rで再認証",
+                "description": "セッションが期限切れになりました。認証情報を再入力してください。",
+                "data": {
+                    "email": "メールアドレス",
+                    "password": "パスワード"
+                }
+            },
+            "reconfigure": {
+                "title": "Rinnai Control-Rを再設定",
+                "description": "接続モードを変更するか、ローカルホストアドレスを更新してください。",
+                "data": {
+                    "connection_mode": "接続モード",
+                    "host": "ホスト"
+                },
+                "data_description": {
+                    "connection_mode": "クラウドはRinnaiアカウントを使用します。ローカルは給湯器に直接接続します。ハイブリッドはローカルとクラウドフォールバックを使用します。",
+                    "host": "Rinnai給湯器コントローラーのIPアドレス（ローカルおよびハイブリッドモードで必須）"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "クラウド認証情報が必要です",
+                "description": "選択したモードにはクラウドアクセスが必要です。Rinnai Control-Rアカウントの認証情報を入力してください。",
+                "data": {
+                    "email": "メールアドレス",
+                    "password": "パスワード"
+                },
+                "data_description": {
+                    "email": "Rinnai Control-Rアカウントのメールアドレス",
+                    "password": "Rinnai Control-Rアカウントのパスワード"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "接続に失敗しました",
+            "invalid_auth": "認証が無効です",
+            "unknown": "予期しないエラー",
+            "host_required": "ローカルモードとハイブリッドモードにはホストIPアドレスが必要です",
+            "local_connection_failed": "指定されたIPアドレスでRinnaiコントローラーに接続できません。確認してください：(1) IPアドレスが正しい、(2) ポート9798にアクセス可能、(3) コントローラーの電源が入っている。ローカル接続ができない場合は、代わりにクラウドモードを使用してください。",
+            "user_not_confirmed": "メールアドレスが確認されていません。続行する前に、メールを確認してRinnaiアカウントを認証してください。",
+            "password_change_required": "続行する前にRinnaiアプリでパスワードを変更する必要があります。パスワードを更新して再試行してください。"
+        },
+        "abort": {
+            "already_configured": "デバイスは既に設定されています",
+            "reauth_successful": "再認証に成功しました",
+            "reauth_failed": "再認証に失敗しました。もう一度お試しください。",
+            "reconfigure_successful": "設定が正常に更新されました"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "クラウド（Rinnaiアカウント）",
+                "local": "ローカル（直接接続）",
+                "hybrid": "ハイブリッド（ローカル + クラウドフォールバック）"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Rinnai認証が期限切れ",
+            "description": "セッションが期限切れになり、Rinnai統合を継続するには再認証が必要です。統合ページから統合を再設定してください。"
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R オプション",
+                "description": "Rinnai給湯器のオプションを設定してください。",
+                "data": {
+                    "maint_interval_enabled": "メンテナンスデータ取得を有効にする",
+                    "maint_interval_minutes": "メンテナンス取得間隔",
+                    "recirculation_duration": "循環時間"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "有効にすると、指定された間隔でデバイスから詳細なメンテナンスデータを取得します。これによりAPI使用量が増加する可能性があります。",
+                    "maint_interval_minutes": "デバイスからメンテナンスデータを取得する頻度（分単位）。低い値はより頻繁な更新を提供しますが、API使用量が増加します。ローカルおよびハイブリッド接続モードでのみ利用可能です。",
+                    "recirculation_duration": "循環スイッチエンティティをオンにした時に使用される時間（分）（5〜300）。"
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "給湯器"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "循環"
+            },
+            "water_heater_heating": {
+                "name": "加熱中"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "循環"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "出口温度"
+            },
+            "inlet_temperature": {
+                "name": "入口温度"
+            },
+            "water_flow_rate": {
+                "name": "水流量"
+            },
+            "combustion_cycles": {
+                "name": "燃焼サイクル"
+            },
+            "operation_hours": {
+                "name": "稼働時間"
+            },
+            "pump_hours": {
+                "name": "ポンプ時間"
+            },
+            "pump_cycles": {
+                "name": "ポンプサイクル"
+            },
+            "fan_current": {
+                "name": "ファン電流"
+            },
+            "fan_frequency": {
+                "name": "ファン周波数"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "循環開始",
+            "description": "指定した時間、水の循環を開始します。",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "時間",
+                    "description": "時間（分）（5〜300）"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "循環停止",
+            "description": "水の循環を直ちに停止します。"
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "Rinnaiデバイスは現在利用できません"
+        },
+        "action_failed": {
+            "message": "{action}に失敗しました：{error}"
+        }
+    }
+}

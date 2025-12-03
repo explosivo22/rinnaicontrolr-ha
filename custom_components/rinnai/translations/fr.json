@@ -1,0 +1,213 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Connexion à Rinnai Control-R",
+                "description": "Choisissez comment vous connecter à votre chauffe-eau Rinnai.",
+                "data": {
+                    "connection_mode": "Mode de connexion"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud utilise votre compte Rinnai. Local se connecte directement au chauffe-eau. Hybride utilise local avec repli sur le cloud."
+                }
+            },
+            "cloud": {
+                "title": "Connexion cloud",
+                "description": "Entrez vos identifiants de compte Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Mot de passe"
+                },
+                "data_description": {
+                    "email": "L'adresse e-mail de votre compte Rinnai Control-R",
+                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                }
+            },
+            "local": {
+                "title": "Connexion locale",
+                "description": "Entrez l'adresse IP de votre contrôleur de chauffe-eau Rinnai. Le contrôleur doit être sur votre réseau local et accessible sur le port 9798.",
+                "data": {
+                    "host": "Hôte"
+                },
+                "data_description": {
+                    "host": "Adresse IP de votre contrôleur de chauffe-eau Rinnai (ex. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Mode hybride - Identifiants cloud",
+                "description": "Entrez d'abord vos identifiants de compte Rinnai Control-R pour le repli sur le cloud.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Mot de passe"
+                },
+                "data_description": {
+                    "email": "L'adresse e-mail de votre compte Rinnai Control-R",
+                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                }
+            },
+            "hybrid_local": {
+                "title": "Mode hybride - Connexion locale",
+                "description": "Entrez maintenant l'adresse IP de votre contrôleur de chauffe-eau Rinnai pour le contrôle local principal.",
+                "data": {
+                    "host": "Hôte"
+                },
+                "data_description": {
+                    "host": "Adresse IP de votre contrôleur de chauffe-eau Rinnai (ex. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Ré-authentification avec Rinnai Control-R",
+                "description": "Votre session a expiré. Veuillez saisir à nouveau vos identifiants.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Mot de passe"
+                }
+            },
+            "reconfigure": {
+                "title": "Reconfigurer Rinnai Control-R",
+                "description": "Modifiez le mode de connexion ou mettez à jour l'adresse de l'hôte local.",
+                "data": {
+                    "connection_mode": "Mode de connexion",
+                    "host": "Hôte"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud utilise votre compte Rinnai. Local se connecte directement au chauffe-eau. Hybride utilise local avec repli sur le cloud.",
+                    "host": "Adresse IP de votre contrôleur de chauffe-eau Rinnai (requis pour les modes Local et Hybride)"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "Identifiants cloud requis",
+                "description": "Le mode sélectionné nécessite un accès cloud. Entrez vos identifiants de compte Rinnai Control-R.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Mot de passe"
+                },
+                "data_description": {
+                    "email": "L'adresse e-mail de votre compte Rinnai Control-R",
+                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Échec de la connexion",
+            "invalid_auth": "Authentification invalide",
+            "unknown": "Erreur inattendue",
+            "host_required": "L'adresse IP de l'hôte est requise pour les modes Local et Hybride",
+            "local_connection_failed": "Impossible de se connecter au contrôleur Rinnai à l'adresse IP spécifiée. Veuillez vérifier : (1) L'adresse IP est correcte, (2) Le port 9798 est accessible, (3) Le contrôleur est allumé. Si la connexion locale n'est pas possible, veuillez utiliser le mode Cloud à la place.",
+            "user_not_confirmed": "Votre adresse e-mail n'a pas été confirmée. Veuillez vérifier vos e-mails et confirmer votre compte Rinnai avant de continuer.",
+            "password_change_required": "Vous devez changer votre mot de passe dans l'application Rinnai avant de continuer. Veuillez mettre à jour votre mot de passe et réessayer."
+        },
+        "abort": {
+            "already_configured": "L'appareil est déjà configuré",
+            "reauth_successful": "La ré-authentification a réussi",
+            "reauth_failed": "La ré-authentification a échoué. Veuillez réessayer.",
+            "reconfigure_successful": "Configuration mise à jour avec succès"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Cloud (compte Rinnai)",
+                "local": "Local (connexion directe)",
+                "hybrid": "Hybride (local + repli cloud)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Authentification Rinnai expirée",
+            "description": "Votre session a expiré et vous devez vous ré-authentifier pour continuer à utiliser l'intégration Rinnai. Veuillez reconfigurer l'intégration depuis la page Intégrations."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Options Rinnai Control-R",
+                "description": "Configurez les options de votre chauffe-eau Rinnai.",
+                "data": {
+                    "maint_interval_enabled": "Activer la récupération des données de maintenance",
+                    "maint_interval_minutes": "Intervalle de récupération de maintenance",
+                    "recirculation_duration": "Durée de Recirculation"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "Lorsqu'activé, récupère les données de maintenance détaillées de l'appareil à l'intervalle spécifié. Cela peut augmenter l'utilisation de l'API.",
+                    "maint_interval_minutes": "Fréquence de récupération des données de maintenance de l'appareil (en minutes). Des valeurs plus basses fournissent des mises à jour plus fréquentes mais augmentent l'utilisation de l'API. Disponible uniquement pour les modes de connexion Local et Hybride.",
+                    "recirculation_duration": "Durée en minutes (5-300) utilisée par l'entité interrupteur de Recirculation lors de l'activation."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Chauffe-eau"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Recirculation"
+            },
+            "water_heater_heating": {
+                "name": "Chauffage"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Recirculation"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Température de sortie"
+            },
+            "inlet_temperature": {
+                "name": "Température d'entrée"
+            },
+            "water_flow_rate": {
+                "name": "Débit d'eau"
+            },
+            "combustion_cycles": {
+                "name": "Cycles de combustion"
+            },
+            "operation_hours": {
+                "name": "Heures de fonctionnement"
+            },
+            "pump_hours": {
+                "name": "Heures de pompe"
+            },
+            "pump_cycles": {
+                "name": "Cycles de pompe"
+            },
+            "fan_current": {
+                "name": "Courant du ventilateur"
+            },
+            "fan_frequency": {
+                "name": "Fréquence du ventilateur"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Démarrer la recirculation",
+            "description": "Démarrer la recirculation d'eau pour une durée spécifiée.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Durée",
+                    "description": "Durée en minutes (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Arrêter la recirculation",
+            "description": "Arrêter immédiatement la recirculation d'eau."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "L'appareil Rinnai est actuellement indisponible"
+        },
+        "action_failed": {
+            "message": "Échec de {action}: {error}"
+        }
+    }
+}

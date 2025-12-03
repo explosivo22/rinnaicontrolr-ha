@@ -1,0 +1,213 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "Verbinden met Rinnai Control-R",
+                "description": "Kies hoe u verbinding wilt maken met uw Rinnai-boiler.",
+                "data": {
+                    "connection_mode": "Verbindingsmodus"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud gebruikt uw Rinnai-account. Lokaal verbindt rechtstreeks met de boiler. Hybride gebruikt lokaal met cloud-fallback."
+                }
+            },
+            "cloud": {
+                "title": "Cloud-verbinding",
+                "description": "Voer uw Rinnai Control-R accountgegevens in.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Wachtwoord"
+                },
+                "data_description": {
+                    "email": "Het e-mailadres van uw Rinnai Control-R account",
+                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                }
+            },
+            "local": {
+                "title": "Lokale verbinding",
+                "description": "Voer het IP-adres van uw Rinnai-boilercontroller in. De controller moet zich op uw lokale netwerk bevinden en toegankelijk zijn op poort 9798.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP-adres van uw Rinnai-boilercontroller (bijv. 192.168.1.100)"
+                }
+            },
+            "hybrid_cloud": {
+                "title": "Hybride modus - Cloud-inloggegevens",
+                "description": "Voer eerst uw Rinnai Control-R accountgegevens in voor cloud-fallback.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Wachtwoord"
+                },
+                "data_description": {
+                    "email": "Het e-mailadres van uw Rinnai Control-R account",
+                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                }
+            },
+            "hybrid_local": {
+                "title": "Hybride modus - Lokale verbinding",
+                "description": "Voer nu het IP-adres van uw Rinnai-boilercontroller in voor primaire lokale bediening.",
+                "data": {
+                    "host": "Host"
+                },
+                "data_description": {
+                    "host": "IP-adres van uw Rinnai-boilercontroller (bijv. 192.168.1.100)"
+                }
+            },
+            "reauth": {
+                "title": "Opnieuw verifiëren met Rinnai Control-R",
+                "description": "Uw sessie is verlopen. Voer uw inloggegevens opnieuw in.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Wachtwoord"
+                }
+            },
+            "reconfigure": {
+                "title": "Rinnai Control-R opnieuw configureren",
+                "description": "Wijzig de verbindingsmodus of werk het lokale hostadres bij.",
+                "data": {
+                    "connection_mode": "Verbindingsmodus",
+                    "host": "Host"
+                },
+                "data_description": {
+                    "connection_mode": "Cloud gebruikt uw Rinnai-account. Lokaal verbindt rechtstreeks met de boiler. Hybride gebruikt lokaal met cloud-fallback.",
+                    "host": "IP-adres van uw Rinnai-boilercontroller (vereist voor Lokale en Hybride modi)"
+                }
+            },
+            "reconfigure_cloud": {
+                "title": "Cloud-inloggegevens vereist",
+                "description": "De geselecteerde modus vereist cloud-toegang. Voer uw Rinnai Control-R accountgegevens in.",
+                "data": {
+                    "email": "E-mail",
+                    "password": "Wachtwoord"
+                },
+                "data_description": {
+                    "email": "Het e-mailadres van uw Rinnai Control-R account",
+                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                }
+            }
+        },
+        "error": {
+            "cannot_connect": "Verbinding mislukt",
+            "invalid_auth": "Ongeldige authenticatie",
+            "unknown": "Onverwachte fout",
+            "host_required": "Host IP-adres is vereist voor Lokale en Hybride modi",
+            "local_connection_failed": "Kan geen verbinding maken met Rinnai-controller op het opgegeven IP-adres. Controleer: (1) Het IP-adres is correct, (2) Poort 9798 is toegankelijk, (3) De controller staat aan. Als lokale verbinding niet mogelijk is, gebruik dan de Cloud-modus.",
+            "user_not_confirmed": "Uw e-mailadres is niet bevestigd. Controleer uw e-mail en bevestig uw Rinnai-account voordat u doorgaat.",
+            "password_change_required": "U moet uw wachtwoord wijzigen in de Rinnai-app voordat u kunt doorgaan. Werk uw wachtwoord bij en probeer het opnieuw."
+        },
+        "abort": {
+            "already_configured": "Apparaat is al geconfigureerd",
+            "reauth_successful": "Opnieuw verifiëren was succesvol",
+            "reauth_failed": "Opnieuw verifiëren mislukt. Probeer het opnieuw.",
+            "reconfigure_successful": "Configuratie succesvol bijgewerkt"
+        }
+    },
+    "selector": {
+        "connection_mode": {
+            "options": {
+                "cloud": "Cloud (Rinnai-account)",
+                "local": "Lokaal (directe verbinding)",
+                "hybrid": "Hybride (lokaal + cloud-fallback)"
+            }
+        }
+    },
+    "issues": {
+        "reauth_required": {
+            "title": "Rinnai-verificatie verlopen",
+            "description": "Uw sessie is verlopen en u moet opnieuw verifiëren om de Rinnai-integratie te blijven gebruiken. Configureer de integratie opnieuw vanaf de Integraties-pagina."
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Rinnai Control-R Opties",
+                "description": "Configureer opties voor uw Rinnai-boiler.",
+                "data": {
+                    "maint_interval_enabled": "Onderhoudsgegevens ophalen inschakelen",
+                    "maint_interval_minutes": "Onderhoud ophaalinterval",
+                    "recirculation_duration": "Circulatieduur"
+                },
+                "data_description": {
+                    "maint_interval_enabled": "Indien ingeschakeld, worden gedetailleerde onderhoudsgegevens van het apparaat opgehaald met het opgegeven interval. Dit kan het API-gebruik verhogen.",
+                    "maint_interval_minutes": "Hoe vaak onderhoudsgegevens van het apparaat worden opgehaald (in minuten). Lagere waarden bieden frequentere updates maar verhogen het API-gebruik. Alleen beschikbaar voor Lokale en Hybride verbindingsmodi.",
+                    "recirculation_duration": "Duur in minuten (5-300) gebruikt door de Circulatie-schakelaarentiteit wanneer ingeschakeld."
+                }
+            }
+        }
+    },
+    "entity": {
+        "water_heater": {
+            "water_heater": {
+                "name": "Boiler"
+            }
+        },
+        "binary_sensor": {
+            "recirculation": {
+                "name": "Circulatie"
+            },
+            "water_heater_heating": {
+                "name": "Verwarming"
+            }
+        },
+        "switch": {
+            "recirculation_switch": {
+                "name": "Circulatie"
+            }
+        },
+        "sensor": {
+            "outlet_temperature": {
+                "name": "Uitlaattemperatuur"
+            },
+            "inlet_temperature": {
+                "name": "Inlaattemperatuur"
+            },
+            "water_flow_rate": {
+                "name": "Waterdebiet"
+            },
+            "combustion_cycles": {
+                "name": "Verbrandingscycli"
+            },
+            "operation_hours": {
+                "name": "Bedrijfsuren"
+            },
+            "pump_hours": {
+                "name": "Pompuren"
+            },
+            "pump_cycles": {
+                "name": "Pompcycli"
+            },
+            "fan_current": {
+                "name": "Ventilatorstroom"
+            },
+            "fan_frequency": {
+                "name": "Ventilatorfrequentie"
+            }
+        }
+    },
+    "services": {
+        "start_recirculation": {
+            "name": "Circulatie starten",
+            "description": "Start watercirculatie voor een opgegeven duur.",
+            "fields": {
+                "recirculation_minutes": {
+                    "name": "Duur",
+                    "description": "Duur in minuten (5-300)"
+                }
+            }
+        },
+        "stop_recirculation": {
+            "name": "Circulatie stoppen",
+            "description": "Stop watercirculatie onmiddellijk."
+        }
+    },
+    "exceptions": {
+        "device_unavailable": {
+            "message": "Het Rinnai-apparaat is momenteel niet beschikbaar"
+        },
+        "action_failed": {
+            "message": "Fout bij {action}: {error}"
+        }
+    }
+}

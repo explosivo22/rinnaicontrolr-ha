@@ -4,12 +4,49 @@ on:
   push:
     branches: [ dev, master ]
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
   pull_request:
     branches: [ master ]
   workflow_dispatch:
 
 jobs:
+  # Lint and type check the code
+  lint:
+    name: Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system ruff mypy homeassistant
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
+
+      - name: Run ruff check
+        run: |
+          ruff check custom_components/rinnai/ --output-format=github
+
+      - name: Run ruff format check
+        run: |
+          ruff format custom_components/rinnai/ --check
+
+      - name: Run mypy
+        run: |
+          mypy custom_components/rinnai/ --ignore-missing-imports --no-error-summary || true
+
   # Validate the component using Home Assistant's official hassfest action
   validate-hassfest:
     name: Validate with Hassfest
@@ -21,10 +58,9 @@ jobs:
       - name: Prepare component structure for validation
         run: |
           # Hassfest requires the directory name to match the domain in manifest.json
-          # The domain is 'rinnai', so we need to rename the directory
-          mkdir -p custom_components/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* custom_components/rinnai/
-          rm -rf custom_components/rinnaicontrolr-ha
+          # The domain is 'rinnai' and our directory is already named 'rinnai'
+          echo "Component structure:"
+          ls -la custom_components/rinnai/
 
       - name: Run Hassfest validation
         uses: home-assistant/actions/hassfest@master
@@ -55,7 +91,7 @@ jobs:
   test:
     name: Test Component (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs]
+    needs: [lint, validate-hassfest, validate-hacs]
     strategy:
       fail-fast: false
       matrix:
@@ -70,34 +106,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Home Assistant
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install homeassistant
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Install pytest and testing tools
+      - name: Install dependencies
         run: |
-          pip install pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
-
-      - name: Get component requirements from manifest
-        id: requirements
-        run: |
-          REQS=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
-          echo "requirements=$REQS" >> $GITHUB_OUTPUT
-          echo "Component requires: $REQS"
-
-      - name: Install component requirements
-        if: steps.requirements.outputs.requirements != ''
-        run: |
-          pip install ${{ steps.requirements.outputs.requirements }}
+          uv pip install --system homeassistant pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
 
       - name: Create Home Assistant config directory
         run: |
-          mkdir -p config/custom_components/rinnai
-          
-      - name: Install custom component to 'rinnai' folder
+          mkdir -p config/custom_components
+
+      - name: Install custom component
         run: |
-          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          cp -r custom_components/rinnai config/custom_components/
           echo "Installed component files:"
           ls -la config/custom_components/rinnai/
 
@@ -147,7 +174,7 @@ jobs:
   integration-test:
     name: Integration Test - Boot HA
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs]
+    needs: [lint, validate-hassfest, validate-hacs]
     
     steps:
       - name: Checkout repository
@@ -158,23 +185,22 @@ jobs:
         with:
           python-version: "3.13"
 
-      - name: Install Home Assistant and dependencies
-        run: |
-          pip install --upgrade pip setuptools wheel
-          pip install homeassistant home-assistant-frontend colorlog
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
 
-      - name: Install pytest tools
+      - name: Install dependencies
         run: |
-          pip install pytest pytest-asyncio pytest-homeassistant-custom-component
-
-      - name: Get and install component requirements
-        run: |
-          python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); reqs=json.load(f).get('requirements', []); print('Installing:', reqs); import subprocess; [subprocess.check_call(['pip', 'install', r]) for r in reqs]"
+          uv pip install --system homeassistant home-assistant-frontend colorlog pytest pytest-asyncio pytest-homeassistant-custom-component
+          # Install component requirements
+          REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
+          if [ -n "$REQS" ]; then
+            uv pip install --system $REQS
+          fi
 
       - name: Prepare Home Assistant environment
         run: |
-          mkdir -p config/custom_components/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* config/custom_components/rinnai/
+          mkdir -p config/custom_components
+          cp -r custom_components/rinnai config/custom_components/
           
           # Create configuration that loads the component
           cat > config/configuration.yaml <<'EOF'
@@ -283,11 +309,15 @@ jobs:
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [validate-hassfest, validate-hacs, test, integration-test]
+    needs: [lint, validate-hassfest, validate-hacs, test, integration-test]
     if: always()
     steps:
       - name: Check test results
         run: |
+          if [ "${{ needs.lint.result }}" != "success" ]; then
+            echo "❌ Lint & type check failed"
+            exit 1
+          fi
           if [ "${{ needs.validate-hassfest.result }}" != "success" ]; then
             echo "❌ Hassfest validation failed"
             exit 1
@@ -304,14 +334,15 @@ jobs:
             echo "❌ Integration tests failed"
             exit 1
           fi
-          echo "✅ All tests passed!"
+          echo "✅ All checks passed!"
 
-  # Create release when a tag is pushed to master
+  # Create release when a tag is pushed
+  # Note: Tags should only be created on master branch via protected branch rules
   release:
     name: Create Release
     runs-on: ubuntu-latest
     needs: [test-summary]
-    if: startsWith(github.ref, 'refs/tags/v') && github.event.base_ref == 'refs/heads/master'
+    if: startsWith(github.ref, 'refs/tags/')
     permissions:
       contents: write
     
@@ -321,14 +352,52 @@ jobs:
         with:
           fetch-depth: 0  # Fetch all history for changelog generation
 
+      - name: Verify tag is on master branch
+        run: |
+          # Get the commit SHA that the tag points to
+          TAG_COMMIT=$(git rev-list -n 1 ${{ github.ref }})
+          
+          # Check if this commit exists on master
+          if git branch -r --contains "$TAG_COMMIT" | grep -q "origin/master"; then
+            echo "✅ Tag is on master branch"
+          else
+            echo "❌ Error: Tag must be created from master branch"
+            echo "Tag commit: $TAG_COMMIT"
+            echo "Branches containing this commit:"
+            git branch -r --contains "$TAG_COMMIT"
+            exit 1
+          fi
+
       - name: Get version from manifest
         id: version
         run: |
-          VERSION=$(python -c "import json; f=open('custom_components/rinnaicontrolr-ha/manifest.json'); print(json.load(f)['version'])")
+          # Extract version with error handling
+          if [ ! -f "custom_components/rinnai/manifest.json" ]; then
+            echo "❌ Error: manifest.json not found"
+            exit 1
+          fi
+          
+          VERSION=$(python3 -c "
+          import json
+          import sys
+          try:
+              with open('custom_components/rinnai/manifest.json') as f:
+                  manifest = json.load(f)
+                  print(manifest.get('version', ''))
+          except Exception as e:
+              print(f'Error reading manifest: {e}', file=sys.stderr)
+              sys.exit(1)
+          ")
+          
+          if [ -z "$VERSION" ]; then
+            echo "❌ Error: Could not extract version from manifest.json"
+            exit 1
+          fi
+          
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Component version: $VERSION"
           
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
           echo "tag_version=$TAG_VERSION" >> $GITHUB_OUTPUT
           echo "Tag version: $TAG_VERSION"
           
@@ -336,6 +405,14 @@ jobs:
           MAJOR_VERSION=$(echo $VERSION | cut -d. -f1)
           echo "major_version=$MAJOR_VERSION" >> $GITHUB_OUTPUT
           echo "Major version: $MAJOR_VERSION"
+          
+          # Detect if this is a prerelease (contains alpha, beta, rc, dev)
+          if echo "$VERSION" | grep -qiE "(alpha|beta|rc|dev|pre)"; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+            echo "Detected as prerelease"
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Verify version matches tag
         run: |
@@ -350,45 +427,66 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get the previous tag
-          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${GITHUB_REF#refs/tags/}$" | head -n 1)
+          # Get the previous tag (excluding current tag)
+          CURRENT_TAG="${GITHUB_REF#refs/tags/}"
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -n 1)
           
           if [ -z "$PREV_TAG" ]; then
-            echo "No previous tag found, using all commits"
+            echo "No previous tag found, using initial commit"
             PREV_TAG=$(git rev-list --max-parents=0 HEAD)
+            COMPARE_BASE="$PREV_TAG"
+          else
+            COMPARE_BASE="$PREV_TAG"
           fi
           
-          echo "Generating changelog from $PREV_TAG to ${GITHUB_REF#refs/tags/}"
+          echo "Generating changelog from $PREV_TAG to $CURRENT_TAG"
           
-          # Generate changelog
-          cat > CHANGELOG.md <<'EOF'
-          ## What's Changed
+          # Generate changelog with better formatting
+          {
+            echo "## What's Changed"
+            echo ""
+            git log ${PREV_TAG}..HEAD --pretty=format:"* %s (%h)" --no-merges
+            echo ""
+            echo ""
+            echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${COMPARE_BASE}...${CURRENT_TAG}"
+          } > CHANGELOG.md
           
-          EOF
-          
-          # Get commits between tags, format nicely
-          git log ${PREV_TAG}..HEAD --pretty=format:"* %s (%h)" --no-merges >> CHANGELOG.md
-          
-          echo "" >> CHANGELOG.md
-          echo "" >> CHANGELOG.md
-          echo "**Full Changelog**: https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${GITHUB_REF#refs/tags/}" >> CHANGELOG.md
-          
-          # Output for use in release
+          # Output for use in release (using heredoc delimiter)
           cat CHANGELOG.md
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          cat CHANGELOG.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "changelog<<CHANGELOG_EOF"
+            cat CHANGELOG.md
+            echo "CHANGELOG_EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create release archive
+        id: archive
         run: |
           # Create a clean archive of just the component
-          mkdir -p release/rinnai
-          cp -r custom_components/rinnaicontrolr-ha/* release/rinnai/
+          ARCHIVE_NAME="rinnai-${{ steps.version.outputs.version }}.zip"
+          
+          mkdir -p release
+          cp -r custom_components/rinnai release/
+          
           cd release
-          zip -r ../rinnai-${{ steps.version.outputs.version }}.zip rinnai/
+          zip -r "../${ARCHIVE_NAME}" rinnai/
           cd ..
+          
+          # Verify archive was created
+          if [ ! -f "$ARCHIVE_NAME" ]; then
+            echo "❌ Error: Failed to create release archive"
+            exit 1
+          fi
+          
           echo "Created release archive:"
-          ls -lh rinnai-${{ steps.version.outputs.version }}.zip
+          ls -lh "$ARCHIVE_NAME"
+          
+          # Generate SHA256 checksum
+          sha256sum "$ARCHIVE_NAME" > "${ARCHIVE_NAME}.sha256"
+          echo "SHA256 checksum:"
+          cat "${ARCHIVE_NAME}.sha256"
+          
+          echo "archive_name=$ARCHIVE_NAME" >> $GITHUB_OUTPUT
 
       - name: Generate version-specific notes
         id: version_notes
@@ -419,16 +517,21 @@ jobs:
             echo "" > VERSION_NOTES.md
           fi
           
-          echo "version_notes<<EOF" >> $GITHUB_OUTPUT
-          cat VERSION_NOTES.md >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          {
+            echo "version_notes<<VERSION_NOTES_EOF"
+            cat VERSION_NOTES.md
+            echo "VERSION_NOTES_EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          name: Release v${{ steps.version.outputs.version }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}
           body: |
-            # Rinnai Control-R Integration v${{ steps.version.outputs.version }}
+            # Rinnai Control-R Integration ${{ steps.version.outputs.version }}
             
             [![HACS][hacs-badge]][hacs-url]
             [![Home Assistant][ha-badge]][ha-url]
@@ -470,13 +573,16 @@ jobs:
             [ha-url]: https://www.home-assistant.io/
           files: |
             rinnai-${{ steps.version.outputs.version }}.zip
+            rinnai-${{ steps.version.outputs.version }}.zip.sha256
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.version.outputs.is_prerelease }}
+          fail_on_unmatched_files: true
+          make_latest: ${{ steps.version.outputs.is_prerelease == 'false' }}
           generate_release_notes: false
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Release published
         run: |
-          echo "✅ Release v${{ steps.version.outputs.version }} published successfully!"
-          echo "📦 Download: https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version.outputs.version }}"
+          echo "✅ Release ${{ steps.version.outputs.version }} published successfully!"
+          echo "📦 Release URL: ${{ steps.create_release.outputs.url }}"
+          echo "📋 Release ID: ${{ steps.create_release.outputs.id }}"
+          echo "⬆️ Upload URL: ${{ steps.create_release.outputs.upload_url }}"
