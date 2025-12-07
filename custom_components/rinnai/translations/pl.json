@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Połączenie lokalne",
-                "description": "Wprowadź adres IP kontrolera podgrzewacza wody Rinnai. Kontroler musi być w sieci lokalnej i dostępny na porcie 9798.",
+                "description": "⚠️ OSTRZEŻENIE: Ta opcja działa tylko z kontrolerami RWM101 lub RWM103. Wprowadź adres IP kontrolera podgrzewacza wody Rinnai. Kontroler musi być w sieci lokalnej i dostępny na porcie 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,7 +65,7 @@
             },
             "reconfigure": {
                 "title": "Rekonfiguruj Rinnai Control-R",
-                "description": "Zmień tryb połączenia lub zaktualizuj adres hosta lokalnego.",
+                "description": "⚠️ OSTRZEŻENIE: Tryb lokalny działa tylko z kontrolerami RWM101 lub RWM103. Zmień tryb połączenia lub zaktualizuj adres hosta lokalnego.",
                 "data": {
                     "connection_mode": "Tryb połączenia",
                     "host": "Host"

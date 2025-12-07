@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Lokal anslutning",
-                "description": "Ange IP-adressen för din Rinnai-varmvattenberedarens kontroller. Kontrollern måste vara på ditt lokala nätverk och tillgänglig på port 9798.",
+                "description": "⚠️ VARNING: Detta alternativ fungerar endast med RWM101- eller RWM103-kontroller. Ange IP-adressen för din Rinnai-varmvattenberedarens kontroller. Kontrollern måste vara på ditt lokala nätverk och tillgänglig på port 9798.",
                 "data": {
                     "host": "Värd"
                 },
@@ -65,7 +65,7 @@
             },
             "reconfigure": {
                 "title": "Omkonfigurera Rinnai Control-R",
-                "description": "Ändra anslutningsläget eller uppdatera den lokala värdadressen.",
+                "description": "⚠️ VARNING: Lokalt läge fungerar endast med RWM101- eller RWM103-kontroller. Ändra anslutningsläget eller uppdatera den lokala värdadressen.",
                 "data": {
                     "connection_mode": "Anslutningsläge",
                     "host": "Värd"

@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Lokale verbinding",
-                "description": "Voer het IP-adres van uw Rinnai-boilercontroller in. De controller moet zich op uw lokale netwerk bevinden en toegankelijk zijn op poort 9798.",
+                "description": "⚠️ WAARSCHUWING: Deze optie werkt alleen met RWM101- of RWM103-controllers. Voer het IP-adres van uw Rinnai-boilercontroller in. De controller moet zich op uw lokale netwerk bevinden en toegankelijk zijn op poort 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,7 +65,7 @@
             },
             "reconfigure": {
                 "title": "Rinnai Control-R opnieuw configureren",
-                "description": "Wijzig de verbindingsmodus of werk het lokale hostadres bij.",
+                "description": "⚠️ WAARSCHUWING: Lokale modus werkt alleen met RWM101- of RWM103-controllers. Wijzig de verbindingsmodus of werk het lokale hostadres bij.",
                 "data": {
                     "connection_mode": "Verbindingsmodus",
                     "host": "Host"

@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Connexion locale",
-                "description": "Entrez l'adresse IP de votre contrôleur de chauffe-eau Rinnai. Le contrôleur doit être sur votre réseau local et accessible sur le port 9798.",
+                "description": "⚠️ AVERTISSEMENT: Cette option ne fonctionne qu'avec les contrôleurs RWM101 ou RWM103. Entrez l'adresse IP de votre contrôleur de chauffe-eau Rinnai. Le contrôleur doit être sur votre réseau local et accessible sur le port 9798.",
                 "data": {
                     "host": "Hôte"
                 },
@@ -65,7 +65,7 @@
             },
             "reconfigure": {
                 "title": "Reconfigurer Rinnai Control-R",
-                "description": "Modifiez le mode de connexion ou mettez à jour l'adresse de l'hôte local.",
+                "description": "⚠️ AVERTISSEMENT: Le mode local ne fonctionne qu'avec les contrôleurs RWM101 ou RWM103. Modifiez le mode de connexion ou mettez à jour l'adresse de l'hôte local.",
                 "data": {
                     "connection_mode": "Mode de connexion",
                     "host": "Hôte"

@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "本地連接",
-                "description": "輸入您的林內熱水器控制器的 IP 地址。控制器必須在您的本地網路中，並且可通過連接埠 9798 存取。",
+                "description": "⚠️ 警告：此選項僅適用於 RWM101 或 RWM103 控制器。輸入您的林內熱水器控制器的 IP 地址。控制器必須在您的本地網路中，並且可通過連接埠 9798 存取。",
                 "data": {
                     "host": "主機"
                 },
@@ -65,7 +65,7 @@
             },
             "reconfigure": {
                 "title": "重新設定 Rinnai Control-R",
-                "description": "變更連接模式或更新本地主機地址。",
+                "description": "⚠️ 警告：本地模式僅適用於 RWM101 或 RWM103 控制器。變更連接模式或更新本地主機地址。",
                 "data": {
                     "connection_mode": "連接模式",
                     "host": "主機"
