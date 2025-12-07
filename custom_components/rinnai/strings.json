@@ -9,7 +9,7 @@
                     "connection_mode": "Connection Mode"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback."
+                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater (⚠️ only works with RWM101 or RWM103 controllers). Hybrid uses local with cloud fallback."
                 }
             },
             "cloud": {
@@ -26,7 +26,7 @@
             },
             "local": {
                 "title": "Local Connection",
-                "description": "⚠️ WARNING: This option only works with RWM101 or RWM103 controllers. Enter the IP address of your Rinnai water heater controller. The controller must be on your local network and accessible on port {port}.",
+                "description": "Enter the IP address of your Rinnai water heater controller. The controller must be on your local network and accessible on port {port}.",
                 "data": {
                     "host": "[%key:common::config_flow::data::host%]"
                 },
@@ -66,13 +66,13 @@
             },
             "reconfigure": {
                 "title": "Reconfigure Rinnai Control-R",
-                "description": "⚠️ WARNING: Local mode only works with RWM101 or RWM103 controllers. Change the connection mode or update the local host address.",
+                "description": "Change the connection mode or update the local host address.",
                 "data": {
                     "connection_mode": "Connection Mode",
                     "host": "[%key:common::config_flow::data::host%]"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback.",
+                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater (⚠️ only works with RWM101 or RWM103 controllers). Hybrid uses local with cloud fallback.",
                     "host": "IP address of your Rinnai water heater controller (required for Local and Hybrid modes)"
                 }
             },

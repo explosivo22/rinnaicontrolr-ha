@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Conexão local",
-                "description": "⚠️ AVISO: Esta opção funciona apenas com controladores RWM101 ou RWM103. Digite o endereço IP do controlador do seu aquecedor de água Rinnai. O controlador deve estar na sua rede local e acessível na porta 9798.",
+                "description": "Digite o endereço IP do controlador do seu aquecedor de água Rinnai. O controlador deve estar na sua rede local e acessível na porta 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,13 +65,13 @@
             },
             "reconfigure": {
                 "title": "Reconfigurar Rinnai Control-R",
-                "description": "⚠️ AVISO: O modo local funciona apenas com controladores RWM101 ou RWM103. Altere o modo de conexão ou atualize o endereço do host local.",
+                "description": "Altere o modo de conexão ou atualize o endereço do host local.",
                 "data": {
                     "connection_mode": "Modo de conexão",
                     "host": "Host"
                 },
                 "data_description": {
-                    "connection_mode": "Nuvem usa sua conta Rinnai. Local conecta diretamente ao aquecedor. Híbrido usa local com fallback na nuvem.",
+                    "connection_mode": "Nuvem usa sua conta Rinnai. Local conecta diretamente ao aquecedor (⚠️ funciona apenas com controladores RWM101 ou RWM103). Híbrido usa local com fallback na nuvem.",
                     "host": "Endereço IP do controlador do seu aquecedor de água Rinnai (obrigatório para modos Local e Híbrido)"
                 }
             },

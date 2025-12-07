@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Ligação local",
-                "description": "⚠️ AVISO: Esta opção funciona apenas com controladores RWM101 ou RWM103. Introduza o endereço IP do controlador do seu esquentador Rinnai. O controlador deve estar na sua rede local e acessível na porta 9798.",
+                "description": "Introduza o endereço IP do controlador do seu esquentador Rinnai. O controlador deve estar na sua rede local e acessível na porta 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,13 +65,13 @@
             },
             "reconfigure": {
                 "title": "Reconfigurar Rinnai Control-R",
-                "description": "⚠️ AVISO: O modo local funciona apenas com controladores RWM101 ou RWM103. Altere o modo de ligação ou atualize o endereço do host local.",
+                "description": "Altere o modo de ligação ou atualize o endereço do host local.",
                 "data": {
                     "connection_mode": "Modo de ligação",
                     "host": "Host"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador. Híbrido usa local com fallback cloud.",
+                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador (⚠️ funciona apenas com controladores RWM101 ou RWM103). Híbrido usa local com fallback cloud.",
                     "host": "Endereço IP do controlador do seu esquentador Rinnai (obrigatório para modos Local e Híbrido)"
                 }
             },

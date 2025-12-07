@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Lokale Verbindung",
-                "description": "⚠️ WARNUNG: Diese Option funktioniert nur mit RWM101- oder RWM103-Controllern. Geben Sie die IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers ein. Der Controller muss in Ihrem lokalen Netzwerk sein und über Port 9798 erreichbar sein.",
+                "description": "Geben Sie die IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers ein. Der Controller muss in Ihrem lokalen Netzwerk sein und über Port 9798 erreichbar sein.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,13 +65,13 @@
             },
             "reconfigure": {
                 "title": "Rinnai Control-R neu konfigurieren",
-                "description": "⚠️ WARNUNG: Der lokale Modus funktioniert nur mit RWM101- oder RWM103-Controllern. Ändern Sie den Verbindungsmodus oder aktualisieren Sie die lokale Host-Adresse.",
+                "description": "Ändern Sie den Verbindungsmodus oder aktualisieren Sie die lokale Host-Adresse.",
                 "data": {
                     "connection_mode": "Verbindungsmodus",
                     "host": "Host"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter. Hybrid verwendet lokal mit Cloud-Fallback.",
+                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter (⚠️ funktioniert nur mit RWM101- oder RWM103-Controllern). Hybrid verwendet lokal mit Cloud-Fallback.",
                     "host": "IP-Adresse Ihres Rinnai-Warmwasserbereiter-Controllers (erforderlich für Lokal- und Hybridmodus)"
                 }
             },

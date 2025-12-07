@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Connessione locale",
-                "description": "⚠️ AVVISO: Questa opzione funziona solo con i controller RWM101 o RWM103. Inserisci l'indirizzo IP del controller del tuo scaldabagno Rinnai. Il controller deve essere sulla tua rete locale e accessibile sulla porta 9798.",
+                "description": "Inserisci l'indirizzo IP del controller del tuo scaldabagno Rinnai. Il controller deve essere sulla tua rete locale e accessibile sulla porta 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,13 +65,13 @@
             },
             "reconfigure": {
                 "title": "Riconfigura Rinnai Control-R",
-                "description": "⚠️ AVVISO: La modalità locale funziona solo con i controller RWM101 o RWM103. Cambia la modalità di connessione o aggiorna l'indirizzo host locale.",
+                "description": "Cambia la modalità di connessione o aggiorna l'indirizzo host locale.",
                 "data": {
                     "connection_mode": "Modalità di connessione",
                     "host": "Host"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud usa il tuo account Rinnai. Locale si connette direttamente allo scaldabagno. Ibrido usa locale con fallback cloud.",
+                    "connection_mode": "Cloud usa il tuo account Rinnai. Locale si connette direttamente allo scaldabagno (⚠️ funziona solo con i controller RWM101 o RWM103). Ibrido usa locale con fallback cloud.",
                     "host": "Indirizzo IP del controller del tuo scaldabagno Rinnai (richiesto per modalità Locale e Ibrida)"
                 }
             },

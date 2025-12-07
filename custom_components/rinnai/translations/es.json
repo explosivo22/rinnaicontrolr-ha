@@ -25,7 +25,7 @@
             },
             "local": {
                 "title": "Conexión local",
-                "description": "⚠️ ADVERTENCIA: Esta opción solo funciona con controladores RWM101 o RWM103. Ingrese la dirección IP de su controlador de calentador de agua Rinnai. El controlador debe estar en su red local y accesible en el puerto 9798.",
+                "description": "Ingrese la dirección IP de su controlador de calentador de agua Rinnai. El controlador debe estar en su red local y accesible en el puerto 9798.",
                 "data": {
                     "host": "Host"
                 },
@@ -65,13 +65,13 @@
             },
             "reconfigure": {
                 "title": "Reconfigurar Rinnai Control-R",
-                "description": "⚠️ ADVERTENCIA: El modo local solo funciona con controladores RWM101 o RWM103. Cambie el modo de conexión o actualice la dirección del host local.",
+                "description": "Cambie el modo de conexión o actualice la dirección del host local.",
                 "data": {
                     "connection_mode": "Modo de conexión",
                     "host": "Host"
                 },
                 "data_description": {
-                    "connection_mode": "Nube usa su cuenta Rinnai. Local se conecta directamente al calentador de agua. Híbrido usa local con respaldo en la nube.",
+                    "connection_mode": "Nube usa su cuenta Rinnai. Local se conecta directamente al calentador de agua (⚠️ solo funciona con controladores RWM101 o RWM103). Híbrido usa local con respaldo en la nube.",
                     "host": "Dirección IP de su controlador de calentador de agua Rinnai (requerido para modos Local e Híbrido)"
                 }
             },
