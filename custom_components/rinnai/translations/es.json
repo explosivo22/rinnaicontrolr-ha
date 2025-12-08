@@ -8,7 +8,7 @@
                     "connection_mode": "Modo de conexión"
                 },
                 "data_description": {
-                    "connection_mode": "Nube usa su cuenta Rinnai. Local se conecta directamente al calentador de agua. Híbrido usa local con respaldo en la nube."
+                    "connection_mode": "Nube usa su cuenta Rinnai. Local se conecta directamente al calentador de agua (⚠️ solo funciona con controladores RWM101 o RWM103). Híbrido usa local con respaldo en la nube."
                 }
             },
             "cloud": {

@@ -8,7 +8,7 @@
                     "connection_mode": "연결 모드"
                 },
                 "data_description": {
-                    "connection_mode": "클라우드는 Rinnai 계정을 사용합니다. 로컬은 온수기에 직접 연결합니다. 하이브리드는 로컬과 클라우드 폴백을 사용합니다."
+                    "connection_mode": "클라우드는 Rinnai 계정을 사용합니다. 로컬은 온수기에 직접 연결합니다 (⚠️ RWM101 또는 RWM103 컨트롤러에서만 작동합니다). 하이브리드는 로컬과 클라우드 폴백을 사용합니다."
                 }
             },
             "cloud": {

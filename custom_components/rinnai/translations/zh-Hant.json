@@ -8,7 +8,7 @@
                     "connection_mode": "連接模式"
                 },
                 "data_description": {
-                    "connection_mode": "雲端使用您的林內帳戶。本地直接連接到熱水器。混合模式使用本地連接，雲端作為備援。"
+                    "connection_mode": "雲端使用您的林內賬戶。本地直接連接到熱水器（⚠️ 僅適用於 RWM101 或 RWM103 控制器）。混合模式使用本地連接，雲端作為後備。"
                 }
             },
             "cloud": {

@@ -8,7 +8,7 @@
                     "connection_mode": "Connection Mode"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater. Hybrid uses local with cloud fallback."
+                    "connection_mode": "Cloud uses your Rinnai account. Local connects directly to the water heater (⚠️ only works with RWM101 or RWM103 controllers). Hybrid uses local with cloud fallback."
                 }
             },
             "cloud": {

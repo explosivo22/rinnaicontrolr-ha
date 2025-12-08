@@ -3,12 +3,12 @@
         "step": {
             "user": {
                 "title": "Połącz z Rinnai Control-R",
-                "description": "Wybierz sposób połączenia z podgrzewaczem wody Rinnai.",
+                "description": "Wybierz, jak połączyć się z podgrzewaczem wody Rinnai.",
                 "data": {
                     "connection_mode": "Tryb połączenia"
                 },
                 "data_description": {
-                    "connection_mode": "Chmura używa konta Rinnai. Lokalnie łączy się bezpośrednio z podgrzewaczem. Hybrydowy używa lokalnego z awaryjnym połączeniem chmurowym."
+                    "connection_mode": "Chmura używa konta Rinnai. Lokalnie łączy się bezpośrednio z podgrzewaczem (⚠️ działa tylko z kontrolerami RWM101 lub RWM103). Hybrydowy używa lokalnego z awaryjnym połączeniem chmurowym."
                 }
             },
             "cloud": {

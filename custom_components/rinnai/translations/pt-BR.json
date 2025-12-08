@@ -8,7 +8,7 @@
                     "connection_mode": "Modo de conexão"
                 },
                 "data_description": {
-                    "connection_mode": "Nuvem usa sua conta Rinnai. Local conecta diretamente ao aquecedor. Híbrido usa local com fallback na nuvem."
+                    "connection_mode": "Nuvem usa sua conta Rinnai. Local conecta diretamente ao aquecedor (⚠️ funciona apenas com controladores RWM101 ou RWM103). Híbrido usa local com fallback na nuvem."
                 }
             },
             "cloud": {

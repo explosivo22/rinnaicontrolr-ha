@@ -8,7 +8,7 @@
                     "connection_mode": "Verbindingsmodus"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud gebruikt uw Rinnai-account. Lokaal verbindt rechtstreeks met de boiler. Hybride gebruikt lokaal met cloud-fallback."
+                    "connection_mode": "Cloud gebruikt uw Rinnai-account. Lokaal verbindt rechtstreeks met de boiler (⚠️ werkt alleen met RWM101- of RWM103-controllers). Hybride gebruikt lokaal met cloud-fallback."
                 }
             },
             "cloud": {

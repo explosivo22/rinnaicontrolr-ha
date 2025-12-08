@@ -8,7 +8,7 @@
                     "connection_mode": "Modo de ligação"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador. Híbrido usa local com fallback cloud."
+                    "connection_mode": "Cloud usa a sua conta Rinnai. Local liga diretamente ao esquentador (⚠️ funciona apenas com controladores RWM101 ou RWM103). Híbrido usa local com fallback cloud."
                 }
             },
             "cloud": {

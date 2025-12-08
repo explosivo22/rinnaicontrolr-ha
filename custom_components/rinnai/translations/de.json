@@ -8,7 +8,7 @@
                     "connection_mode": "Verbindungsmodus"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter. Hybrid verwendet lokal mit Cloud-Fallback."
+                    "connection_mode": "Cloud verwendet Ihr Rinnai-Konto. Lokal verbindet sich direkt mit dem Warmwasserbereiter (⚠️ funktioniert nur mit RWM101- oder RWM103-Controllern). Hybrid verwendet lokal mit Cloud-Fallback."
                 }
             },
             "cloud": {

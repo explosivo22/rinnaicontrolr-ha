@@ -2,13 +2,13 @@
     "config": {
         "step": {
             "user": {
-                "title": "Connexion à Rinnai Control-R",
+                "title": "Se connecter à Rinnai Control-R",
                 "description": "Choisissez comment vous connecter à votre chauffe-eau Rinnai.",
                 "data": {
                     "connection_mode": "Mode de connexion"
                 },
                 "data_description": {
-                    "connection_mode": "Cloud utilise votre compte Rinnai. Local se connecte directement au chauffe-eau. Hybride utilise local avec repli sur le cloud."
+                    "connection_mode": "Cloud utilise votre compte Rinnai. Local se connecte directement au chauffe-eau (⚠️ ne fonctionne qu'avec les contrôleurs RWM101 ou RWM103). Hybride utilise local avec repli sur le cloud."
                 }
             },
             "cloud": {

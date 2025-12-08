@@ -8,7 +8,7 @@
                     "connection_mode": "Anslutningsläge"
                 },
                 "data_description": {
-                    "connection_mode": "Moln använder ditt Rinnai-konto. Lokal ansluter direkt till varmvattenberedaren. Hybrid använder lokal med moln-fallback."
+                    "connection_mode": "Moln använder ditt Rinnai-konto. Lokal ansluter direkt till varmvattenberedaren (⚠️ fungerar endast med RWM101- eller RWM103-kontroller). Hybrid använder lokal med moln-fallback."
                 }
             },
             "cloud": {
