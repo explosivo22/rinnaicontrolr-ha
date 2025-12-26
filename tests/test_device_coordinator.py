@@ -1,4 +1,5 @@
 """Tests for Rinnai device coordinator."""
+
 import sys
 import types
 import pathlib
@@ -16,16 +17,19 @@ DOMAIN = "rinnai"
 
 class _Unauthenticated(Exception):
     """Fake Unauthenticated exception."""
+
     pass
 
 
 class _RequestError(Exception):
     """Fake RequestError exception."""
+
     pass
 
 
 class _FakeUser:
     """Fake user API."""
+
     async def get_info(self):
         return {
             "email": "test@example.com",
@@ -118,6 +122,7 @@ class _FakeDevice:
 
 class _FakeAPI:
     """Fake aiorinnai API."""
+
     def __init__(self):
         self.user = _FakeUser()
         self.device = _FakeDevice()
@@ -198,6 +203,7 @@ def _load_device_module(monkeypatch):
 
 # Token expiration tests
 
+
 def test_is_token_expired_with_valid_token(monkeypatch):
     """Test token expiration check with valid token."""
     device_mod = _load_device_module(monkeypatch)
@@ -246,6 +252,7 @@ def test_is_token_expired_with_invalid_token(monkeypatch):
 
 
 # Coordinator tests
+
 
 @pytest.mark.asyncio
 async def test_coordinator_properties(hass, monkeypatch):
@@ -435,7 +442,9 @@ async def test_coordinator_token_refresh_on_expiring_token(hass, monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_coordinator_auth_failure_raises_config_entry_auth_failed(hass, monkeypatch):
+async def test_coordinator_auth_failure_raises_config_entry_auth_failed(
+    hass, monkeypatch
+):
     """Test that auth failures raise ConfigEntryAuthFailed."""
     device_mod = _load_device_module(monkeypatch)
 
@@ -525,6 +534,7 @@ async def test_coordinator_properties_return_defaults_without_data(hass, monkeyp
 
 # Helper function tests
 
+
 def test_convert_to_bool_with_string_true(monkeypatch):
     """Test _convert_to_bool with string 'true'."""
     device_mod = _load_device_module(monkeypatch)
@@ -553,3 +563,154 @@ def test_convert_to_bool_with_other_values(monkeypatch):
     assert device_mod._convert_to_bool(1) is True
     assert device_mod._convert_to_bool(0) is False
     assert device_mod._convert_to_bool("") is False
+
+
+# Local mode retry tests
+
+
+class _FakeLocalClient:
+    """Fake local client for testing."""
+
+    def __init__(self):
+        self.call_count = 0
+        self.fail_count = 0  # Number of times to fail before succeeding
+        self.always_fail = False
+
+    async def get_status(self):
+        self.call_count += 1
+        if self.always_fail:
+            return None
+        if self.call_count <= self.fail_count:
+            return None
+        return {
+            "domestic_temperature": 120,
+            "set_domestic_temperature": 120,
+            "domestic_combustion": False,
+            "operation_enabled": True,
+            "recirculation_enabled": False,
+            "schedule_holiday": False,
+            "serial_number": "LOCAL123",
+            "model": "RUR199",
+            "module_firmware_version": "1.0",
+        }
+
+
+@pytest.mark.asyncio
+async def test_local_update_success_first_try(hass, monkeypatch):
+    """Test local update succeeds on first try."""
+    device_mod = _load_device_module(monkeypatch)
+    _load_local_module(monkeypatch)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "host": "192.168.1.100",
+            "connection_mode": "local",
+        },
+        options={},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    local_client = _FakeLocalClient()
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass,
+        "LOCAL123",
+        dict(entry.options),
+        entry,
+        local_client=local_client,
+        connection_mode="local",
+    )
+
+    data = await coordinator._async_update_data()
+
+    assert local_client.call_count == 1
+    assert data["domestic_temperature"] == 120
+    assert coordinator._consecutive_errors == 0
+
+
+@pytest.mark.asyncio
+async def test_local_update_success_after_retries(hass, monkeypatch):
+    """Test local update succeeds after initial failures."""
+    device_mod = _load_device_module(monkeypatch)
+    _load_local_module(monkeypatch)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "host": "192.168.1.100",
+            "connection_mode": "local",
+        },
+        options={},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    local_client = _FakeLocalClient()
+    local_client.fail_count = 2  # Fail twice, succeed on third try
+
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass,
+        "LOCAL123",
+        dict(entry.options),
+        entry,
+        local_client=local_client,
+        connection_mode="local",
+    )
+
+    data = await coordinator._async_update_data()
+
+    # Should have retried and succeeded
+    assert local_client.call_count == 3
+    assert data["domestic_temperature"] == 120
+    assert coordinator._consecutive_errors == 0
+
+
+@pytest.mark.asyncio
+async def test_local_update_fails_after_retry_window(hass, monkeypatch):
+    """Test local update fails after exhausting retry window."""
+    device_mod = _load_device_module(monkeypatch)
+    _load_local_module(monkeypatch)
+
+    # Use shorter retry window for testing
+    monkeypatch.setattr(device_mod, "LOCAL_RETRY_WINDOW_SECONDS", 2.0)
+    monkeypatch.setattr(device_mod, "LOCAL_INITIAL_RETRY_DELAY", 0.5)
+    monkeypatch.setattr(device_mod, "LOCAL_MAX_RETRY_DELAY", 1.0)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "host": "192.168.1.100",
+            "connection_mode": "local",
+        },
+        options={},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    local_client = _FakeLocalClient()
+    local_client.always_fail = True
+
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass,
+        "LOCAL123",
+        dict(entry.options),
+        entry,
+        local_client=local_client,
+        connection_mode="local",
+    )
+
+    with pytest.raises(UpdateFailed) as exc_info:
+        await coordinator._async_update_data()
+
+    # Should have made multiple attempts
+    assert local_client.call_count >= 2
+    assert coordinator._consecutive_errors == 1
+    assert "Local update failed after" in str(exc_info.value)
+
+
+def _load_local_module(monkeypatch):
+    """Load local module."""
+    repo_root = pathlib.Path(__file__).resolve().parents[1]
+    base_dir = repo_root / "custom_components" / "rinnai"
+    _load_module("custom_components.rinnai.local", base_dir / "local.py")

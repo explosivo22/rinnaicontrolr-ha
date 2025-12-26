@@ -1,4 +1,5 @@
 """Tests for Rinnai entity platforms (sensor, binary_sensor)."""
+
 import sys
 import types
 import pathlib
@@ -77,11 +78,14 @@ def _load_entity_modules(monkeypatch):
     init_mod.__path__ = [str(base_dir)]
     # RinnaiConfigEntry is just a type alias, we can fake it
     from homeassistant.config_entries import ConfigEntry
+
     init_mod.RinnaiConfigEntry = ConfigEntry  # type: ignore[attr-defined]
     sys.modules["custom_components.rinnai"] = init_mod
 
     sensor_mod = _load_module("custom_components.rinnai.sensor", base_dir / "sensor.py")
-    binary_sensor_mod = _load_module("custom_components.rinnai.binary_sensor", base_dir / "binary_sensor.py")
+    binary_sensor_mod = _load_module(
+        "custom_components.rinnai.binary_sensor", base_dir / "binary_sensor.py"
+    )
 
     return sensor_mod, binary_sensor_mod
 
@@ -122,6 +126,7 @@ def _create_mock_device():
 # =====================
 # Sensor Tests
 # =====================
+
 
 def _get_sensor_description(sensor_mod, key: str):
     """Get a sensor description by key."""
@@ -372,6 +377,7 @@ async def test_fan_frequency_sensor_none(monkeypatch):
 # Binary Sensor Tests
 # =====================
 
+
 def _get_binary_sensor_description(binary_sensor_mod, key: str):
     """Get a binary sensor description by key."""
     for desc in binary_sensor_mod.BINARY_SENSOR_DESCRIPTIONS:
@@ -414,7 +420,9 @@ async def test_heating_binary_sensor_on(monkeypatch):
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_heating = True
-    description = _get_binary_sensor_description(binary_sensor_mod, "water_heater_heating")
+    description = _get_binary_sensor_description(
+        binary_sensor_mod, "water_heater_heating"
+    )
 
     sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
@@ -428,7 +436,9 @@ async def test_heating_binary_sensor_off(monkeypatch):
     _, binary_sensor_mod = _load_entity_modules(monkeypatch)
     device = _create_mock_device()
     device.is_heating = False
-    description = _get_binary_sensor_description(binary_sensor_mod, "water_heater_heating")
+    description = _get_binary_sensor_description(
+        binary_sensor_mod, "water_heater_heating"
+    )
 
     sensor = binary_sensor_mod.RinnaiBinarySensor(device, description)
 
@@ -439,6 +449,7 @@ async def test_heating_binary_sensor_off(monkeypatch):
 # =====================
 # Entity Base Tests
 # =====================
+
 
 @pytest.mark.asyncio
 async def test_entity_unique_id(monkeypatch):
