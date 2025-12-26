@@ -17,11 +17,13 @@
                 "description": "Enter your Rinnai Control-R account credentials.",
                 "data": {
                     "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "password": "[%key:common::config_flow::data::password%]",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate when your session expires."
                 }
             },
             "local": {
@@ -39,11 +41,13 @@
                 "description": "First, enter your Rinnai Control-R account credentials for cloud fallback.",
                 "data": {
                     "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "password": "[%key:common::config_flow::data::password%]",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate when your session expires."
                 }
             },
             "hybrid_local": {
@@ -61,7 +65,11 @@
                 "description": "Your session has expired. Please re-enter your credentials.",
                 "data": {
                     "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "password": "[%key:common::config_flow::data::password%]",
+                    "save_password": "Save password for automatic re-authentication"
+                },
+                "data_description": {
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate when your session expires."
                 }
             },
             "reconfigure": {
@@ -81,11 +89,13 @@
                 "description": "The selected mode requires cloud access. Enter your Rinnai Control-R account credentials.",
                 "data": {
                     "email": "[%key:common::config_flow::data::email%]",
-                    "password": "[%key:common::config_flow::data::password%]"
+                    "password": "[%key:common::config_flow::data::password%]",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate when your session expires."
                 }
             }
         },

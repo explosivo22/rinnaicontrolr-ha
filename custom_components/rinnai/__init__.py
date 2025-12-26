@@ -19,6 +19,7 @@ from .const import (
     CONF_CONNECTION_MODE,
     CONF_HOST,
     CONF_REFRESH_TOKEN,
+    CONF_STORED_PASSWORD,
     CONNECTION_MODE_CLOUD,
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
@@ -225,17 +226,45 @@ async def _setup_cloud_client(
         await _persist_tokens_if_changed(hass, entry, client)
 
     except Unauthenticated as err:
-        _LOGGER.error("Authentication error: %s", err)
-        ir.async_create_issue(
-            hass,
-            DOMAIN,
-            "reauth_required",
-            is_fixable=True,
-            is_persistent=True,
-            severity=ir.IssueSeverity.ERROR,
-            translation_key="reauth_required",
-        )
-        raise ConfigEntryAuthFailed from err
+        _LOGGER.warning("Token refresh failed: %s", err)
+
+        # Attempt automatic re-login if password is stored
+        stored_password = entry.data.get(CONF_STORED_PASSWORD)
+        if stored_password:
+            _LOGGER.info("Attempting automatic re-login with stored password")
+            try:
+                await client.async_login(entry.data[CONF_EMAIL], stored_password)
+                user_info = await client.user.get_info()
+                _LOGGER.info("Automatic re-login successful")
+
+                # Persist the new tokens
+                await _persist_tokens_if_changed(hass, entry, client)
+            except Exception as login_err:
+                _LOGGER.error("Automatic re-login failed: %s", login_err)
+                ir.async_create_issue(
+                    hass,
+                    DOMAIN,
+                    "reauth_required",
+                    is_fixable=True,
+                    is_persistent=True,
+                    severity=ir.IssueSeverity.ERROR,
+                    translation_key="reauth_required",
+                )
+                raise ConfigEntryAuthFailed from login_err
+        else:
+            _LOGGER.error(
+                "Authentication error and no stored password for automatic re-login"
+            )
+            ir.async_create_issue(
+                hass,
+                DOMAIN,
+                "reauth_required",
+                is_fixable=True,
+                is_persistent=True,
+                severity=ir.IssueSeverity.ERROR,
+                translation_key="reauth_required",
+            )
+            raise ConfigEntryAuthFailed from err
     except RequestError as err:
         _LOGGER.error("Request error during setup: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to Rinnai API: {err}") from err
