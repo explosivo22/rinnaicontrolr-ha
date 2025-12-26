@@ -336,8 +336,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._last_error = None
                 await self._persist_tokens_if_changed()
 
-                if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
-                    await self._maybe_do_maintenance_retrieval()
+                # Set device info BEFORE maintenance retrieval to avoid race
+                # condition where _execute_cloud_action checks it before set
+                self._device_information = device_info
 
                 # Extract key values for logging
                 device_data = device_info.get("data", {}).get("getDevice", {})
@@ -348,7 +349,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     info.get("domestic_temperature"),
                     info.get("domestic_combustion"),
                 )
-                self._device_information = device_info
+
+                # Maintenance retrieval after device info is set
+                if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                    await self._maybe_do_maintenance_retrieval()
+
                 # Cache cloud device name for hybrid mode
                 cloud_name = device_data.get("device_name")
                 if cloud_name:

@@ -714,3 +714,94 @@ def _load_local_module(monkeypatch):
     repo_root = pathlib.Path(__file__).resolve().parents[1]
     base_dir = repo_root / "custom_components" / "rinnai"
     _load_module("custom_components.rinnai.local", base_dir / "local.py")
+
+
+# Maintenance race condition tests (GitHub issue #146)
+
+
+@pytest.mark.asyncio
+async def test_maintenance_on_first_update_has_device_info(hass, monkeypatch):
+    """Test device info is set before maintenance runs on first update.
+
+    Regression test for issue #146: maintenance was called before
+    _device_information was populated, causing cloud action to fail.
+    """
+    device_mod = _load_device_module(monkeypatch)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+        },
+        options={
+            "maint_interval_enabled": True,
+            "maint_interval_minutes": 5,
+        },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    api = _FakeAPI()
+    captured_device_info = []
+
+    original_do_maintenance = api.device.do_maintenance_retrieval
+
+    async def capture_state_maintenance(device):
+        # Capture coordinator state when maintenance is called
+        captured_device_info.append(coordinator._device_information)
+        return await original_do_maintenance(device)
+
+    api.device.do_maintenance_retrieval = capture_state_maintenance
+
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass, "device-1", dict(entry.options), entry, api_client=api
+    )
+
+    # Verify initial state
+    assert coordinator._device_information is None
+
+    await coordinator._async_update_data()
+
+    # Key assertion: device info must be set BEFORE maintenance runs
+    assert len(captured_device_info) == 1
+    assert captured_device_info[0] is not None
+    assert "data" in captured_device_info[0]
+
+
+@pytest.mark.asyncio
+async def test_maintenance_skipped_when_disabled(hass, monkeypatch):
+    """Test maintenance is not called when disabled in options."""
+    device_mod = _load_device_module(monkeypatch)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+        },
+        options={
+            "maint_interval_enabled": False,
+        },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    api = _FakeAPI()
+    maintenance_called = False
+
+    async def track_maintenance(device):
+        nonlocal maintenance_called
+        maintenance_called = True
+
+    api.device.do_maintenance_retrieval = track_maintenance
+
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass, "device-1", dict(entry.options), entry, api_client=api
+    )
+
+    await coordinator._async_update_data()
+
+    assert maintenance_called is False
