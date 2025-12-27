@@ -592,7 +592,26 @@ class _FakeLocalClient:
             "serial_number": "LOCAL123",
             "model": "RUR199",
             "module_firmware_version": "1.0",
+            # Maintenance/diagnostic sensor fields (returned by local list command)
+            "m01_water_flow_rate_raw": 25,
+            "m02_outlet_temperature": 118,
+            "m03_combustion_hours_raw": 2500,
+            "m04_combustion_cycles": 1500,
+            "m05_fan_frequency": 60,
+            "m07_water_flow_control_position": 50,
+            "m08_inlet_temperature": 55,
+            "m09_fan_current": 100,
+            "m11_heat_exchanger_outlet_temperature": 120,
+            "m12_bypass_servo_position": 30,
+            "m17_outdoor_antifreeze_temperature": 45,
+            "m19_pump_hours": 500,
+            "m20_pump_cycles": 200,
+            "m21_exhaust_temperature": 150,
         }
+
+    async def do_maintenance_retrieval(self):
+        """Trigger maintenance data retrieval."""
+        return True
 
 
 @pytest.mark.asyncio

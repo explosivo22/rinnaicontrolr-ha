@@ -261,6 +261,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                             data.get("domestic_temperature"),
                             data.get("domestic_combustion"),
                         )
+
+                    # Trigger maintenance retrieval for diagnostic sensor fields
+                    if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                        await self._maybe_do_maintenance_retrieval()
+
                     return data
 
                 # data is None - treat as a retriable error
@@ -405,6 +410,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     # Fetch cloud device name once for user-friendly naming
                     if not self._cached_cloud_device_name and self.api_client:
                         await self._cache_cloud_device_name()
+
+                    # Trigger maintenance retrieval for diagnostic sensor fields
+                    if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                        await self._maybe_do_maintenance_retrieval()
+
                     return data
             except Exception as error:
                 local_error = error

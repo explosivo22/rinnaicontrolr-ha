@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import voluptuous as vol
@@ -50,6 +51,26 @@ from .const import (
     MIN_MAINT_INTERVAL_MINUTES,
 )
 from .local import RinnaiLocalClient
+
+# Regex pattern for IPv4 addresses
+_IPV4_PATTERN = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+
+
+def _is_hostname(host: str) -> bool:
+    """Check if the host is a hostname (not an IP address).
+
+    Returns True if the host contains letters or is a .local mDNS name,
+    indicating it's a hostname that requires DNS resolution.
+    """
+    # Check for IPv4 pattern
+    if _IPV4_PATTERN.match(host):
+        return False
+    # Check for IPv6 (contains colons)
+    if ":" in host:
+        return False
+    # Anything else is likely a hostname
+    return True
+
 
 # Common schema components to reduce duplication
 CONNECTION_MODE_OPTIONS: list[SelectOptionDict] = [
@@ -253,13 +274,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error(
-                "Cannot connect to Rinnai controller at %s on port 9798. "
-                "Please verify the IP address is correct and the device is accessible. "
-                "Consider using Cloud mode if local connection is not possible.",
-                self.host,
-            )
-            errors["base"] = "local_connection_failed"
+            # Provide more specific error message for hostname resolution issues
+            if _is_hostname(self.host):
+                LOGGER.error(
+                    "Cannot resolve hostname %s. mDNS hostnames like "
+                    "'rinnai-control-r.local' often fail in containerized environments. "
+                    "Please use the device's IP address instead.",
+                    self.host,
+                )
+                errors["base"] = "hostname_resolution_failed"
+            else:
+                LOGGER.error(
+                    "Cannot connect to Rinnai controller at %s on port 9798. "
+                    "Please verify the IP address is correct and the device is accessible. "
+                    "Consider using Cloud mode if local connection is not possible.",
+                    self.host,
+                )
+                errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -370,13 +401,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error(
-                "Cannot connect to Rinnai controller at %s on port 9798. "
-                "Please verify the IP address is correct and the device is accessible. "
-                "Consider using Cloud mode if local connection is not possible.",
-                self.host,
-            )
-            errors["base"] = "local_connection_failed"
+            # Provide more specific error message for hostname resolution issues
+            if _is_hostname(self.host):
+                LOGGER.error(
+                    "Cannot resolve hostname %s. mDNS hostnames like "
+                    "'rinnai-control-r.local' often fail in containerized environments. "
+                    "Please use the device's IP address instead.",
+                    self.host,
+                )
+                errors["base"] = "hostname_resolution_failed"
+            else:
+                LOGGER.error(
+                    "Cannot connect to Rinnai controller at %s on port 9798. "
+                    "Please verify the IP address is correct and the device is accessible. "
+                    "Consider using Cloud mode if local connection is not possible.",
+                    self.host,
+                )
+                errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="hybrid_local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -567,13 +608,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             # Test connection
             client = RinnaiLocalClient(new_host)
             if not await client.test_connection():
-                LOGGER.error(
-                    "Reconfigure: Cannot connect to Rinnai controller at %s on port 9798. "
-                    "Please verify the IP address is correct and the device is accessible. "
-                    "Consider using Cloud mode if local connection is not possible.",
-                    new_host,
-                )
-                errors["base"] = "local_connection_failed"
+                # Provide more specific error message for hostname resolution issues
+                if _is_hostname(new_host):
+                    LOGGER.error(
+                        "Reconfigure: Cannot resolve hostname %s. mDNS hostnames like "
+                        "'rinnai-control-r.local' often fail in containerized environments. "
+                        "Please use the device's IP address instead.",
+                        new_host,
+                    )
+                    errors["base"] = "hostname_resolution_failed"
+                else:
+                    LOGGER.error(
+                        "Reconfigure: Cannot connect to Rinnai controller at %s on port 9798. "
+                        "Please verify the IP address is correct and the device is accessible. "
+                        "Consider using Cloud mode if local connection is not possible.",
+                        new_host,
+                    )
+                    errors["base"] = "local_connection_failed"
                 return self.async_show_form(
                     step_id="reconfigure",
                     data_schema=vol.Schema(

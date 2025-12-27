@@ -105,6 +105,7 @@
             "unknown": "[%key:common::config_flow::error::unknown%]",
             "host_required": "Host IP address is required for Local and Hybrid modes",
             "local_connection_failed": "Unable to connect to Rinnai controller at the specified IP address. Please verify: (1) The IP address is correct, (2) Port 9798 is accessible, (3) The controller is powered on. If local connection is not possible, please use Cloud mode instead.",
+            "hostname_resolution_failed": "Unable to resolve hostname. Hostnames like 'rinnai-control-r.local' often fail in containerized environments. Please use the device's IP address instead (check your router's DHCP lease table).",
             "user_not_confirmed": "Your email address has not been confirmed. Please check your email and confirm your Rinnai account before continuing.",
             "password_change_required": "You must change your password in the Rinnai app before continuing. Please update your password and try again."
         },
