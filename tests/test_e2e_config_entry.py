@@ -76,6 +76,7 @@ class _FakeDevice:
 
 class _FakeAPI:
     """Fake aiorinnai API matching real aiorinnai.API signature."""
+
     def __init__(
         self,
         session=None,
@@ -94,21 +95,21 @@ class _FakeAPI:
         self.executor_timeout = executor_timeout
         self.username = None
         self.is_connected = False
-        
+
         # Private token attributes (real API only has private ones)
         self._access_token = None
         self._refresh_token = None
         self._id_token = None
-        
+
         # Sub-objects (populated immediately for e2e tests)
         self.user = _FakeUser()
         self.device = _FakeDevice()
-    
+
     @property
     def access_token(self):
         """Public accessor for access token (for config_flow.py compatibility)."""
         return self._access_token
-    
+
     @property
     def refresh_token(self):
         """Public accessor for refresh token (for config_flow.py compatibility)."""
@@ -147,6 +148,7 @@ class _FakeAPI:
 
 
 # ----- Helpers to expose the integration package from the repo path -----
+
 
 def _ensure_package_modules(repo_root: pathlib.Path):
     cc_name = "custom_components"
@@ -221,7 +223,9 @@ def _materialize_custom_component(hass) -> pathlib.Path:
 
 
 @pytest.mark.asyncio
-async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_integrations, monkeypatch):
+async def test_end_to_end_config_entry_sets_up_platforms(
+    hass, enable_custom_integrations, monkeypatch
+):
     _install_fake_aiorinnai(monkeypatch)
     mod = _preload_integration()
 
@@ -234,7 +238,9 @@ async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_int
         self._device_information = await self.api_client.device.get_info(self.id)
         return None
 
-    monkeypatch.setattr(mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh)
+    monkeypatch.setattr(
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -261,7 +267,9 @@ async def test_end_to_end_config_entry_sets_up_platforms(hass, enable_custom_int
 
     # Assert platform entities were created by checking entity registry
     registry = er.async_get(hass)
-    created = [e for e in registry.entities.values() if e.config_entry_id == entry.entry_id]
+    created = [
+        e for e in registry.entities.values() if e.config_entry_id == entry.entry_id
+    ]
     # Expect at least water_heater plus several sensors/binary_sensors
     assert any(e.domain == "water_heater" for e in created)
     assert any(e.domain == "sensor" for e in created)

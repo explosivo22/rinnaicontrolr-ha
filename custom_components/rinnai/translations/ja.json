@@ -16,11 +16,13 @@
                 "description": "Rinnai Control-Rアカウントの認証情報を入力してください。",
                 "data": {
                     "email": "メールアドレス",
-                    "password": "パスワード"
+                    "password": "パスワード",
+                    "save_password": "自動再認証のためにパスワードを保存"
                 },
                 "data_description": {
                     "email": "Rinnai Control-Rアカウントのメールアドレス",
-                    "password": "Rinnai Control-Rアカウントのパスワード"
+                    "password": "Rinnai Control-Rアカウントのパスワード",
+                    "save_password": "有効にすると、セッションが期限切れになったときに自動的に再認証するためにパスワードが保存されます。無効の場合は、手動で再認証する必要があります。"
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "まず、クラウドフォールバック用のRinnai Control-Rアカウント認証情報を入力してください。",
                 "data": {
                     "email": "メールアドレス",
-                    "password": "パスワード"
+                    "password": "パスワード",
+                    "save_password": "自動再認証のためにパスワードを保存"
                 },
                 "data_description": {
                     "email": "Rinnai Control-Rアカウントのメールアドレス",
-                    "password": "Rinnai Control-Rアカウントのパスワード"
+                    "password": "Rinnai Control-Rアカウントのパスワード",
+                    "save_password": "有効にすると、セッションが期限切れになったときに自動的に再認証するためにパスワードが保存されます。無効の場合は、手動で再認証する必要があります。"
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "セッションが期限切れになりました。認証情報を再入力してください。",
                 "data": {
                     "email": "メールアドレス",
-                    "password": "パスワード"
+                    "password": "パスワード",
+                    "save_password": "自動再認証のためにパスワードを保存"
+                },
+                "data_description": {
+                    "save_password": "有効にすると、セッションが期限切れになったときに自動的に再認証するためにパスワードが保存されます。無効の場合は、手動で再認証する必要があります。"
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "選択したモードにはクラウドアクセスが必要です。Rinnai Control-Rアカウントの認証情報を入力してください。",
                 "data": {
                     "email": "メールアドレス",
-                    "password": "パスワード"
+                    "password": "パスワード",
+                    "save_password": "自動再認証のためにパスワードを保存"
                 },
                 "data_description": {
                     "email": "Rinnai Control-Rアカウントのメールアドレス",
-                    "password": "Rinnai Control-Rアカウントのパスワード"
+                    "password": "Rinnai Control-Rアカウントのパスワード",
+                    "save_password": "有効にすると、セッションが期限切れになったときに自動的に再認証するためにパスワードが保存されます。無効の場合は、手動で再認証する必要があります。"
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "ファン周波数"
+            },
+            "water_flow_control_position": {
+                "name": "水流制御位置"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "熱交換器出口温度"
+            },
+            "bypass_servo_position": {
+                "name": "バイパスサーボ位置"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "屋外不凍液温度"
+            },
+            "exhaust_temperature": {
+                "name": "排気温度"
             }
         }
     },

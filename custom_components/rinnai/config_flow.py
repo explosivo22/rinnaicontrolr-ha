@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 import voluptuous as vol
@@ -35,18 +36,41 @@ from .const import (
     CONF_MAINT_INTERVAL_MINUTES,
     CONF_RECIRCULATION_DURATION,
     CONF_REFRESH_TOKEN,
+    CONF_SAVE_PASSWORD,
+    CONF_STORED_PASSWORD,
     CONNECTION_MODE_CLOUD,
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
     DEFAULT_MAINT_INTERVAL_ENABLED,
     DEFAULT_MAINT_INTERVAL_MINUTES,
     DEFAULT_RECIRCULATION_DURATION,
+    DEFAULT_SAVE_PASSWORD,
     DOMAIN,
     LOGGER,
     MAX_MAINT_INTERVAL_MINUTES,
     MIN_MAINT_INTERVAL_MINUTES,
 )
 from .local import RinnaiLocalClient
+
+# Regex pattern for IPv4 addresses
+_IPV4_PATTERN = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+
+
+def _is_hostname(host: str) -> bool:
+    """Check if the host is a hostname (not an IP address).
+
+    Returns True if the host contains letters or is a .local mDNS name,
+    indicating it's a hostname that requires DNS resolution.
+    """
+    # Check for IPv4 pattern
+    if _IPV4_PATTERN.match(host):
+        return False
+    # Check for IPv6 (contains colons)
+    if ":" in host:
+        return False
+    # Anything else is likely a hostname
+    return True
+
 
 # Common schema components to reduce duplication
 CONNECTION_MODE_OPTIONS: list[SelectOptionDict] = [
@@ -68,12 +92,22 @@ def _get_connection_mode_selector() -> SelectSelector:
 
 def _get_cloud_auth_schema(
     default_email: str = "",
+    default_save_password: bool = DEFAULT_SAVE_PASSWORD,
 ) -> vol.Schema:
-    """Get the cloud authentication schema."""
+    """Get the cloud authentication schema.
+
+    Args:
+        default_email: Pre-filled email address.
+        default_save_password: Default value for save password checkbox.
+
+    Returns:
+        Schema for cloud authentication form.
+    """
     return vol.Schema(
         {
             vol.Required(CONF_EMAIL, default=default_email): str,
             vol.Required(CONF_PASSWORD): str,
+            vol.Optional(CONF_SAVE_PASSWORD, default=default_save_password): bool,
         }
     )
 
@@ -97,6 +131,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         self.password: str | None = None
         self.host: str | None = None
         self.connection_mode: str | None = None
+        self.save_password: bool = False
         self._local_sysinfo: dict[str, Any] | None = None
 
     async def async_step_user(
@@ -144,6 +179,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         self.username = user_input[CONF_EMAIL]
         self.password = user_input[CONF_PASSWORD]
+        self.save_password = user_input.get(CONF_SAVE_PASSWORD, False)
         LOGGER.debug("Config flow: attempting cloud login for %s", self.username)
 
         try:
@@ -195,12 +231,17 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         await self.async_set_unique_id(self.username.lower())
         self._abort_if_unique_id_configured()
 
-        data = {
+        data: dict[str, Any] = {
             CONF_CONNECTION_MODE: CONNECTION_MODE_CLOUD,
             CONF_EMAIL: self.username,
             CONF_ACCESS_TOKEN: self.api.access_token,
             CONF_REFRESH_TOKEN: self.api.refresh_token,
         }
+
+        # Store password for automatic re-authentication if user opted in
+        if self.save_password and self.password:
+            data[CONF_STORED_PASSWORD] = self.password
+            LOGGER.debug("Config flow: password will be stored for auto re-auth")
 
         LOGGER.info("Config flow: creating cloud config entry for %s", title)
         return self.async_create_entry(
@@ -233,13 +274,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error(
-                "Cannot connect to Rinnai controller at %s on port 9798. "
-                "Please verify the IP address is correct and the device is accessible. "
-                "Consider using Cloud mode if local connection is not possible.",
-                self.host,
-            )
-            errors["base"] = "local_connection_failed"
+            # Provide more specific error message for hostname resolution issues
+            if _is_hostname(self.host):
+                LOGGER.error(
+                    "Cannot resolve hostname %s. mDNS hostnames like "
+                    "'rinnai-control-r.local' often fail in containerized environments. "
+                    "Please use the device's IP address instead.",
+                    self.host,
+                )
+                errors["base"] = "hostname_resolution_failed"
+            else:
+                LOGGER.error(
+                    "Cannot connect to Rinnai controller at %s on port 9798. "
+                    "Please verify the IP address is correct and the device is accessible. "
+                    "Consider using Cloud mode if local connection is not possible.",
+                    self.host,
+                )
+                errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -284,6 +335,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         self.username = user_input[CONF_EMAIL]
         self.password = user_input[CONF_PASSWORD]
+        self.save_password = user_input.get(CONF_SAVE_PASSWORD, False)
 
         try:
             # Use Home Assistant's shared session for connection pooling
@@ -349,13 +401,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         sysinfo = await client.get_sysinfo()
 
         if sysinfo is None:
-            LOGGER.error(
-                "Cannot connect to Rinnai controller at %s on port 9798. "
-                "Please verify the IP address is correct and the device is accessible. "
-                "Consider using Cloud mode if local connection is not possible.",
-                self.host,
-            )
-            errors["base"] = "local_connection_failed"
+            # Provide more specific error message for hostname resolution issues
+            if _is_hostname(self.host):
+                LOGGER.error(
+                    "Cannot resolve hostname %s. mDNS hostnames like "
+                    "'rinnai-control-r.local' often fail in containerized environments. "
+                    "Please use the device's IP address instead.",
+                    self.host,
+                )
+                errors["base"] = "hostname_resolution_failed"
+            else:
+                LOGGER.error(
+                    "Cannot connect to Rinnai controller at %s on port 9798. "
+                    "Please verify the IP address is correct and the device is accessible. "
+                    "Consider using Cloud mode if local connection is not possible.",
+                    self.host,
+                )
+                errors["base"] = "local_connection_failed"
             return self.async_show_form(
                 step_id="hybrid_local",
                 data_schema=_get_local_schema(default_host=self.host),
@@ -376,13 +438,18 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         await self.async_set_unique_id(self.username.lower())
         self._abort_if_unique_id_configured()
 
-        data = {
+        data: dict[str, Any] = {
             CONF_CONNECTION_MODE: CONNECTION_MODE_HYBRID,
             CONF_EMAIL: self.username,
             CONF_ACCESS_TOKEN: self.api.access_token,
             CONF_REFRESH_TOKEN: self.api.refresh_token,
             CONF_HOST: self.host,
         }
+
+        # Store password for automatic re-authentication if user opted in
+        if self.save_password and self.password:
+            data[CONF_STORED_PASSWORD] = self.password
+            LOGGER.debug("Config flow: password will be stored for auto re-auth")
 
         return self.async_create_entry(
             title=title,
@@ -399,15 +466,26 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         errors: dict[str, str] = {}
         default_email = str(self.context.get(CONF_EMAIL, ""))
 
+        # Get existing save_password preference from entry
+        entry_id = self.context.get("entry_id")
+        entry = self.hass.config_entries.async_get_entry(entry_id) if entry_id else None
+        default_save_password = bool(
+            entry.data.get(CONF_STORED_PASSWORD) if entry else False
+        )
+
         if user_input is None:
             return self.async_show_form(
                 step_id="reauth",
-                data_schema=_get_cloud_auth_schema(default_email=default_email),
+                data_schema=_get_cloud_auth_schema(
+                    default_email=default_email,
+                    default_save_password=default_save_password,
+                ),
                 errors=errors,
             )
 
         self.username = user_input[CONF_EMAIL]
         self.password = user_input[CONF_PASSWORD]
+        self.save_password = user_input.get(CONF_SAVE_PASSWORD, False)
 
         try:
             # Use Home Assistant's shared session for connection pooling
@@ -459,15 +537,20 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         entry = self.hass.config_entries.async_get_entry(entry_id)
         if entry:
-            self.hass.config_entries.async_update_entry(
-                entry,
-                data={
-                    **entry.data,
-                    CONF_EMAIL: self.username,
-                    CONF_ACCESS_TOKEN: self.api.access_token,
-                    CONF_REFRESH_TOKEN: self.api.refresh_token,
-                },
-            )
+            new_data = {
+                **entry.data,
+                CONF_EMAIL: self.username,
+                CONF_ACCESS_TOKEN: self.api.access_token,
+                CONF_REFRESH_TOKEN: self.api.refresh_token,
+            }
+
+            # Store or remove password based on user preference
+            if self.save_password and self.password:
+                new_data[CONF_STORED_PASSWORD] = self.password
+            elif CONF_STORED_PASSWORD in new_data:
+                del new_data[CONF_STORED_PASSWORD]
+
+            self.hass.config_entries.async_update_entry(entry, data=new_data)
             self.hass.async_create_task(
                 self.hass.config_entries.async_reload(entry.entry_id)
             )
@@ -525,13 +608,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             # Test connection
             client = RinnaiLocalClient(new_host)
             if not await client.test_connection():
-                LOGGER.error(
-                    "Reconfigure: Cannot connect to Rinnai controller at %s on port 9798. "
-                    "Please verify the IP address is correct and the device is accessible. "
-                    "Consider using Cloud mode if local connection is not possible.",
-                    new_host,
-                )
-                errors["base"] = "local_connection_failed"
+                # Provide more specific error message for hostname resolution issues
+                if _is_hostname(new_host):
+                    LOGGER.error(
+                        "Reconfigure: Cannot resolve hostname %s. mDNS hostnames like "
+                        "'rinnai-control-r.local' often fail in containerized environments. "
+                        "Please use the device's IP address instead.",
+                        new_host,
+                    )
+                    errors["base"] = "hostname_resolution_failed"
+                else:
+                    LOGGER.error(
+                        "Reconfigure: Cannot connect to Rinnai controller at %s on port 9798. "
+                        "Please verify the IP address is correct and the device is accessible. "
+                        "Consider using Cloud mode if local connection is not possible.",
+                        new_host,
+                    )
+                    errors["base"] = "local_connection_failed"
                 return self.async_show_form(
                     step_id="reconfigure",
                     data_schema=vol.Schema(
@@ -547,15 +640,13 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
 
         # Check if switching to a mode that requires cloud credentials
         needs_cloud = new_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID)
-        has_cloud_credentials = bool(
-            entry.data.get(CONF_ACCESS_TOKEN) and entry.data.get(CONF_REFRESH_TOKEN)
-        )
 
-        if needs_cloud and not has_cloud_credentials:
-            # Need to collect cloud credentials
+        if needs_cloud:
+            # Always prompt for cloud credentials to ensure they're valid
+            # This handles both new setups and expired token scenarios
             return await self.async_step_reconfigure_cloud()
 
-        # Update entry data
+        # Local-only mode: just update the entry
         new_data = {**entry.data, CONF_CONNECTION_MODE: new_mode}
         if new_host:
             new_data[CONF_HOST] = new_host
@@ -572,15 +663,23 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         entry = self.hass.config_entries.async_get_entry(self.context["entry_id"])
         assert entry is not None
 
+        # Pre-fill from existing entry
+        default_email = entry.data.get(CONF_EMAIL, "")
+        default_save_password = bool(entry.data.get(CONF_STORED_PASSWORD))
+
         if user_input is None:
             return self.async_show_form(
                 step_id="reconfigure_cloud",
-                data_schema=_get_cloud_auth_schema(),
+                data_schema=_get_cloud_auth_schema(
+                    default_email=default_email,
+                    default_save_password=default_save_password,
+                ),
                 errors=errors,
             )
 
         self.username = user_input[CONF_EMAIL]
         self.password = user_input[CONF_PASSWORD]
+        self.save_password = user_input.get(CONF_SAVE_PASSWORD, False)
 
         try:
             # Use Home Assistant's shared session for connection pooling
@@ -625,7 +724,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
             )
 
         # Build new data with cloud credentials
-        new_data = {
+        new_data: dict[str, Any] = {
             **entry.data,
             CONF_CONNECTION_MODE: self.connection_mode,
             CONF_EMAIL: self.username,
@@ -634,6 +733,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call
         }
         if self.host:
             new_data[CONF_HOST] = self.host
+
+        # Store or remove password based on user preference
+        if self.save_password and self.password:
+            new_data[CONF_STORED_PASSWORD] = self.password
+        elif CONF_STORED_PASSWORD in new_data:
+            del new_data[CONF_STORED_PASSWORD]
 
         self.hass.config_entries.async_update_entry(entry, data=new_data)
         await self.hass.config_entries.async_reload(entry.entry_id)

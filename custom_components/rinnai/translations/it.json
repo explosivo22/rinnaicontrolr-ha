@@ -16,11 +16,13 @@
                 "description": "Inserisci le credenziali del tuo account Rinnai Control-R.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Salva password per la riautenticazione automatica"
                 },
                 "data_description": {
                     "email": "L'indirizzo email del tuo account Rinnai Control-R",
-                    "password": "La password del tuo account Rinnai Control-R"
+                    "password": "La password del tuo account Rinnai Control-R",
+                    "save_password": "Se abilitato, la password verrà memorizzata per riautenticarsi automaticamente quando la sessione scade. Se disabilitato, sarà necessario riautenticarsi manualmente."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Prima, inserisci le credenziali del tuo account Rinnai Control-R per il fallback cloud.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Salva password per la riautenticazione automatica"
                 },
                 "data_description": {
                     "email": "L'indirizzo email del tuo account Rinnai Control-R",
-                    "password": "La password del tuo account Rinnai Control-R"
+                    "password": "La password del tuo account Rinnai Control-R",
+                    "save_password": "Se abilitato, la password verrà memorizzata per riautenticarsi automaticamente quando la sessione scade. Se disabilitato, sarà necessario riautenticarsi manualmente."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "La tua sessione è scaduta. Per favore, reinserisci le tue credenziali.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Salva password per la riautenticazione automatica"
+                },
+                "data_description": {
+                    "save_password": "Se abilitato, la password verrà memorizzata per riautenticarsi automaticamente quando la sessione scade. Se disabilitato, sarà necessario riautenticarsi manualmente."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "La modalità selezionata richiede l'accesso cloud. Inserisci le credenziali del tuo account Rinnai Control-R.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Salva password per la riautenticazione automatica"
                 },
                 "data_description": {
                     "email": "L'indirizzo email del tuo account Rinnai Control-R",
-                    "password": "La password del tuo account Rinnai Control-R"
+                    "password": "La password del tuo account Rinnai Control-R",
+                    "save_password": "Se abilitato, la password verrà memorizzata per riautenticarsi automaticamente quando la sessione scade. Se disabilitato, sarà necessario riautenticarsi manualmente."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Frequenza ventilatore"
+            },
+            "water_flow_control_position": {
+                "name": "Posizione controllo flusso acqua"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Temperatura uscita scambiatore di calore"
+            },
+            "bypass_servo_position": {
+                "name": "Posizione servo bypass"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Temperatura antigelo esterna"
+            },
+            "exhaust_temperature": {
+                "name": "Temperatura di scarico"
             }
         }
     },

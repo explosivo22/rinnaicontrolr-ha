@@ -8,5 +8,5 @@
     "issue_tracker": "https://github.com/explosivo22/rinnaicontrolr-ha/issues",
     "quality_scale": "platinum",
     "requirements": ["aiorinnai==0.5.1", "PyJWT>=2.0.0"],
-    "version": "2.2.0"
+    "version": "2.2.3"
 }

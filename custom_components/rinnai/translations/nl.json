@@ -16,11 +16,13 @@
                 "description": "Voer uw Rinnai Control-R accountgegevens in.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Wachtwoord"
+                    "password": "Wachtwoord",
+                    "save_password": "Wachtwoord opslaan voor automatische herauthenticatie"
                 },
                 "data_description": {
                     "email": "Het e-mailadres van uw Rinnai Control-R account",
-                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                    "password": "Het wachtwoord van uw Rinnai Control-R account",
+                    "save_password": "Indien ingeschakeld, wordt uw wachtwoord opgeslagen om automatisch opnieuw te authenticeren wanneer uw sessie verloopt. Anders moet u handmatig opnieuw authenticeren."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Voer eerst uw Rinnai Control-R accountgegevens in voor cloud-fallback.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Wachtwoord"
+                    "password": "Wachtwoord",
+                    "save_password": "Wachtwoord opslaan voor automatische herauthenticatie"
                 },
                 "data_description": {
                     "email": "Het e-mailadres van uw Rinnai Control-R account",
-                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                    "password": "Het wachtwoord van uw Rinnai Control-R account",
+                    "save_password": "Indien ingeschakeld, wordt uw wachtwoord opgeslagen om automatisch opnieuw te authenticeren wanneer uw sessie verloopt. Anders moet u handmatig opnieuw authenticeren."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Uw sessie is verlopen. Voer uw inloggegevens opnieuw in.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Wachtwoord"
+                    "password": "Wachtwoord",
+                    "save_password": "Wachtwoord opslaan voor automatische herauthenticatie"
+                },
+                "data_description": {
+                    "save_password": "Indien ingeschakeld, wordt uw wachtwoord opgeslagen om automatisch opnieuw te authenticeren wanneer uw sessie verloopt. Anders moet u handmatig opnieuw authenticeren."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "De geselecteerde modus vereist cloud-toegang. Voer uw Rinnai Control-R accountgegevens in.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Wachtwoord"
+                    "password": "Wachtwoord",
+                    "save_password": "Wachtwoord opslaan voor automatische herauthenticatie"
                 },
                 "data_description": {
                     "email": "Het e-mailadres van uw Rinnai Control-R account",
-                    "password": "Het wachtwoord van uw Rinnai Control-R account"
+                    "password": "Het wachtwoord van uw Rinnai Control-R account",
+                    "save_password": "Indien ingeschakeld, wordt uw wachtwoord opgeslagen om automatisch opnieuw te authenticeren wanneer uw sessie verloopt. Anders moet u handmatig opnieuw authenticeren."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Ventilatorfrequentie"
+            },
+            "water_flow_control_position": {
+                "name": "Waterstroom regelaarpositie"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Warmtewisselaar uitlaattemperatuur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass servopositie"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Buitenantivries temperatuur"
+            },
+            "exhaust_temperature": {
+                "name": "Uitlaattemperatuur"
             }
         }
     },

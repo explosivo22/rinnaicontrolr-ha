@@ -16,11 +16,13 @@
                 "description": "Ange dina Rinnai Control-R-kontouppgifter.",
                 "data": {
                     "email": "E-post",
-                    "password": "Lösenord"
+                    "password": "Lösenord",
+                    "save_password": "Spara lösenord för automatisk omautentisering"
                 },
                 "data_description": {
                     "email": "E-postadressen för ditt Rinnai Control-R-konto",
-                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto",
+                    "save_password": "Om aktiverat sparas ditt lösenord för att automatiskt autentisera igen när din session går ut. Annars måste du autentisera manuellt."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Ange först dina Rinnai Control-R-kontouppgifter för moln-fallback.",
                 "data": {
                     "email": "E-post",
-                    "password": "Lösenord"
+                    "password": "Lösenord",
+                    "save_password": "Spara lösenord för automatisk omautentisering"
                 },
                 "data_description": {
                     "email": "E-postadressen för ditt Rinnai Control-R-konto",
-                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto",
+                    "save_password": "Om aktiverat sparas ditt lösenord för att automatiskt autentisera igen när din session går ut. Annars måste du autentisera manuellt."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Din session har gått ut. Ange dina uppgifter igen.",
                 "data": {
                     "email": "E-post",
-                    "password": "Lösenord"
+                    "password": "Lösenord",
+                    "save_password": "Spara lösenord för automatisk omautentisering"
+                },
+                "data_description": {
+                    "save_password": "Om aktiverat sparas ditt lösenord för att automatiskt autentisera igen när din session går ut. Annars måste du autentisera manuellt."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "Det valda läget kräver molnåtkomst. Ange dina Rinnai Control-R-kontouppgifter.",
                 "data": {
                     "email": "E-post",
-                    "password": "Lösenord"
+                    "password": "Lösenord",
+                    "save_password": "Spara lösenord för automatisk omautentisering"
                 },
                 "data_description": {
                     "email": "E-postadressen för ditt Rinnai Control-R-konto",
-                    "password": "Lösenordet för ditt Rinnai Control-R-konto"
+                    "password": "Lösenordet för ditt Rinnai Control-R-konto",
+                    "save_password": "Om aktiverat sparas ditt lösenord för att automatiskt autentisera igen när din session går ut. Annars måste du autentisera manuellt."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Fläktfrekvens"
+            },
+            "water_flow_control_position": {
+                "name": "Vattenflödesreglage position"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Värmeväxlare utloppstemperatur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass-servo position"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Utomhusfrostskydd temperatur"
+            },
+            "exhaust_temperature": {
+                "name": "Avgastemperatur"
             }
         }
     },

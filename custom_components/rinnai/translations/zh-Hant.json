@@ -16,11 +16,13 @@
                 "description": "輸入您的 Rinnai Control-R 帳戶憑證。",
                 "data": {
                     "email": "電子郵件",
-                    "password": "密碼"
+                    "password": "密碼",
+                    "save_password": "儲存密碼以自動重新驗證"
                 },
                 "data_description": {
                     "email": "您的 Rinnai Control-R 帳戶電子郵件地址",
-                    "password": "您的 Rinnai Control-R 帳戶密碼"
+                    "password": "您的 Rinnai Control-R 帳戶密碼",
+                    "save_password": "如果啟用，您的密碼將被儲存，以便在工作階段過期時自動重新驗證。如果停用，您需要手動重新驗證。"
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "首先，輸入您的 Rinnai Control-R 帳戶憑證用於雲端備援。",
                 "data": {
                     "email": "電子郵件",
-                    "password": "密碼"
+                    "password": "密碼",
+                    "save_password": "儲存密碼以自動重新驗證"
                 },
                 "data_description": {
                     "email": "您的 Rinnai Control-R 帳戶電子郵件地址",
-                    "password": "您的 Rinnai Control-R 帳戶密碼"
+                    "password": "您的 Rinnai Control-R 帳戶密碼",
+                    "save_password": "如果啟用，您的密碼將被儲存，以便在工作階段過期時自動重新驗證。如果停用，您需要手動重新驗證。"
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "您的工作階段已過期。請重新輸入您的憑證。",
                 "data": {
                     "email": "電子郵件",
-                    "password": "密碼"
+                    "password": "密碼",
+                    "save_password": "儲存密碼以自動重新驗證"
+                },
+                "data_description": {
+                    "save_password": "如果啟用，您的密碼將被儲存，以便在工作階段過期時自動重新驗證。如果停用，您需要手動重新驗證。"
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "所選模式需要雲端存取。請輸入您的 Rinnai Control-R 帳戶憑證。",
                 "data": {
                     "email": "電子郵件",
-                    "password": "密碼"
+                    "password": "密碼",
+                    "save_password": "儲存密碼以自動重新驗證"
                 },
                 "data_description": {
                     "email": "您的 Rinnai Control-R 帳戶電子郵件地址",
-                    "password": "您的 Rinnai Control-R 帳戶密碼"
+                    "password": "您的 Rinnai Control-R 帳戶密碼",
+                    "save_password": "如果啟用，您的密碼將被儲存，以便在工作階段過期時自動重新驗證。如果停用，您需要手動重新驗證。"
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "風扇頻率"
+            },
+            "water_flow_control_position": {
+                "name": "水流控制位置"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "換熱器出口溫度"
+            },
+            "bypass_servo_position": {
+                "name": "旁通伺服位置"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "室外防凍溫度"
+            },
+            "exhaust_temperature": {
+                "name": "排氣溫度"
             }
         }
     },

@@ -34,12 +34,17 @@ if TYPE_CHECKING:
     from .local import RinnaiLocalClient
 # Limit concurrent API calls per device
 PARALLEL_UPDATES = 1
-# Maximum retry attempts for transient errors
+# Maximum retry attempts for transient errors (cloud mode)
 MAX_RETRY_ATTEMPTS = 3
-# Delay between retries (seconds)
+# Delay between retries (seconds, cloud mode)
 RETRY_DELAY = 2
 # Refresh tokens 5 minutes before expiration
 TOKEN_REFRESH_BUFFER_SECONDS = 300
+# Local mode retry settings
+LOCAL_RETRY_WINDOW_SECONDS = 30.0
+LOCAL_INITIAL_RETRY_DELAY = 1.0
+LOCAL_MAX_RETRY_DELAY = 8.0
+LOCAL_BACKOFF_MULTIPLIER = 2.0
 
 
 def _convert_to_bool(value: Any) -> bool:
@@ -213,43 +218,102 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return await self._update_cloud()
 
     async def _update_local(self) -> dict[str, Any]:
-        """Fetch data via local TCP connection."""
+        """Fetch data via local TCP connection with retry and backoff.
+
+        Retries with exponential backoff for up to LOCAL_RETRY_WINDOW_SECONDS
+        before marking the device as unavailable. This handles transient network
+        issues without impacting the normal polling schedule.
+        """
         if self.local_client is None:
             LOGGER.error(
                 "Local client not configured for device %s", self._rinnai_device_id
             )
             raise UpdateFailed("Local client not configured")
 
-        try:
-            data = await self.local_client.get_status()
-            if data is None:
-                LOGGER.warning(
-                    "No response from local controller for device %s",
+        start_time = time.monotonic()
+        attempt = 0
+        retry_delay = LOCAL_INITIAL_RETRY_DELAY
+        last_error: Exception | None = None
+
+        while True:
+            attempt += 1
+            elapsed = time.monotonic() - start_time
+
+            try:
+                data = await self.local_client.get_status()
+                if data is not None:
+                    self._local_data = data
+                    self._consecutive_errors = 0
+                    self._last_error = None
+                    if attempt > 1:
+                        LOGGER.info(
+                            "Local update succeeded for device %s after %d attempts "
+                            "(%.1fs elapsed)",
+                            self._rinnai_device_id,
+                            attempt,
+                            elapsed,
+                        )
+                    else:
+                        LOGGER.debug(
+                            "Local update successful for device %s: temp=%s°F, "
+                            "heating=%s",
+                            self._rinnai_device_id,
+                            data.get("domestic_temperature"),
+                            data.get("domestic_combustion"),
+                        )
+
+                    # Trigger maintenance retrieval for diagnostic sensor fields
+                    if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                        await self._maybe_do_maintenance_retrieval()
+
+                    return data
+
+                # data is None - treat as a retriable error
+                last_error = Exception("No response from local controller")
+
+            except Exception as error:
+                last_error = error
+
+            # Check if we've exceeded the retry window
+            elapsed = time.monotonic() - start_time
+            if elapsed >= LOCAL_RETRY_WINDOW_SECONDS:
+                break
+
+            # Calculate remaining time in window
+            remaining = LOCAL_RETRY_WINDOW_SECONDS - elapsed
+            actual_delay = min(retry_delay, remaining)
+
+            if actual_delay > 0:
+                LOGGER.debug(
+                    "Local update attempt %d failed for device %s: %s. "
+                    "Retrying in %.1fs (%.1fs remaining in window)",
+                    attempt,
                     self._rinnai_device_id,
+                    last_error,
+                    actual_delay,
+                    remaining,
                 )
-                raise UpdateFailed("Failed to get status from local controller")
+                await asyncio.sleep(actual_delay)
 
-            self._local_data = data
-            self._consecutive_errors = 0
-            self._last_error = None
-            LOGGER.debug(
-                "Local update successful for device %s: temp=%s°F, heating=%s",
-                self._rinnai_device_id,
-                data.get("domestic_temperature"),
-                data.get("domestic_combustion"),
+            # Exponential backoff with cap
+            retry_delay = min(
+                retry_delay * LOCAL_BACKOFF_MULTIPLIER, LOCAL_MAX_RETRY_DELAY
             )
-            return data
 
-        except UpdateFailed:
-            self._consecutive_errors += 1
-            raise
-        except Exception as error:
-            self._consecutive_errors += 1
-            self._last_error = error
-            LOGGER.error(
-                "Local update failed for device %s: %s", self._rinnai_device_id, error
-            )
-            raise UpdateFailed(f"Local update failed: {error}") from error
+        # All retries exhausted within the window
+        self._consecutive_errors += 1
+        self._last_error = last_error
+        total_elapsed = time.monotonic() - start_time
+        LOGGER.warning(
+            "Local update failed for device %s after %d attempts over %.1fs: %s",
+            self._rinnai_device_id,
+            attempt,
+            total_elapsed,
+            last_error,
+        )
+        raise UpdateFailed(
+            f"Local update failed after {attempt} attempts: {last_error}"
+        ) from last_error
 
     async def _update_cloud(self) -> dict[str, Any]:
         """Fetch data via cloud API with retry logic."""
@@ -277,8 +341,9 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self._last_error = None
                 await self._persist_tokens_if_changed()
 
-                if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
-                    await self._maybe_do_maintenance_retrieval()
+                # Set device info BEFORE maintenance retrieval to avoid race
+                # condition where _execute_cloud_action checks it before set
+                self._device_information = device_info
 
                 # Extract key values for logging
                 device_data = device_info.get("data", {}).get("getDevice", {})
@@ -289,7 +354,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     info.get("domestic_temperature"),
                     info.get("domestic_combustion"),
                 )
-                self._device_information = device_info
+
+                # Maintenance retrieval after device info is set
+                if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                    await self._maybe_do_maintenance_retrieval()
+
                 # Cache cloud device name for hybrid mode
                 cloud_name = device_data.get("device_name")
                 if cloud_name:
@@ -341,6 +410,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                     # Fetch cloud device name once for user-friendly naming
                     if not self._cached_cloud_device_name and self.api_client:
                         await self._cache_cloud_device_name()
+
+                    # Trigger maintenance retrieval for diagnostic sensor fields
+                    if self.options.get(CONF_MAINT_INTERVAL_ENABLED, False):
+                        await self._maybe_do_maintenance_retrieval()
+
                     return data
             except Exception as error:
                 local_error = error
@@ -673,6 +747,51 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             "m20_pump_cycles",
         )
         return float(cycles) if cycles is not None else None
+
+    @property
+    def water_flow_control_position(self) -> float | None:
+        """Return the water flow control position (percentage)."""
+        position = self._get_value(
+            ("data", "getDevice", "info", "m07_water_flow_control_position"),
+            "m07_water_flow_control_position",
+        )
+        return float(position) if position is not None else None
+
+    @property
+    def heat_exchanger_outlet_temperature(self) -> float | None:
+        """Return the heat exchanger outlet temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m11_heat_exchanger_outlet_temperature"),
+            "m11_heat_exchanger_outlet_temperature",
+        )
+        return float(temp) if temp is not None else None
+
+    @property
+    def bypass_servo_position(self) -> float | None:
+        """Return the bypass servo position (percentage)."""
+        position = self._get_value(
+            ("data", "getDevice", "info", "m12_bypass_servo_position"),
+            "m12_bypass_servo_position",
+        )
+        return float(position) if position is not None else None
+
+    @property
+    def outdoor_antifreeze_temperature(self) -> float | None:
+        """Return the outdoor antifreeze temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m17_outdoor_antifreeze_temperature"),
+            "m17_outdoor_antifreeze_temperature",
+        )
+        return float(temp) if temp is not None else None
+
+    @property
+    def exhaust_temperature(self) -> float | None:
+        """Return the exhaust temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m21_exhaust_temperature"),
+            "m21_exhaust_temperature",
+        )
+        return float(temp) if temp is not None else None
 
     # =========================================================================
     # Actions - Route to appropriate backend based on connection mode

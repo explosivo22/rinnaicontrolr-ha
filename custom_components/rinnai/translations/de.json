@@ -16,11 +16,13 @@
                 "description": "Geben Sie Ihre Rinnai Control-R Kontodaten ein.",
                 "data": {
                     "email": "E-Mail",
-                    "password": "Passwort"
+                    "password": "Passwort",
+                    "save_password": "Passwort für automatische Reauthentifizierung speichern"
                 },
                 "data_description": {
                     "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
-                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                    "password": "Ihr Rinnai Control-R Kontopasswort",
+                    "save_password": "Wenn aktiviert, wird Ihr Passwort gespeichert, um sich automatisch erneut zu authentifizieren, wenn Ihre Sitzung abläuft. Andernfalls müssen Sie sich manuell erneut authentifizieren."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Geben Sie zunächst Ihre Rinnai Control-R Kontodaten für den Cloud-Fallback ein.",
                 "data": {
                     "email": "E-Mail",
-                    "password": "Passwort"
+                    "password": "Passwort",
+                    "save_password": "Passwort für automatische Reauthentifizierung speichern"
                 },
                 "data_description": {
                     "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
-                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                    "password": "Ihr Rinnai Control-R Kontopasswort",
+                    "save_password": "Wenn aktiviert, wird Ihr Passwort gespeichert, um sich automatisch erneut zu authentifizieren, wenn Ihre Sitzung abläuft. Andernfalls müssen Sie sich manuell erneut authentifizieren."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Ihre Sitzung ist abgelaufen. Bitte geben Sie Ihre Anmeldedaten erneut ein.",
                 "data": {
                     "email": "E-Mail",
-                    "password": "Passwort"
+                    "password": "Passwort",
+                    "save_password": "Passwort für automatische Reauthentifizierung speichern"
+                },
+                "data_description": {
+                    "save_password": "Wenn aktiviert, wird Ihr Passwort gespeichert, um sich automatisch erneut zu authentifizieren, wenn Ihre Sitzung abläuft. Andernfalls müssen Sie sich manuell erneut authentifizieren."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "Der ausgewählte Modus erfordert Cloud-Zugriff. Geben Sie Ihre Rinnai Control-R Kontodaten ein.",
                 "data": {
                     "email": "E-Mail",
-                    "password": "Passwort"
+                    "password": "Passwort",
+                    "save_password": "Passwort für automatische Reauthentifizierung speichern"
                 },
                 "data_description": {
                     "email": "Die E-Mail-Adresse Ihres Rinnai Control-R Kontos",
-                    "password": "Ihr Rinnai Control-R Kontopasswort"
+                    "password": "Ihr Rinnai Control-R Kontopasswort",
+                    "save_password": "Wenn aktiviert, wird Ihr Passwort gespeichert, um sich automatisch erneut zu authentifizieren, wenn Ihre Sitzung abläuft. Andernfalls müssen Sie sich manuell erneut authentifizieren."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Lüfterfrequenz"
+            },
+            "water_flow_control_position": {
+                "name": "Wasserdurchflussregler-Position"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Wärmetauscher-Auslasstemperatur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass-Servo-Position"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Außenfrostschutz-Temperatur"
+            },
+            "exhaust_temperature": {
+                "name": "Abgastemperatur"
             }
         }
     },

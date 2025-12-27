@@ -27,6 +27,11 @@ DEFAULT_RECIRCULATION_DURATION: Final = 10
 CONF_REFRESH_TOKEN: Final = "conf_refresh_token"
 CONF_ACCESS_TOKEN: Final = "conf_access_token"
 
+# Password storage (optional - for automatic re-authentication)
+CONF_SAVE_PASSWORD: Final = "save_password"
+CONF_STORED_PASSWORD: Final = "stored_password"
+DEFAULT_SAVE_PASSWORD: Final = False
+
 # Connection modes
 CONF_CONNECTION_MODE: Final = "connection_mode"
 CONNECTION_MODE_CLOUD: Final = "cloud"

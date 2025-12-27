@@ -16,11 +16,13 @@
                 "description": "Enter your Rinnai Control-R account credentials.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "First, enter your Rinnai Control-R account credentials for cloud fallback.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Your session has expired. Please re-enter your credentials.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Save password for automatic re-authentication"
+                },
+                "data_description": {
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "The selected mode requires cloud access. Enter your Rinnai Control-R account credentials.",
                 "data": {
                     "email": "Email",
-                    "password": "Password"
+                    "password": "Password",
+                    "save_password": "Save password for automatic re-authentication"
                 },
                 "data_description": {
                     "email": "The email address used for your Rinnai Control-R account",
-                    "password": "Your Rinnai Control-R account password"
+                    "password": "Your Rinnai Control-R account password",
+                    "save_password": "If enabled, your password will be stored to automatically re-authenticate when your session expires. If disabled, you will need to manually re-authenticate."
                 }
             }
         },
@@ -94,6 +104,7 @@
             "unknown": "Unexpected error",
             "host_required": "Host IP address is required for Local and Hybrid modes",
             "local_connection_failed": "Unable to connect to Rinnai controller at the specified IP address. Please verify: (1) The IP address is correct, (2) Port 9798 is accessible, (3) The controller is powered on. If local connection is not possible, please use Cloud mode instead.",
+            "hostname_resolution_failed": "Unable to resolve hostname. Hostnames like 'rinnai-control-r.local' often fail in containerized environments. Please use the device's IP address instead (check your router's DHCP lease table).",
             "user_not_confirmed": "Your email address has not been confirmed. Please check your email and confirm your Rinnai account before continuing.",
             "password_change_required": "You must change your password in the Rinnai app before continuing. Please update your password and try again."
         },
@@ -183,6 +194,21 @@
             },
             "fan_frequency": {
                 "name": "Fan Frequency"
+            },
+            "water_flow_control_position": {
+                "name": "Water Flow Control Position"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Heat Exchanger Outlet Temperature"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass Servo Position"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Outdoor Antifreeze Temperature"
+            },
+            "exhaust_temperature": {
+                "name": "Exhaust Temperature"
             }
         }
     },

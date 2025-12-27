@@ -1,8 +1,6 @@
 import sys
 import types
 import pathlib
-from typing import Optional
-from importlib.machinery import SourceFileLoader
 import importlib.util
 
 import pytest
@@ -44,11 +42,22 @@ class _FakeUser:
 
 class _FakeDevice:
     async def get_info(self, device_id: str):
-        return {"data": {"getDevice": {"device_name": "Rinnai", "model": "X", "firmware": "1.0", "shadow": {"set_domestic_temperature": None}, "info": {"domestic_temperature": 120}}}}
+        return {
+            "data": {
+                "getDevice": {
+                    "device_name": "Rinnai",
+                    "model": "X",
+                    "firmware": "1.0",
+                    "shadow": {"set_domestic_temperature": None},
+                    "info": {"domestic_temperature": 120},
+                }
+            }
+        }
 
 
 class _FakeAPI:
     """Fake aiorinnai API matching real aiorinnai.API signature."""
+
     def __init__(
         self,
         session=None,
@@ -67,21 +76,21 @@ class _FakeAPI:
         self.executor_timeout = executor_timeout
         self.username = None
         self.is_connected = False
-        
+
         # Private token attributes (real API only has private ones)
         self._access_token = None
         self._refresh_token = None
         self._id_token = None
-        
+
         # Sub-objects (populated immediately for setup tests)
         self.user = _FakeUser()
         self.device = _FakeDevice()
-    
+
     @property
     def access_token(self):
         """Public accessor for access token (for config_flow.py compatibility)."""
         return self._access_token
-    
+
     @property
     def refresh_token(self):
         """Public accessor for refresh token (for config_flow.py compatibility)."""
@@ -185,7 +194,9 @@ def _load_config_flow_module(monkeypatch):
     # Ensure const is present
     if "custom_components.rinnai.const" not in sys.modules:
         _load_module("custom_components.rinnai.const", base_dir / "const.py")
-    return _load_module("custom_components.rinnai.config_flow", base_dir / "config_flow.py")
+    return _load_module(
+        "custom_components.rinnai.config_flow", base_dir / "config_flow.py"
+    )
 
 
 @pytest.mark.asyncio
@@ -209,7 +220,9 @@ async def test_async_setup_entry_success(hass, monkeypatch):
     async def _fake_refresh(self):
         return None
 
-    monkeypatch.setattr(mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh)
+    monkeypatch.setattr(
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -303,7 +316,9 @@ async def test_config_flow_reauth_success(hass, monkeypatch):
     assert form["type"] == "form"
 
     # Step 2: submit credentials
-    result = await flow.async_step_reauth({CONF_EMAIL: "new@example.com", CONF_PASSWORD: "pw"})
+    result = await flow.async_step_reauth(
+        {CONF_EMAIL: "new@example.com", CONF_PASSWORD: "pw"}
+    )
     assert result["type"] == "abort"
     assert result["reason"] == "reauth_successful"
 
@@ -367,7 +382,9 @@ async def test_coordinator_has_available_property(hass, monkeypatch):
     async def _fake_refresh(self):
         return None
 
-    monkeypatch.setattr(mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh)
+    monkeypatch.setattr(
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -417,7 +434,9 @@ async def test_async_unload_entry(hass, monkeypatch):
     async def _fake_refresh(self):
         return None
 
-    monkeypatch.setattr(mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh)
+    monkeypatch.setattr(
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
+    )
 
     entry = MockConfigEntry(
         domain=DOMAIN,
@@ -450,18 +469,6 @@ async def test_token_expiration_check():
     """Test the token expiration checking function."""
     import time
     import jwt
-    import sys
-    import pathlib
-
-    repo_root = pathlib.Path(__file__).resolve().parents[1]
-    base_dir = repo_root / "custom_components" / "rinnai"
-
-    # Load the device module to access _is_token_expired
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "device_module", base_dir / "device.py"
-    )
-    device_module = importlib.util.module_from_spec(spec)
 
     # We need to test the function logic directly
     # Create a token that expires in 10 minutes
@@ -506,9 +513,7 @@ async def test_coordinator_calls_ensure_valid_token(hass, monkeypatch):
 
     # Mock _ensure_valid_token to track calls
     monkeypatch.setattr(
-        mod.RinnaiDeviceDataUpdateCoordinator,
-        "_ensure_valid_token",
-        _track_token_check
+        mod.RinnaiDeviceDataUpdateCoordinator, "_ensure_valid_token", _track_token_check
     )
 
     # Short-circuit the device refresh to avoid hitting API
@@ -518,9 +523,7 @@ async def test_coordinator_calls_ensure_valid_token(hass, monkeypatch):
         return None
 
     monkeypatch.setattr(
-        mod.RinnaiDeviceDataUpdateCoordinator,
-        "async_refresh",
-        _fake_refresh
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
     )
 
     entry = MockConfigEntry(

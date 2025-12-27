@@ -16,11 +16,13 @@
                 "description": "Entrez vos identifiants de compte Rinnai Control-R.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Mot de passe"
+                    "password": "Mot de passe",
+                    "save_password": "Enregistrer le mot de passe pour la réauthentification automatique"
                 },
                 "data_description": {
                     "email": "L'adresse e-mail de votre compte Rinnai Control-R",
-                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                    "password": "Le mot de passe de votre compte Rinnai Control-R",
+                    "save_password": "Si activé, votre mot de passe sera enregistré pour vous réauthentifier automatiquement lorsque votre session expire. Sinon, vous devrez vous réauthentifier manuellement."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Entrez d'abord vos identifiants de compte Rinnai Control-R pour le repli sur le cloud.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Mot de passe"
+                    "password": "Mot de passe",
+                    "save_password": "Enregistrer le mot de passe pour la réauthentification automatique"
                 },
                 "data_description": {
                     "email": "L'adresse e-mail de votre compte Rinnai Control-R",
-                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                    "password": "Le mot de passe de votre compte Rinnai Control-R",
+                    "save_password": "Si activé, votre mot de passe sera enregistré pour vous réauthentifier automatiquement lorsque votre session expire. Sinon, vous devrez vous réauthentifier manuellement."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Votre session a expiré. Veuillez saisir à nouveau vos identifiants.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Mot de passe"
+                    "password": "Mot de passe",
+                    "save_password": "Enregistrer le mot de passe pour la réauthentification automatique"
+                },
+                "data_description": {
+                    "save_password": "Si activé, votre mot de passe sera enregistré pour vous réauthentifier automatiquement lorsque votre session expire. Sinon, vous devrez vous réauthentifier manuellement."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "Le mode sélectionné nécessite un accès cloud. Entrez vos identifiants de compte Rinnai Control-R.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Mot de passe"
+                    "password": "Mot de passe",
+                    "save_password": "Enregistrer le mot de passe pour la réauthentification automatique"
                 },
                 "data_description": {
                     "email": "L'adresse e-mail de votre compte Rinnai Control-R",
-                    "password": "Le mot de passe de votre compte Rinnai Control-R"
+                    "password": "Le mot de passe de votre compte Rinnai Control-R",
+                    "save_password": "Si activé, votre mot de passe sera enregistré pour vous réauthentifier automatiquement lorsque votre session expire. Sinon, vous devrez vous réauthentifier manuellement."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Fréquence du ventilateur"
+            },
+            "water_flow_control_position": {
+                "name": "Position du régulateur de débit d'eau"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Température de sortie de l'échangeur de chaleur"
+            },
+            "bypass_servo_position": {
+                "name": "Position du servo de dérivation"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Température antigel extérieure"
+            },
+            "exhaust_temperature": {
+                "name": "Température d'échappement"
             }
         }
     },

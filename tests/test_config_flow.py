@@ -1,4 +1,5 @@
 """Tests for Rinnai config flow."""
+
 import sys
 import types
 import pathlib
@@ -14,26 +15,31 @@ DOMAIN = "rinnai"
 
 class _RequestError(Exception):
     """Fake RequestError."""
+
     pass
 
 
 class _UserNotFound(Exception):
     """Fake UserNotFound."""
+
     pass
 
 
 class _UserNotConfirmed(Exception):
     """Fake UserNotConfirmed."""
+
     pass
 
 
 class _PasswordChangeRequired(Exception):
     """Fake PasswordChangeRequired."""
+
     pass
 
 
 class _FakeUser:
     """Fake user API."""
+
     async def get_info(self):
         return {
             "email": "test@example.com",
@@ -43,6 +49,7 @@ class _FakeUser:
 
 class _FakeDevice:
     """Fake device API."""
+
     async def get_info(self, device_id: str):
         return {
             "data": {
@@ -57,6 +64,7 @@ class _FakeDevice:
 
 class _FakeAPI:
     """Fake aiorinnai API matching real aiorinnai.API signature."""
+
     def __init__(
         self,
         session=None,
@@ -75,24 +83,24 @@ class _FakeAPI:
         self.executor_timeout = executor_timeout
         self.username = None
         self.is_connected = False
-        
+
         # Private token attributes (real API only has private ones)
         self._access_token = None
         self._refresh_token = None
         self._id_token = None
-        
+
         # Sub-objects (None until login, like real API)
         self.user = None
         self.device = None
-        
+
         # Test control flags
         self._fail_with_request_error = False
-    
+
     @property
     def access_token(self):
         """Public accessor for access token (for config_flow.py compatibility)."""
         return self._access_token
-    
+
     @property
     def refresh_token(self):
         """Public accessor for refresh token (for config_flow.py compatibility)."""
@@ -191,7 +199,9 @@ def _load_config_flow_module(monkeypatch):
     # Preload const
     _load_module("custom_components.rinnai.const", base_dir / "const.py")
 
-    return _load_module("custom_components.rinnai.config_flow", base_dir / "config_flow.py")
+    return _load_module(
+        "custom_components.rinnai.config_flow", base_dir / "config_flow.py"
+    )
 
 
 @pytest.mark.asyncio
@@ -227,10 +237,12 @@ async def test_config_flow_user_step_success(hass, monkeypatch):
     assert result["step_id"] == "cloud"
 
     # Step 2: Enter credentials
-    result = await flow.async_step_cloud({
-        CONF_EMAIL: "test@example.com",
-        CONF_PASSWORD: "testpassword",
-    })
+    result = await flow.async_step_cloud(
+        {
+            CONF_EMAIL: "test@example.com",
+            CONF_PASSWORD: "testpassword",
+        }
+    )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["title"] == "test@example.com"
@@ -250,9 +262,27 @@ async def test_config_flow_user_step_connection_error(hass, monkeypatch):
 
     # Make API fail with RequestError
     original_init = _FakeAPI.__init__
-    def failing_init(self, session=None, timeout=30.0, retry_count=3, retry_delay=1.0, retry_multiplier=2.0, executor_timeout=30.0):
-        original_init(self, session=session, timeout=timeout, retry_count=retry_count, retry_delay=retry_delay, retry_multiplier=retry_multiplier, executor_timeout=executor_timeout)
+
+    def failing_init(
+        self,
+        session=None,
+        timeout=30.0,
+        retry_count=3,
+        retry_delay=1.0,
+        retry_multiplier=2.0,
+        executor_timeout=30.0,
+    ):
+        original_init(
+            self,
+            session=session,
+            timeout=timeout,
+            retry_count=retry_count,
+            retry_delay=retry_delay,
+            retry_multiplier=retry_multiplier,
+            executor_timeout=executor_timeout,
+        )
         self._fail_with_request_error = True
+
     monkeypatch.setattr(_FakeAPI, "__init__", failing_init)
 
     flow = cf_mod.ConfigFlow()
@@ -263,10 +293,12 @@ async def test_config_flow_user_step_connection_error(hass, monkeypatch):
     await flow.async_step_user({"connection_mode": "cloud"})
 
     # Step 2: Enter credentials - should fail
-    result = await flow.async_step_cloud({
-        CONF_EMAIL: "test@example.com",
-        CONF_PASSWORD: "testpassword",
-    })
+    result = await flow.async_step_cloud(
+        {
+            CONF_EMAIL: "test@example.com",
+            CONF_PASSWORD: "testpassword",
+        }
+    )
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "cannot_connect"
@@ -307,6 +339,7 @@ async def test_config_flow_reauth_step_success(hass, monkeypatch):
     # Patch reload to no-op
     async def _no_reload(eid):
         return None
+
     monkeypatch.setattr(hass.config_entries, "async_reload", _no_reload)
 
     flow = cf_mod.ConfigFlow()
@@ -314,10 +347,12 @@ async def test_config_flow_reauth_step_success(hass, monkeypatch):
     flow.context = {"entry_id": entry.entry_id}
 
     # Submit reauth
-    result = await flow.async_step_reauth({
-        CONF_EMAIL: "new@example.com",
-        CONF_PASSWORD: "newpassword",
-    })
+    result = await flow.async_step_reauth(
+        {
+            CONF_EMAIL: "new@example.com",
+            CONF_PASSWORD: "newpassword",
+        }
+    )
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reauth_successful"
@@ -335,19 +370,39 @@ async def test_config_flow_reauth_connection_error(hass, monkeypatch):
 
     # Make API fail
     original_init = _FakeAPI.__init__
-    def failing_init(self, session=None, timeout=30.0, retry_count=3, retry_delay=1.0, retry_multiplier=2.0, executor_timeout=30.0):
-        original_init(self, session=session, timeout=timeout, retry_count=retry_count, retry_delay=retry_delay, retry_multiplier=retry_multiplier, executor_timeout=executor_timeout)
+
+    def failing_init(
+        self,
+        session=None,
+        timeout=30.0,
+        retry_count=3,
+        retry_delay=1.0,
+        retry_multiplier=2.0,
+        executor_timeout=30.0,
+    ):
+        original_init(
+            self,
+            session=session,
+            timeout=timeout,
+            retry_count=retry_count,
+            retry_delay=retry_delay,
+            retry_multiplier=retry_multiplier,
+            executor_timeout=executor_timeout,
+        )
         self._fail_with_request_error = True
+
     monkeypatch.setattr(_FakeAPI, "__init__", failing_init)
 
     flow = cf_mod.ConfigFlow()
     flow.hass = hass
     flow.context = {}
 
-    result = await flow.async_step_reauth({
-        CONF_EMAIL: "test@example.com",
-        CONF_PASSWORD: "testpassword",
-    })
+    result = await flow.async_step_reauth(
+        {
+            CONF_EMAIL: "test@example.com",
+            CONF_PASSWORD: "testpassword",
+        }
+    )
 
     assert result["type"] == FlowResultType.FORM
     assert result["errors"]["base"] == "cannot_connect"
@@ -362,10 +417,12 @@ async def test_config_flow_reauth_no_entry_id(hass, monkeypatch):
     flow.hass = hass
     flow.context = {}  # No entry_id
 
-    result = await flow.async_step_reauth({
-        CONF_EMAIL: "test@example.com",
-        CONF_PASSWORD: "testpassword",
-    })
+    result = await flow.async_step_reauth(
+        {
+            CONF_EMAIL: "test@example.com",
+            CONF_PASSWORD: "testpassword",
+        }
+    )
 
     assert result["type"] == FlowResultType.ABORT
     assert result["reason"] == "reauth_failed"
@@ -427,9 +484,11 @@ async def test_options_flow_submit(hass, monkeypatch):
     flow = config_flow.async_get_options_flow(entry)
     flow.hass = hass
 
-    result = await flow.async_step_init({
-        "maint_interval_enabled": False,
-    })
+    result = await flow.async_step_init(
+        {
+            "maint_interval_enabled": False,
+        }
+    )
 
     assert result["type"] == FlowResultType.CREATE_ENTRY
     assert result["data"]["maint_interval_enabled"] is False

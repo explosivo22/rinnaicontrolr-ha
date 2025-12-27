@@ -16,11 +16,13 @@
                 "description": "Rinnai Control-R 계정 자격 증명을 입력하세요.",
                 "data": {
                     "email": "이메일",
-                    "password": "비밀번호"
+                    "password": "비밀번호",
+                    "save_password": "자동 재인증을 위해 비밀번호 저장"
                 },
                 "data_description": {
                     "email": "Rinnai Control-R 계정의 이메일 주소",
-                    "password": "Rinnai Control-R 계정 비밀번호"
+                    "password": "Rinnai Control-R 계정 비밀번호",
+                    "save_password": "활성화하면 세션이 만료될 때 자동으로 재인증하기 위해 비밀번호가 저장됩니다. 비활성화하면 수동으로 재인증해야 합니다."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "먼저 클라우드 폴백용 Rinnai Control-R 계정 자격 증명을 입력하세요.",
                 "data": {
                     "email": "이메일",
-                    "password": "비밀번호"
+                    "password": "비밀번호",
+                    "save_password": "자동 재인증을 위해 비밀번호 저장"
                 },
                 "data_description": {
                     "email": "Rinnai Control-R 계정의 이메일 주소",
-                    "password": "Rinnai Control-R 계정 비밀번호"
+                    "password": "Rinnai Control-R 계정 비밀번호",
+                    "save_password": "활성화하면 세션이 만료될 때 자동으로 재인증하기 위해 비밀번호가 저장됩니다. 비활성화하면 수동으로 재인증해야 합니다."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "세션이 만료되었습니다. 자격 증명을 다시 입력하세요.",
                 "data": {
                     "email": "이메일",
-                    "password": "비밀번호"
+                    "password": "비밀번호",
+                    "save_password": "자동 재인증을 위해 비밀번호 저장"
+                },
+                "data_description": {
+                    "save_password": "활성화하면 세션이 만료될 때 자동으로 재인증하기 위해 비밀번호가 저장됩니다. 비활성화하면 수동으로 재인증해야 합니다."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "선택한 모드에는 클라우드 액세스가 필요합니다. Rinnai Control-R 계정 자격 증명을 입력하세요.",
                 "data": {
                     "email": "이메일",
-                    "password": "비밀번호"
+                    "password": "비밀번호",
+                    "save_password": "자동 재인증을 위해 비밀번호 저장"
                 },
                 "data_description": {
                     "email": "Rinnai Control-R 계정의 이메일 주소",
-                    "password": "Rinnai Control-R 계정 비밀번호"
+                    "password": "Rinnai Control-R 계정 비밀번호",
+                    "save_password": "활성화하면 세션이 만료될 때 자동으로 재인증하기 위해 비밀번호가 저장됩니다. 비활성화하면 수동으로 재인증해야 합니다."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "팬 주파수"
+            },
+            "water_flow_control_position": {
+                "name": "수류 제어 위치"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "열교환기 출구 온도"
+            },
+            "bypass_servo_position": {
+                "name": "바이패스 서보 위치"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "실외 부동액 온도"
+            },
+            "exhaust_temperature": {
+                "name": "배기 온도"
             }
         }
     },

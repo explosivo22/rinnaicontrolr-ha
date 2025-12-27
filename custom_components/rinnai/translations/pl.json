@@ -16,11 +16,13 @@
                 "description": "Wprowadź dane logowania do konta Rinnai Control-R.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Hasło"
+                    "password": "Hasło",
+                    "save_password": "Zapisz hasło do automatycznej ponownej autoryzacji"
                 },
                 "data_description": {
                     "email": "Adres e-mail konta Rinnai Control-R",
-                    "password": "Hasło do konta Rinnai Control-R"
+                    "password": "Hasło do konta Rinnai Control-R",
+                    "save_password": "Jeśli włączone, hasło zostanie zapisane, aby automatycznie ponownie się uwierzytelnić po wygaśnięciu sesji. W przeciwnym razie konieczne będzie ręczne uwierzytelnienie."
                 }
             },
             "local": {
@@ -38,11 +40,13 @@
                 "description": "Najpierw wprowadź dane logowania do konta Rinnai Control-R dla awaryjnego połączenia chmurowego.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Hasło"
+                    "password": "Hasło",
+                    "save_password": "Zapisz hasło do automatycznej ponownej autoryzacji"
                 },
                 "data_description": {
                     "email": "Adres e-mail konta Rinnai Control-R",
-                    "password": "Hasło do konta Rinnai Control-R"
+                    "password": "Hasło do konta Rinnai Control-R",
+                    "save_password": "Jeśli włączone, hasło zostanie zapisane, aby automatycznie ponownie się uwierzytelnić po wygaśnięciu sesji. W przeciwnym razie konieczne będzie ręczne uwierzytelnienie."
                 }
             },
             "hybrid_local": {
@@ -60,7 +64,11 @@
                 "description": "Sesja wygasła. Wprowadź ponownie dane logowania.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Hasło"
+                    "password": "Hasło",
+                    "save_password": "Zapisz hasło do automatycznej ponownej autoryzacji"
+                },
+                "data_description": {
+                    "save_password": "Jeśli włączone, hasło zostanie zapisane, aby automatycznie ponownie się uwierzytelnić po wygaśnięciu sesji. W przeciwnym razie konieczne będzie ręczne uwierzytelnienie."
                 }
             },
             "reconfigure": {
@@ -80,11 +88,13 @@
                 "description": "Wybrany tryb wymaga dostępu do chmury. Wprowadź dane logowania do konta Rinnai Control-R.",
                 "data": {
                     "email": "E-mail",
-                    "password": "Hasło"
+                    "password": "Hasło",
+                    "save_password": "Zapisz hasło do automatycznej ponownej autoryzacji"
                 },
                 "data_description": {
                     "email": "Adres e-mail konta Rinnai Control-R",
-                    "password": "Hasło do konta Rinnai Control-R"
+                    "password": "Hasło do konta Rinnai Control-R",
+                    "save_password": "Jeśli włączone, hasło zostanie zapisane, aby automatycznie ponownie się uwierzytelnić po wygaśnięciu sesji. W przeciwnym razie konieczne będzie ręczne uwierzytelnienie."
                 }
             }
         },
@@ -183,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Częstotliwość wentylatora"
+            },
+            "water_flow_control_position": {
+                "name": "Pozycja regulatora przepływu wody"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Temperatura wyjściowa wymiennika ciepła"
+            },
+            "bypass_servo_position": {
+                "name": "Pozycja serwo obejścia"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Temperatura zewnętrznego płynu niezamarzającego"
+            },
+            "exhaust_temperature": {
+                "name": "Temperatura spalin"
             }
         }
     },
