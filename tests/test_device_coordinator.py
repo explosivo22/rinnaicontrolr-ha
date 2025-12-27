@@ -744,16 +744,6 @@ async def test_maintenance_on_first_update_has_device_info(hass, monkeypatch):
     entry.add_to_hass(hass)
 
     api = _FakeAPI()
-    captured_device_info = []
-
-    original_do_maintenance = api.device.do_maintenance_retrieval
-
-    async def capture_state_maintenance(device):
-        # Capture coordinator state when maintenance is called
-        captured_device_info.append(coordinator._device_information)
-        return await original_do_maintenance(device)
-
-    api.device.do_maintenance_retrieval = capture_state_maintenance
 
     coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
         hass, "device-1", dict(entry.options), entry, api_client=api
@@ -761,6 +751,18 @@ async def test_maintenance_on_first_update_has_device_info(hass, monkeypatch):
 
     # Verify initial state
     assert coordinator._device_information is None
+
+    # Track when _execute_cloud_action is called and what state it sees
+    captured_device_info = []
+    original_execute_cloud_action = coordinator._execute_cloud_action
+
+    async def capture_state_execute(action_name, method_name, *args):
+        # Capture coordinator state when cloud action is called
+        if method_name == "do_maintenance_retrieval":
+            captured_device_info.append(coordinator._device_information)
+        return await original_execute_cloud_action(action_name, method_name, *args)
+
+    coordinator._execute_cloud_action = capture_state_execute
 
     await coordinator._async_update_data()
 
