@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "风扇频率"
+            },
+            "water_flow_control_position": {
+                "name": "水流控制位置"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "换热器出口温度"
+            },
+            "bypass_servo_position": {
+                "name": "旁通伺服位置"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "室外防冻温度"
+            },
+            "exhaust_temperature": {
+                "name": "排气温度"
             }
         }
     },

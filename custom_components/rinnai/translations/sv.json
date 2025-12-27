@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Fläktfrekvens"
+            },
+            "water_flow_control_position": {
+                "name": "Vattenflödesreglage position"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Värmeväxlare utloppstemperatur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass-servo position"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Utomhusfrostskydd temperatur"
+            },
+            "exhaust_temperature": {
+                "name": "Avgastemperatur"
             }
         }
     },

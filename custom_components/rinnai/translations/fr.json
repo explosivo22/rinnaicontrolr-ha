@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Fréquence du ventilateur"
+            },
+            "water_flow_control_position": {
+                "name": "Position du régulateur de débit d'eau"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Température de sortie de l'échangeur de chaleur"
+            },
+            "bypass_servo_position": {
+                "name": "Position du servo de dérivation"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Température antigel extérieure"
+            },
+            "exhaust_temperature": {
+                "name": "Température d'échappement"
             }
         }
     },

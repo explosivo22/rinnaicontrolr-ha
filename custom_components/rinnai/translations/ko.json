@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "팬 주파수"
+            },
+            "water_flow_control_position": {
+                "name": "수류 제어 위치"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "열교환기 출구 온도"
+            },
+            "bypass_servo_position": {
+                "name": "바이패스 서보 위치"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "실외 부동액 온도"
+            },
+            "exhaust_temperature": {
+                "name": "배기 온도"
             }
         }
     },

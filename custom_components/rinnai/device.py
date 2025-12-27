@@ -738,6 +738,51 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         return float(cycles) if cycles is not None else None
 
+    @property
+    def water_flow_control_position(self) -> float | None:
+        """Return the water flow control position (percentage)."""
+        position = self._get_value(
+            ("data", "getDevice", "info", "m07_water_flow_control_position"),
+            "m07_water_flow_control_position",
+        )
+        return float(position) if position is not None else None
+
+    @property
+    def heat_exchanger_outlet_temperature(self) -> float | None:
+        """Return the heat exchanger outlet temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m11_heat_exchanger_outlet_temperature"),
+            "m11_heat_exchanger_outlet_temperature",
+        )
+        return float(temp) if temp is not None else None
+
+    @property
+    def bypass_servo_position(self) -> float | None:
+        """Return the bypass servo position (percentage)."""
+        position = self._get_value(
+            ("data", "getDevice", "info", "m12_bypass_servo_position"),
+            "m12_bypass_servo_position",
+        )
+        return float(position) if position is not None else None
+
+    @property
+    def outdoor_antifreeze_temperature(self) -> float | None:
+        """Return the outdoor antifreeze temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m17_outdoor_antifreeze_temperature"),
+            "m17_outdoor_antifreeze_temperature",
+        )
+        return float(temp) if temp is not None else None
+
+    @property
+    def exhaust_temperature(self) -> float | None:
+        """Return the exhaust temperature in degrees F."""
+        temp = self._get_value(
+            ("data", "getDevice", "info", "m21_exhaust_temperature"),
+            "m21_exhaust_temperature",
+        )
+        return float(temp) if temp is not None else None
+
     # =========================================================================
     # Actions - Route to appropriate backend based on connection mode
     # =========================================================================

@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Lüfterfrequenz"
+            },
+            "water_flow_control_position": {
+                "name": "Wasserdurchflussregler-Position"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Wärmetauscher-Auslasstemperatur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass-Servo-Position"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Außenfrostschutz-Temperatur"
+            },
+            "exhaust_temperature": {
+                "name": "Abgastemperatur"
             }
         }
     },

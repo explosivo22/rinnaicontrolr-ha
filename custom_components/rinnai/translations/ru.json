@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Частота вентилятора"
+            },
+            "water_flow_control_position": {
+                "name": "Положение регулятора расхода воды"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Температура на выходе теплообменника"
+            },
+            "bypass_servo_position": {
+                "name": "Положение сервопривода байпаса"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Температура наружного антифриза"
+            },
+            "exhaust_temperature": {
+                "name": "Температура выхлопных газов"
             }
         }
     },

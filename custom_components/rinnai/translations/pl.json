@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Częstotliwość wentylatora"
+            },
+            "water_flow_control_position": {
+                "name": "Pozycja regulatora przepływu wody"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Temperatura wyjściowa wymiennika ciepła"
+            },
+            "bypass_servo_position": {
+                "name": "Pozycja serwo obejścia"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Temperatura zewnętrznego płynu niezamarzającego"
+            },
+            "exhaust_temperature": {
+                "name": "Temperatura spalin"
             }
         }
     },

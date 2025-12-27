@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Frequência do ventilador"
+            },
+            "water_flow_control_position": {
+                "name": "Posição do controle de vazão de água"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Temperatura de saída do trocador de calor"
+            },
+            "bypass_servo_position": {
+                "name": "Posição do servo de bypass"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Temperatura anticongelante externa"
+            },
+            "exhaust_temperature": {
+                "name": "Temperatura de exaustão"
             }
         }
     },

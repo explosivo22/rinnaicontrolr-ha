@@ -193,6 +193,21 @@
             },
             "fan_frequency": {
                 "name": "Ventilatorfrequentie"
+            },
+            "water_flow_control_position": {
+                "name": "Waterstroom regelaarpositie"
+            },
+            "heat_exchanger_outlet_temperature": {
+                "name": "Warmtewisselaar uitlaattemperatuur"
+            },
+            "bypass_servo_position": {
+                "name": "Bypass servopositie"
+            },
+            "outdoor_antifreeze_temperature": {
+                "name": "Buitenantivries temperatuur"
+            },
+            "exhaust_temperature": {
+                "name": "Uitlaattemperatuur"
             }
         }
     },
