@@ -749,27 +749,30 @@ async def test_maintenance_on_first_update_has_device_info(hass, monkeypatch):
         hass, "device-1", dict(entry.options), entry, api_client=api
     )
 
-    # Verify initial state
+    # Verify initial state and options
     assert coordinator._device_information is None
+    assert coordinator.options.get("maint_interval_enabled") is True, (
+        f"Options not set correctly: {coordinator.options}"
+    )
 
-    # Track when _execute_cloud_action is called and what state it sees
-    captured_device_info = []
-    original_execute_cloud_action = coordinator._execute_cloud_action
+    # Track when _maybe_do_maintenance_retrieval is called
+    maintenance_called = []
+    original_maybe_do_maintenance = coordinator._maybe_do_maintenance_retrieval
 
-    async def capture_state_execute(action_name, method_name, *args):
-        # Capture coordinator state when cloud action is called
-        if method_name == "do_maintenance_retrieval":
-            captured_device_info.append(coordinator._device_information)
-        return await original_execute_cloud_action(action_name, method_name, *args)
+    async def capture_maintenance():
+        maintenance_called.append(coordinator._device_information)
+        return await original_maybe_do_maintenance()
 
-    coordinator._execute_cloud_action = capture_state_execute
+    coordinator._maybe_do_maintenance_retrieval = capture_maintenance
 
     await coordinator._async_update_data()
 
-    # Key assertion: device info must be set BEFORE maintenance runs
-    assert len(captured_device_info) == 1
-    assert captured_device_info[0] is not None
-    assert "data" in captured_device_info[0]
+    # Key assertion: maintenance should be called with device info already set
+    assert len(maintenance_called) == 1, (
+        f"Maintenance not called. Options: {coordinator.options}"
+    )
+    assert maintenance_called[0] is not None
+    assert "data" in maintenance_called[0]
 
 
 @pytest.mark.asyncio
