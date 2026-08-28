@@ -11,7 +11,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr, issue_registry as ir
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -178,10 +179,11 @@ def _setup_device_discovery_listener(
 
     Checks for device additions/removals every 10 minutes.
     """
-    from homeassistant.helpers.event import async_track_time_interval
     from datetime import timedelta
 
-    async def _check_devices(now: Any = None) -> None:  # noqa: ANN401
+    from homeassistant.helpers.event import async_track_time_interval
+
+    async def _check_devices(now: Any = None) -> None:
         """Check for device changes."""
         await async_check_device_changes(hass, entry)
 
@@ -223,6 +225,7 @@ async def _setup_cloud_client(
             entry.data[CONF_ACCESS_TOKEN],
             entry.data[CONF_REFRESH_TOKEN],
         )
+        assert client.user is not None  # set by async_renew_access_token
         user_info = await client.user.get_info()
         _LOGGER.debug("User info retrieved: %s", user_info)
 
@@ -238,6 +241,7 @@ async def _setup_cloud_client(
             _LOGGER.info("Attempting automatic re-login with stored password")
             try:
                 await client.async_login(entry.data[CONF_EMAIL], stored_password)
+                assert client.user is not None  # set by async_login
                 user_info = await client.user.get_info()
                 _LOGGER.info("Automatic re-login successful")
 
@@ -272,6 +276,9 @@ async def _setup_cloud_client(
     except RequestError as err:
         _LOGGER.error("Request error during setup: %s", err)
         raise ConfigEntryNotReady(f"Unable to connect to Rinnai API: {err}") from err
+
+    if user_info is None:
+        raise ConfigEntryNotReady("Could not retrieve user info from Rinnai API")
 
     devices = user_info.get("devices", {}).get("items", [])
     if not devices:
@@ -362,11 +369,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> b
     _LOGGER.info("Unloading Rinnai integration (entry_id=%s)", entry.entry_id[:8])
 
     # Cancel device discovery listener if it exists
-    if hasattr(entry, "runtime_data") and entry.runtime_data is not None:
-        if entry.runtime_data.cancel_device_discovery is not None:
-            entry.runtime_data.cancel_device_discovery()
-            entry.runtime_data.cancel_device_discovery = None
-            _LOGGER.debug("Cancelled device discovery listener")
+    if (
+        hasattr(entry, "runtime_data")
+        and entry.runtime_data is not None
+        and entry.runtime_data.cancel_device_discovery is not None
+    ):
+        entry.runtime_data.cancel_device_discovery()
+        entry.runtime_data.cancel_device_discovery = None
+        _LOGGER.debug("Cancelled device discovery listener")
 
     result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if result:
@@ -522,8 +532,7 @@ async def _async_add_entities_for_new_devices(
     from .binary_sensor import BINARY_SENSOR_DESCRIPTIONS, RinnaiBinarySensor
     from .sensor import SENSOR_DESCRIPTIONS, RinnaiSensor
     from .switch import RinnaiRecirculationSwitch
-    from .water_heater import RinnaiWaterHeater
-    from .water_heater import VALID_TEMPERATURES
+    from .water_heater import VALID_TEMPERATURES, RinnaiWaterHeater
 
     runtime_data = entry.runtime_data
 
@@ -605,7 +614,11 @@ async def async_check_device_changes(
         return
 
     try:
+        assert runtime_data.client.user is not None  # set by async_login/renew
         user_info = await runtime_data.client.user.get_info()
+        if user_info is None:
+            _LOGGER.debug("No user info returned while checking for device changes")
+            return
         devices = user_info.get("devices", {}).get("items", [])
         current_device_ids = {device["id"] for device in devices}
 
@@ -615,7 +628,7 @@ async def async_check_device_changes(
         # Then check for new devices
         await async_discover_and_add_new_devices(hass, entry, current_device_ids)
 
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001 - periodic poll, retried next interval
         _LOGGER.warning("Failed to check for device changes: %s", err)
 
 

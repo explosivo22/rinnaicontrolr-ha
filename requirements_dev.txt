@@ -1,0 +1,19 @@
+# Pinned to match .github/workflows/test-with-homeassistant.yaml exactly, so
+# local pre-commit/test results are reproducible and match CI. Bumping any
+# version here should be a deliberate change, made in the same PR as the
+# matching bump in the CI workflow and vice versa.
+#
+# The component's own runtime dependencies (aiorinnai, PyJWT) are NOT listed
+# here - they're declared in custom_components/rinnai/manifest.json (kept
+# loosely pinned there on purpose, since they share HA's Python environment
+# with every other installed integration) and are installed from there. See
+# CONTRIBUTING.md for the command that does this.
+
+homeassistant==2025.1.4
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-homeassistant-custom-component==0.13.205
+pytest-cov==6.0.0
+ruff==0.16.3
+mypy==2.3.1
+pre-commit==4.6.2

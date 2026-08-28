@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system ruff mypy homeassistant
+          uv pip install --system -r requirements_dev.txt
           # Install component requirements
           REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
           if [ -n "$REQS" ]; then
@@ -111,7 +111,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system homeassistant pytest pytest-asyncio pytest-homeassistant-custom-component pytest-cov
+          uv pip install --system -r requirements_dev.txt
           # Install component requirements
           REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
           if [ -n "$REQS" ]; then
@@ -190,7 +190,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv pip install --system homeassistant home-assistant-frontend colorlog pytest pytest-asyncio pytest-homeassistant-custom-component
+          uv pip install --system -r requirements_dev.txt
+          uv pip install --system home-assistant-frontend==20250109.2 colorlog==6.12.0
           # Install component requirements
           REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
           if [ -n "$REQS" ]; then

@@ -21,6 +21,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from . import RinnaiConfigEntry
 from .entity import RinnaiEntity
 
@@ -45,7 +46,7 @@ def _error_description_state_key(code: str | None) -> str | None:
     return code.lower().replace(" ", "_")
 
 
-ERROR_DESCRIPTION_STATES: tuple[str, ...] = (
+ERROR_DESCRIPTION_STATES: list[str] = [
     NO_ERROR_STATE,
     "2",
     "3",
@@ -64,9 +65,9 @@ ERROR_DESCRIPTION_STATES: tuple[str, ...] = (
     "72",
     "lc",
     "no_code",
-)
+]
 
-ERROR_CODE_STATES: tuple[str, ...] = (
+ERROR_CODE_STATES: list[str] = [
     NO_ERROR_STATE,
     "2",
     "3",
@@ -85,7 +86,7 @@ ERROR_CODE_STATES: tuple[str, ...] = (
     "72",
     "lc",
     "no_code",
-)
+]
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -358,7 +359,7 @@ class RinnaiSensor(RinnaiEntity, SensorEntity):
         if isinstance(value, (int, float)):
             adjusted_value = value * self.entity_description.value_multiplier
             if self.entity_description.round_digits == 0:
-                return int(round(adjusted_value))
+                return round(adjusted_value)
             return round(adjusted_value, self.entity_description.round_digits)
 
         # Otherwise return raw value (e.g., strings for diagnostic fields)
