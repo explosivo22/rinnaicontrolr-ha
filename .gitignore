@@ -70,6 +70,7 @@ CLAUDE.md
 # Copilot
 .github/copilot-instructions.md
 .github/docs/
+.github/mistakes.md
 
 # Documentation (generated locally, used for PR descriptions)
 CHANGELOG.md
