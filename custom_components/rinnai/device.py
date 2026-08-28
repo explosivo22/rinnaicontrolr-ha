@@ -594,10 +594,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def firmware_version(self) -> str | None:
         """Return the firmware version for the device."""
-        return self._get_value(
+        firmware = self._get_value(
             ("data", "getDevice", "firmware"),
             "module_firmware_version",
         )
+        return None if firmware is None else str(firmware)
 
     @property
     def thing_name(self) -> str | None:
