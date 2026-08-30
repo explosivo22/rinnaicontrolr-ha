@@ -105,10 +105,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
     if connection_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID):
         api_client, device_ids = await _setup_cloud_client(hass, entry)
 
-    if connection_mode in (CONNECTION_MODE_LOCAL, CONNECTION_MODE_HYBRID):
+    if connection_mode == CONNECTION_MODE_LOCAL:
         local_client, local_device_id = await _setup_local_client(entry)
-        if connection_mode == CONNECTION_MODE_LOCAL:
-            device_ids = [local_device_id]
+        device_ids = [local_device_id]
+    elif connection_mode == CONNECTION_MODE_HYBRID:
+        local_client = await _setup_local_client_hybrid(entry)
 
     if not device_ids:
         _LOGGER.warning("No Rinnai devices found for account")
@@ -315,6 +316,49 @@ async def _setup_local_client(entry: ConfigEntry) -> tuple[RinnaiLocalClient, st
 
     # Use serial number as device ID for local mode
     return client, serial_number
+
+
+async def _setup_local_client_hybrid(entry: ConfigEntry) -> RinnaiLocalClient | None:
+    """Set up the local TCP client for hybrid mode without failing setup.
+
+    In hybrid mode the cloud connection is the availability guarantee: a local
+    connection failure at setup must not take the whole entry down, mirroring
+    the coordinator's per-update cloud fallback. The client is still returned
+    when a host is configured so local polling resumes automatically once the
+    controller is reachable again.
+
+    Returns:
+        The local client, or None when no host is configured.
+    """
+    host = entry.data.get(CONF_HOST)
+    if not host:
+        _LOGGER.warning(
+            "Hybrid mode: no host configured for local connection; "
+            "running with cloud only"
+        )
+        return None
+
+    _LOGGER.debug("Setting up local client for %s", host)
+
+    client = RinnaiLocalClient(host)
+
+    sysinfo = await client.get_sysinfo()
+    if sysinfo is None:
+        _LOGGER.warning(
+            "Hybrid mode: Rinnai controller at %s is unreachable; starting "
+            "with cloud data (local polling resumes automatically when the "
+            "controller becomes reachable)",
+            host,
+        )
+    else:
+        serial_number = sysinfo.get("sysinfo", {}).get("serial-number", host)
+        _LOGGER.info(
+            "Successfully connected to Rinnai controller at %s (Serial: %s)",
+            host,
+            serial_number,
+        )
+
+    return client
 
 
 async def _persist_tokens_if_changed(

@@ -548,3 +548,100 @@ async def test_coordinator_calls_ensure_valid_token(hass, monkeypatch):
 
     # Cleanup - unload to cancel timers
     await mod.async_unload_entry(hass, entry)
+
+
+@pytest.mark.asyncio
+async def test_async_setup_entry_hybrid_local_unreachable_falls_back_to_cloud(
+    hass, monkeypatch
+):
+    """Hybrid mode must complete setup on cloud when the local probe fails.
+
+    Regression test: a ConfigEntryNotReady from the local probe used to abort
+    the whole entry setup even though the cloud client had already
+    authenticated, leaving every entity unavailable until the controller
+    became locally reachable again.
+    """
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    async def _no_forward(entry, platforms):
+        return None
+
+    async def _no_unload(entry, platforms):
+        return True
+
+    monkeypatch.setattr(hass.config_entries, "async_forward_entry_setups", _no_forward)
+    monkeypatch.setattr(hass.config_entries, "async_unload_platforms", _no_unload)
+
+    async def _fake_refresh(self):
+        return None
+
+    monkeypatch.setattr(
+        mod.RinnaiDeviceDataUpdateCoordinator, "async_refresh", _fake_refresh
+    )
+
+    # Local controller is unreachable: get_sysinfo returns None
+    async def _sysinfo_unreachable(self):
+        return None
+
+    monkeypatch.setattr(mod.RinnaiLocalClient, "get_sysinfo", _sysinfo_unreachable)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+            "connection_mode": "hybrid",
+            "host": "192.0.2.10",
+        },
+        options={
+            "maint_interval_enabled": False,
+        },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    ok = await mod.async_setup_entry(hass, entry)
+
+    assert ok is True
+    assert entry.runtime_data is not None
+    assert entry.runtime_data.connection_mode == "hybrid"
+    # Cloud device list drives the coordinators
+    assert len(entry.runtime_data.devices) == 1
+    # Local client is retained so per-update local polling can recover
+    assert entry.runtime_data.local_client is not None
+
+    await mod.async_unload_entry(hass, entry)
+
+
+@pytest.mark.asyncio
+async def test_async_setup_entry_local_mode_unreachable_still_raises(
+    hass, monkeypatch
+):
+    """Local-only mode has no fallback and must still raise ConfigEntryNotReady."""
+    from homeassistant.exceptions import ConfigEntryNotReady
+
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    async def _sysinfo_unreachable(self):
+        return None
+
+    monkeypatch.setattr(mod.RinnaiLocalClient, "get_sysinfo", _sysinfo_unreachable)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "connection_mode": "local",
+            "host": "192.0.2.10",
+        },
+        options={
+            "maint_interval_enabled": False,
+        },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    with pytest.raises(ConfigEntryNotReady):
+        await mod.async_setup_entry(hass, entry)
