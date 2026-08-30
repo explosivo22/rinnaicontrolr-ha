@@ -11,7 +11,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
-from homeassistant.helpers import device_registry as dr, issue_registry as ir
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import issue_registry as ir
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
@@ -105,10 +106,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
     if connection_mode in (CONNECTION_MODE_CLOUD, CONNECTION_MODE_HYBRID):
         api_client, device_ids = await _setup_cloud_client(hass, entry)
 
-    if connection_mode in (CONNECTION_MODE_LOCAL, CONNECTION_MODE_HYBRID):
+    if connection_mode == CONNECTION_MODE_LOCAL:
         local_client, local_device_id = await _setup_local_client(entry)
-        if connection_mode == CONNECTION_MODE_LOCAL:
-            device_ids = [local_device_id]
+        device_ids = [local_device_id]
+    elif connection_mode == CONNECTION_MODE_HYBRID:
+        local_client = await _setup_local_client_hybrid(entry)
 
     if not device_ids:
         _LOGGER.warning("No Rinnai devices found for account")
@@ -178,10 +180,11 @@ def _setup_device_discovery_listener(
 
     Checks for device additions/removals every 10 minutes.
     """
-    from homeassistant.helpers.event import async_track_time_interval
     from datetime import timedelta
 
-    async def _check_devices(now: Any = None) -> None:  # noqa: ANN401
+    from homeassistant.helpers.event import async_track_time_interval
+
+    async def _check_devices(now: Any = None) -> None:
         """Check for device changes."""
         await async_check_device_changes(hass, entry)
 
@@ -317,6 +320,49 @@ async def _setup_local_client(entry: ConfigEntry) -> tuple[RinnaiLocalClient, st
     return client, serial_number
 
 
+async def _setup_local_client_hybrid(entry: ConfigEntry) -> RinnaiLocalClient | None:
+    """Set up the local TCP client for hybrid mode without failing setup.
+
+    In hybrid mode the cloud connection is the availability guarantee: a local
+    connection failure at setup must not take the whole entry down, mirroring
+    the coordinator's per-update cloud fallback. The client is still returned
+    when a host is configured so local polling resumes automatically once the
+    controller is reachable again.
+
+    Returns:
+        The local client, or None when no host is configured.
+    """
+    host = entry.data.get(CONF_HOST)
+    if not host:
+        _LOGGER.warning(
+            "Hybrid mode: no host configured for local connection; "
+            "running with cloud only"
+        )
+        return None
+
+    _LOGGER.debug("Setting up local client for %s", host)
+
+    client = RinnaiLocalClient(host)
+
+    sysinfo = await client.get_sysinfo()
+    if sysinfo is None:
+        _LOGGER.warning(
+            "Hybrid mode: Rinnai controller at %s is unreachable; starting "
+            "with cloud data (local polling resumes automatically when the "
+            "controller becomes reachable)",
+            host,
+        )
+    else:
+        serial_number = sysinfo.get("sysinfo", {}).get("serial-number", host)
+        _LOGGER.info(
+            "Successfully connected to Rinnai controller at %s (Serial: %s)",
+            host,
+            serial_number,
+        )
+
+    return client
+
+
 async def _persist_tokens_if_changed(
     hass: HomeAssistant, entry: ConfigEntry, client: API
 ) -> None:
@@ -362,11 +408,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> b
     _LOGGER.info("Unloading Rinnai integration (entry_id=%s)", entry.entry_id[:8])
 
     # Cancel device discovery listener if it exists
-    if hasattr(entry, "runtime_data") and entry.runtime_data is not None:
-        if entry.runtime_data.cancel_device_discovery is not None:
-            entry.runtime_data.cancel_device_discovery()
-            entry.runtime_data.cancel_device_discovery = None
-            _LOGGER.debug("Cancelled device discovery listener")
+    if (
+        hasattr(entry, "runtime_data")
+        and entry.runtime_data is not None
+        and entry.runtime_data.cancel_device_discovery is not None
+    ):
+        entry.runtime_data.cancel_device_discovery()
+        entry.runtime_data.cancel_device_discovery = None
+        _LOGGER.debug("Cancelled device discovery listener")
 
     result = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if result:
@@ -522,8 +571,7 @@ async def _async_add_entities_for_new_devices(
     from .binary_sensor import BINARY_SENSOR_DESCRIPTIONS, RinnaiBinarySensor
     from .sensor import SENSOR_DESCRIPTIONS, RinnaiSensor
     from .switch import RinnaiRecirculationSwitch
-    from .water_heater import RinnaiWaterHeater
-    from .water_heater import VALID_TEMPERATURES
+    from .water_heater import VALID_TEMPERATURES, RinnaiWaterHeater
 
     runtime_data = entry.runtime_data
 
@@ -615,7 +663,7 @@ async def async_check_device_changes(
         # Then check for new devices
         await async_discover_and_add_new_devices(hass, entry, current_device_ids)
 
-    except Exception as err:
+    except Exception as err:  # noqa: BLE001
         _LOGGER.warning("Failed to check for device changes: %s", err)
 
 

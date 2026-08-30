@@ -6,15 +6,13 @@ import re
 from typing import Any
 
 import voluptuous as vol
-
 from aiorinnai import API
 from aiorinnai.errors import (
-    RequestError,
-    UserNotFound,
-    UserNotConfirmed,
     PasswordChangeRequired,
+    RequestError,
+    UserNotConfirmed,
+    UserNotFound,
 )
-
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
@@ -71,11 +69,8 @@ def _is_hostname(host: str) -> bool:
     # Check for IPv4 pattern
     if _IPV4_PATTERN.match(host):
         return False
-    # Check for IPv6 (contains colons)
-    if ":" in host:
-        return False
-    # Anything else is likely a hostname
-    return True
+    # IPv6 contains colons; anything else is likely a hostname
+    return ":" not in host
 
 
 # Common schema components to reduce duplication
