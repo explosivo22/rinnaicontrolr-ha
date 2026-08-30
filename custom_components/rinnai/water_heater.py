@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components.water_heater import (
     ATTR_TEMPERATURE,
     STATE_GAS,
