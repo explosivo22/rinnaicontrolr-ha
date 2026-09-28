@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.components.water_heater import (
     ATTR_TEMPERATURE,
     STATE_GAS,
@@ -234,30 +233,30 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
             return
 
         # Round to nearest integer for validation (handles Celsius conversions like 40°C = 103.82°F → 104°F)
-        target_temp = round(target_temp)
+        target_temp_f: int = round(target_temp)
 
         # Validate temperature is within valid setpoints
         # If still not valid after rounding, automatically adjust to nearest valid temperature
-        if target_temp not in self._valid_temperatures:
+        if target_temp_f not in self._valid_temperatures:
             # Find the nearest valid temperature (prefer lower if equidistant for safety)
             nearest_temp = min(
-                self._valid_temperatures, key=lambda t: (abs(t - target_temp), t)
+                self._valid_temperatures, key=lambda t: (abs(t - target_temp_f), t)
             )
 
             LOGGER.info(
                 "Temperature %s°F is not a valid setpoint, adjusting to nearest valid %s°F on %s",
-                target_temp,
+                target_temp_f,
                 nearest_temp,
                 self._device.device_name,
             )
-            target_temp = nearest_temp
+            target_temp_f = nearest_temp
 
         LOGGER.info(
             "Setting target temperature to %s°F on %s",
-            target_temp,
+            target_temp_f,
             self._device.device_name,
         )
-        await self._device.async_set_temperature(int(target_temp))
+        await self._device.async_set_temperature(target_temp_f)
         LOGGER.debug("Temperature update completed for %s", self._device.device_name)
 
     async def async_turn_away_mode_on(self) -> None:

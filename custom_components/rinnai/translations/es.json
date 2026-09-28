@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Desconocido"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Fallo del sensor de temperatura de salida del intercambiador de calor",
                     "34": "Fallo del sensor de temperatura de aire de combustión",
                     "52": "Señal anormal de la válvula solenoide modulante",
+                    "55": "Servicio pronto (recordatorio de mantenimiento)",
                     "61": "Fallo del ventilador de combustión",
                     "65": "Servo de flujo de agua defectuoso (no detiene el flujo correctamente)",
                     "71": "Fallo del circuito de válvulas solenoides SV0, SV1, SV2 y SV3",
                     "72": "Fallo del dispositivo de detección de llama",
                     "lc": "Acumulación de sarro en el intercambiador de calor",
                     "no_code": "Sin código (no sucede nada cuando se activa el flujo de agua).",
-                    "no_error": "Sin error"
+                    "no_error": "Sin error",
+                    "unknown": "Desconocido"
                 }
             },
             "wifi_ssid": {

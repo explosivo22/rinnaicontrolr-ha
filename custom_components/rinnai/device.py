@@ -8,7 +8,6 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Any
 
 import jwt
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_EMAIL
 from homeassistant.core import HomeAssistant
@@ -24,8 +23,10 @@ from .const import (
     CONNECTION_MODE_HYBRID,
     CONNECTION_MODE_LOCAL,
     DEFAULT_MAINT_INTERVAL_MINUTES,
-    DOMAIN as RINNAI_DOMAIN,
     LOGGER,
+)
+from .const import (
+    DOMAIN as RINNAI_DOMAIN,
 )
 
 if TYPE_CHECKING:
@@ -58,6 +59,7 @@ ERROR_CODE_DESCRIPTIONS: dict[str, str] = {
     "33": "Heat exchanger outgoing temperature sensor fault",
     "34": "Combustion air temperature sensor fault",
     "52": "Modulating solenoid valve signal abnormal",
+    "55": "Service soon (maintenance reminder)",
     "61": "Combustion fan failure",
     "65": "Water flow servo faulty (does not stop flow properly)",
     "71": "SV0, SV1, SV2, and SV3 solenoid valve circuit fault",
@@ -98,7 +100,7 @@ def _is_token_expired(
     except jwt.DecodeError:
         LOGGER.warning("Failed to decode token, treating as expired")
         return True
-    except Exception as err:
+    except jwt.PyJWTError as err:
         LOGGER.warning("Error checking token expiration: %s", err)
         return True
 
@@ -291,7 +293,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 # data is None - treat as a retriable error
                 last_error = Exception("No response from local controller")
 
-            except Exception as error:
+            except Exception as error:  # noqa: BLE001 - retry loop, any failure retried
                 last_error = error
 
             # Check if we've exceeded the retry window
@@ -352,10 +354,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             try:
                 await self._ensure_valid_token()
 
+                device_client = self.api_client.device
+                assert device_client is not None  # set by async_login/renew
+
                 async with asyncio.timeout(10):
-                    device_info = await self.api_client.device.get_info(
-                        self._rinnai_device_id
-                    )
+                    device_info = await device_client.get_info(self._rinnai_device_id)
 
                 self._consecutive_errors = 0
                 self._last_error = None
@@ -436,7 +439,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                         await self._maybe_do_maintenance_retrieval()
 
                     return data
-            except Exception as error:
+            except Exception as error:  # noqa: BLE001 - any local failure falls back to cloud
                 local_error = error
                 LOGGER.warning("Hybrid mode: local failed (%s), trying cloud...", error)
 
@@ -471,10 +474,12 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         try:
             await self._ensure_valid_token()
+
+            device_client = self.api_client.device
+            assert device_client is not None  # set by async_login/renew
+
             async with asyncio.timeout(10):
-                device_info = await self.api_client.device.get_info(
-                    self._rinnai_device_id
-                )
+                device_info = await device_client.get_info(self._rinnai_device_id)
             device_data = device_info.get("data", {}).get("getDevice", {})
             cloud_name = device_data.get("device_name")
             if cloud_name:
@@ -482,7 +487,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 LOGGER.debug(
                     "Cached cloud device name '%s' for hybrid mode", cloud_name
                 )
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001
             # Non-fatal - we'll just use the serial number fallback
             LOGGER.debug("Could not fetch cloud device name: %s", error)
 
@@ -539,9 +544,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self, cloud_keys: tuple[str, ...], local_key: str, default: Any = None
     ) -> Any:
         """Get value from appropriate data source based on connection mode."""
-        if self._connection_mode == CONNECTION_MODE_LOCAL:
-            return self._get_local_value(local_key, default)
-        elif (
+        if self._connection_mode == CONNECTION_MODE_LOCAL or (
             self._connection_mode == CONNECTION_MODE_HYBRID and not self._using_fallback
         ):
             return self._get_local_value(local_key, default)
@@ -594,10 +597,11 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def firmware_version(self) -> str | None:
         """Return the firmware version for the device."""
-        return self._get_value(
+        firmware = self._get_value(
             ("data", "getDevice", "firmware"),
             "module_firmware_version",
         )
+        return None if firmware is None else str(firmware)
 
     @property
     def thing_name(self) -> str | None:
@@ -905,7 +909,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 try:
                     await self._execute_local_action(action_name, local_method, *args)
                     return
-                except Exception as error:
+                except Exception as error:  # noqa: BLE001 - any local failure falls back to cloud
                     LOGGER.warning(
                         "Hybrid mode: local %s failed (%s), trying cloud...",
                         action_name,
@@ -1067,7 +1071,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
             self._last_maintenance_retrieval = now
             LOGGER.debug("Rinnai maintenance retrieval started")
-        except Exception as error:
+        except Exception as error:  # noqa: BLE001 - best-effort diagnostic, non-critical
             LOGGER.warning("Maintenance retrieval failed: %s", error)
 
     async def async_do_maintenance_retrieval(self) -> None:

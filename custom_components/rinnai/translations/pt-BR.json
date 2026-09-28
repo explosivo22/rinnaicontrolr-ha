@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Desconhecido"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Falha do sensor de temperatura de saída do trocador de calor",
                     "34": "Falha do sensor de temperatura do ar de combustão",
                     "52": "Sinal anormal da válvula solenoide modulante",
+                    "55": "Manutenção em breve (lembrete de manutenção)",
                     "61": "Falha do ventilador de combustão",
                     "65": "Servo do fluxo de água com defeito (não interrompe o fluxo corretamente)",
                     "71": "Falha no circuito das válvulas solenoides SV0, SV1, SV2 e SV3",
                     "72": "Falha do dispositivo de detecção de chama",
                     "lc": "Acúmulo de calcário no trocador de calor",
                     "no_code": "Sem código (nada acontece quando o fluxo de água é ativado).",
-                    "no_error": "Sem erro"
+                    "no_error": "Sem erro",
+                    "unknown": "Desconhecido"
                 }
             },
             "wifi_ssid": {

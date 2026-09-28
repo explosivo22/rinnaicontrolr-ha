@@ -45,7 +45,7 @@ class RinnaiEntity(CoordinatorEntity["RinnaiDeviceDataUpdateCoordinator"]):
             manufacturer=self._device.manufacturer,
             model=self._device.model,
             name=self._device.device_name,
-            sw_version=self._device.firmware_version,
+            sw_version=str(self._device.firmware_version),
         )
 
     @property

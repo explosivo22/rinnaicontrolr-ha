@@ -1,0 +1,30 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check
+        name: ruff check
+        entry: .venv/bin/ruff check
+        language: system
+        types: [python]
+        files: ^custom_components/rinnai/
+
+      - id: ruff-format
+        name: ruff format
+        entry: .venv/bin/ruff format --check
+        language: system
+        types: [python]
+        files: ^custom_components/rinnai/
+
+      - id: mypy
+        name: mypy
+        entry: .venv/bin/mypy custom_components/rinnai/ --ignore-missing-imports --no-error-summary
+        language: system
+        pass_filenames: false
+        files: ^custom_components/rinnai/
+
+      - id: pytest
+        name: pytest
+        entry: env PYTHONPATH=. .venv/bin/pytest tests/ -q
+        language: system
+        pass_filenames: false
+        files: ^(custom_components/rinnai/|tests/)

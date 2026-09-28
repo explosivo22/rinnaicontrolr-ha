@@ -229,12 +229,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Unknown"
                 }
             },
             "error_description": {
@@ -251,13 +253,15 @@
                     "33": "Heat exchanger outgoing temperature sensor fault",
                     "34": "Combustion air temperature sensor fault",
                     "52": "Modulating solenoid valve signal abnormal",
+                    "55": "Service soon (maintenance reminder)",
                     "61": "Combustion fan failure",
                     "65": "Water flow servo faulty (does not stop flow properly)",
                     "71": "SV0, SV1, SV2, and SV3 solenoid valve circuit fault",
                     "72": "Flame sensing device fault",
                     "lc": "Scale build-up in the heat exchanger",
                     "no_code": "No Code (nothing happens when water flow is activated).",
-                    "no_error": "No Error"
+                    "no_error": "No Error",
+                    "unknown": "Unknown"
                 }
             },
             "wifi_ssid": {

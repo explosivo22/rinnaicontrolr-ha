@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Nieznany"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Błąd czujnika temperatury wylotowej wymiennika ciepła",
                     "34": "Błąd czujnika temperatury powietrza spalania",
                     "52": "Nieprawidłowy sygnał zaworu elektromagnetycznego modulującego",
+                    "55": "Wkrótce serwis (przypomnienie o konserwacji)",
                     "61": "Awaria wentylatora spalania",
                     "65": "Uszkodzony serwomechanizm przepływu wody (nie zatrzymuje przepływu)",
                     "71": "Błąd obwodu zaworów elektromagnetycznych SV0, SV1, SV2 i SV3",
                     "72": "Błąd urządzenia wykrywania płomienia",
                     "lc": "Osad kamienia w wymienniku ciepła",
                     "no_code": "Brak kodu (nic się nie dzieje po uruchomieniu przepływu wody).",
-                    "no_error": "Brak błędu"
+                    "no_error": "Brak błędu",
+                    "unknown": "Nieznany"
                 }
             },
             "wifi_ssid": {

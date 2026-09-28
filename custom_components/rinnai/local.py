@@ -51,7 +51,7 @@ class RinnaiLocalClient:
             await asyncio.wait_for(reader.read(1024), timeout=2)
 
             # Send command
-            writer.write(f"{command}\n".encode("utf-8"))
+            writer.write(f"{command}\n".encode())
             await writer.drain()
 
             # Read response with timeout
@@ -84,7 +84,7 @@ class RinnaiLocalClient:
             LOGGER.error("Connection refused by Rinnai controller at %s", self.host)
         except OSError as e:
             LOGGER.error("Socket error communicating with Rinnai controller: %s", e)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - final catch-all for I/O from the device
             LOGGER.error("Unexpected error communicating with Rinnai controller: %s", e)
         finally:
             if writer is not None:

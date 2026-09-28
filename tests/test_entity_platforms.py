@@ -479,6 +479,39 @@ async def test_error_code_sensor_no_code(monkeypatch):
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("key", ["error_code", "error_description"])
+async def test_error_sensors_service_soon_code(monkeypatch, key):
+    """Test error sensors map code 55 (service soon) to a valid option."""
+    sensor_mod, _ = _load_entity_modules(monkeypatch)
+    device = _create_mock_device()
+    device.error_code = "55"
+    description = _get_sensor_description(sensor_mod, key)
+
+    sensor = sensor_mod.RinnaiSensor(device, description)
+
+    assert sensor.native_value == "55"
+    assert sensor.native_value in description.options
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("key", ["error_code", "error_description"])
+async def test_error_sensors_unmapped_code_is_unknown(monkeypatch, caplog, key):
+    """Test error sensors fall back to 'unknown' and log unmapped codes once."""
+    sensor_mod, _ = _load_entity_modules(monkeypatch)
+    monkeypatch.setattr(sensor_mod, "_LOGGED_UNKNOWN_ERROR_CODES", set())
+    device = _create_mock_device()
+    device.error_code = "99"
+    description = _get_sensor_description(sensor_mod, key)
+
+    sensor = sensor_mod.RinnaiSensor(device, description)
+
+    assert sensor.native_value == "unknown"
+    assert sensor.native_value == "unknown"
+    assert "unknown" in description.options
+    assert caplog.text.count("Unrecognized Rinnai error code '99'") == 1
+
+
+@pytest.mark.asyncio
 async def test_error_code_sensor_is_enum(monkeypatch):
     """Test error_code sensor has ENUM device class and options."""
     sensor_mod, _ = _load_entity_modules(monkeypatch)

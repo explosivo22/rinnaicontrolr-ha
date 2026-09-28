@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Okänd"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Fel på värmeväxlarens utgående temperatursensor",
                     "34": "Fel på förbränningslufttemperatursensor",
                     "52": "Onormalt signal för modulerande magnetventil",
+                    "55": "Service snart (underhållspåminnelse)",
                     "61": "Förbränningsfläkt fel",
                     "65": "Vattenflödesservo felaktig (stoppar inte flödet korrekt)",
                     "71": "Fel i solenoidventilkrets SV0, SV1, SV2 och SV3",
                     "72": "Fel i flamavkänningsenheten",
                     "lc": "Kalkavlagring i värmeväxlaren",
                     "no_code": "Ingen kod (inget händer när vattenflödet aktiveras).",
-                    "no_error": "Inget fel"
+                    "no_error": "Inget fel",
+                    "unknown": "Okänd"
                 }
             },
             "wifi_ssid": {
