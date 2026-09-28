@@ -59,6 +59,7 @@ ERROR_CODE_DESCRIPTIONS: dict[str, str] = {
     "33": "Heat exchanger outgoing temperature sensor fault",
     "34": "Combustion air temperature sensor fault",
     "52": "Modulating solenoid valve signal abnormal",
+    "55": "Service soon (maintenance reminder)",
     "61": "Combustion fan failure",
     "65": "Water flow servo faulty (does not stop flow properly)",
     "71": "SV0, SV1, SV2, and SV3 solenoid valve circuit fault",

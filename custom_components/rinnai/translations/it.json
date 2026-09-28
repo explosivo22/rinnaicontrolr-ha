@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Sconosciuto"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Guasto sensore temperatura uscita scambiatore di calore",
                     "34": "Guasto sensore temperatura aria di combustione",
                     "52": "Segnale anomalo della valvola solenoide modulante",
+                    "55": "Assistenza a breve (promemoria di manutenzione)",
                     "61": "Guasto ventola di combustione",
                     "65": "Servo del flusso d’acqua guasto (non arresta correttamente il flusso)",
                     "71": "Guasto circuito valvole solenoidi SV0, SV1, SV2 e SV3",
                     "72": "Guasto dispositivo rilevamento fiamma",
                     "lc": "Accumulo di calcare nello scambiatore di calore",
                     "no_code": "Nessun codice (non accade nulla quando si attiva il flusso d’acqua).",
-                    "no_error": "Nessun errore"
+                    "no_error": "Nessun errore",
+                    "unknown": "Sconosciuto"
                 }
             },
             "wifi_ssid": {

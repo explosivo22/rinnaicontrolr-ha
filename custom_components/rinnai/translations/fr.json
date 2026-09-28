@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Inconnu"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Défaut du capteur de température de sortie de l’échangeur",
                     "34": "Défaut du capteur de température d’air de combustion",
                     "52": "Signal anormal de l’électrovanne modulante",
+                    "55": "Entretien bientôt requis (rappel d'entretien)",
                     "61": "Défaillance du ventilateur de combustion",
                     "65": "Servomoteur de débit d’eau défectueux (ne stoppe pas correctement le débit)",
                     "71": "Défaut du circuit des électrovannes SV0, SV1, SV2 et SV3",
                     "72": "Défaut du dispositif de détection de flamme",
                     "lc": "Accumulation de tartre dans l’échangeur",
                     "no_code": "Pas de code (rien ne se passe quand le débit d’eau est activé).",
-                    "no_error": "Aucune erreur"
+                    "no_error": "Aucune erreur",
+                    "unknown": "Inconnu"
                 }
             },
             "wifi_ssid": {

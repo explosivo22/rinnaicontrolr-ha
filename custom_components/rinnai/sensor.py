@@ -23,6 +23,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import RinnaiConfigEntry
+from .const import LOGGER
 from .entity import RinnaiEntity
 
 if TYPE_CHECKING:
@@ -31,6 +32,10 @@ if TYPE_CHECKING:
 # Limit concurrent updates per platform
 PARALLEL_UPDATES = 1
 NO_ERROR_STATE = "no_error"
+UNKNOWN_ERROR_STATE = "unknown"
+
+# Error codes already reported as unmapped, so each is only logged once
+_LOGGED_UNKNOWN_ERROR_CODES: set[str] = set()
 
 
 def _error_description_state_key(code: str | None) -> str | None:
@@ -59,12 +64,14 @@ ERROR_DESCRIPTION_STATES: list[str] = [
     "33",
     "34",
     "52",
+    "55",
     "61",
     "65",
     "71",
     "72",
     "lc",
     "no_code",
+    UNKNOWN_ERROR_STATE,
 ]
 
 ERROR_CODE_STATES: list[str] = [
@@ -80,12 +87,14 @@ ERROR_CODE_STATES: list[str] = [
     "33",
     "34",
     "52",
+    "55",
     "61",
     "65",
     "71",
     "72",
     "lc",
     "no_code",
+    UNKNOWN_ERROR_STATE,
 ]
 
 
@@ -353,6 +362,17 @@ class RinnaiSensor(RinnaiEntity, SensorEntity):
             and value is None
         ):
             return NO_ERROR_STATE
+        options = self.entity_description.options
+        if options is not None and value not in options:
+            # An unmapped error code must not raise in the ENUM sensor
+            if value not in _LOGGED_UNKNOWN_ERROR_CODES:
+                _LOGGED_UNKNOWN_ERROR_CODES.add(str(value))
+                LOGGER.warning(
+                    "Unrecognized Rinnai error code '%s'; please report it at "
+                    "https://github.com/explosivo22/rinnaicontrolr-ha/issues",
+                    value,
+                )
+            return UNKNOWN_ERROR_STATE
         if value is None:
             return None
         # If numeric, apply multiplier and rounding

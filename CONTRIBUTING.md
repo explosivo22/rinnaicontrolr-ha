@@ -2,8 +2,9 @@
 
 ## Prerequisites
 
-- Python **3.12** (pinned in `.python-version`; CI also tests 3.13 for
-  forward compatibility, but 3.12 is the primary dev target)
+- Python **3.14** (pinned in `.python-version`; required by the pinned
+  Home Assistant release, and the version CI tests against). `uv venv`
+  downloads it automatically if it isn't installed.
 - [`uv`](https://docs.astral.sh/uv/) — used to create the venv and install
   dependencies - e.g.,
   ```bash

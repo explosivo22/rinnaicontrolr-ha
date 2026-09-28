@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Unbekannt"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Sensorfehler Wärmetauscher-Ausgangstemperatur",
                     "34": "Sensorfehler Verbrennungslufttemperatur",
                     "52": "Modulierendes Magnetventil: Signal fehlerhaft",
+                    "55": "Wartung bald fällig (Wartungserinnerung)",
                     "61": "Verbrennungslüfter ausgefallen",
                     "65": "Wasserfluss-Servo defekt (stoppt den Durchfluss nicht korrekt)",
                     "71": "SV0, SV1, SV2 und SV3 Magnetventil-Schaltkreisfehler",
                     "72": "Flammensensor-Fehler",
                     "lc": "Kalkablagerung im Wärmetauscher",
                     "no_code": "Kein Code (bei Wasserfluss passiert nichts).",
-                    "no_error": "Kein Fehler"
+                    "no_error": "Kein Fehler",
+                    "unknown": "Unbekannt"
                 }
             },
             "wifi_ssid": {

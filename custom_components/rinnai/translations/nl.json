@@ -224,12 +224,14 @@
                     "33": "33",
                     "34": "34",
                     "52": "52",
+                    "55": "55",
                     "61": "61",
                     "65": "65",
                     "71": "71",
                     "72": "72",
                     "lc": "LC",
-                    "no_code": "NO CODE"
+                    "no_code": "NO CODE",
+                    "unknown": "Onbekend"
                 }
             },
             "error_description": {
@@ -246,13 +248,15 @@
                     "33": "Storing uitlaattemperatuursensor warmtewisselaar",
                     "34": "Storing verbrandingslucht-temperatuursensor",
                     "52": "Abnormaal signaal modulerende magneetklep",
+                    "55": "Binnenkort onderhoud (onderhoudsherinnering)",
                     "61": "Verbrandingsventilator defect",
                     "65": "Waterstroom-servo defect (stopt de stroom niet goed)",
                     "71": "SV0, SV1, SV2 en SV3 magneetklepcircuitstoring",
                     "72": "Vlamdetectie-apparaat defect",
                     "lc": "Kalkaanslag in de warmtewisselaar",
                     "no_code": "Geen code (er gebeurt niets wanneer de waterstroom wordt geactiveerd).",
-                    "no_error": "Geen fout"
+                    "no_error": "Geen fout",
+                    "unknown": "Onbekend"
                 }
             },
             "wifi_ssid": {

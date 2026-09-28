@@ -16,15 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.12"
+          python-version: "3.14"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v10.2.0
 
       - name: Install dependencies
         run: |
@@ -45,7 +45,7 @@ jobs:
 
       - name: Run mypy
         run: |
-          mypy custom_components/rinnai/ --ignore-missing-imports --no-error-summary || true
+          mypy custom_components/rinnai/ --ignore-missing-imports --no-error-summary
 
   # Validate the component using Home Assistant's official hassfest action
   validate-hassfest:
@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare component structure for validation
         run: |
@@ -71,7 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Prepare component structure for HACS validation
         run: |
@@ -95,19 +95,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.14"]
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v10.2.0
 
       - name: Install dependencies
         run: |
@@ -162,8 +162,8 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}
 
       - name: Upload coverage to Codecov
-        if: matrix.python-version == '3.12'
-        uses: codecov/codecov-action@v4
+        if: matrix.python-version == '3.14'
+        uses: codecov/codecov-action@v7
         with:
           files: ./coverage.xml
           flags: unittests
@@ -178,20 +178,20 @@ jobs:
     
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
-      - name: Set up Python 3.13
-        uses: actions/setup-python@v5
+      - name: Set up Python 3.14
+        uses: actions/setup-python@v7
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@v10.2.0
 
       - name: Install dependencies
         run: |
           uv pip install --system -r requirements_dev.txt
-          uv pip install --system home-assistant-frontend==20250109.2 colorlog==6.12.0
+          uv pip install --system home-assistant-frontend==20260826.7 colorlog==6.10.1
           # Install component requirements
           REQS=$(python -c "import json; f=open('custom_components/rinnai/manifest.json'); reqs=json.load(f).get('requirements', []); print(' '.join(reqs))" 2>/dev/null || echo "")
           if [ -n "$REQS" ]; then
@@ -298,7 +298,7 @@ jobs:
 
       - name: Upload Home Assistant logs on failure
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ha-logs-integration-test
           path: |
