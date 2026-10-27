@@ -49,3 +49,7 @@ CONNECTION_MODE_HYBRID: Final = "hybrid"
 # Local connection settings
 CONF_HOST: Final = "host"
 LOCAL_PORT: Final = 9798
+
+# Unit string used for the flow sensor before 2.4.0; long-term statistics
+# recorded with it are relabelled to gal/min on setup.
+LEGACY_FLOW_UNIT: Final = "gpm"

@@ -22,10 +22,11 @@ from homeassistant.const import (
     UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import RinnaiConfigEntry
-from .const import LOGGER
+from .const import DOMAIN, LEGACY_FLOW_UNIT, LOGGER
 from .entity import RinnaiEntity
 
 if TYPE_CHECKING:
@@ -318,6 +319,52 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
 )
 
 
+async def _async_relabel_legacy_flow_statistics(
+    hass: HomeAssistant, entity_id: str
+) -> None:
+    """Relabel flow statistics recorded as legacy "gpm" to gal/min.
+
+    Before 2.4.0 the flow sensor had no device class and the unit "gpm", which
+    Home Assistant cannot convert. Statistics for the new unit would otherwise be
+    suppressed. The values are identical (1 gpm = 1 gal/min), so only the unit
+    label is rewritten.
+    """
+    if "recorder" not in hass.config.components:
+        return
+
+    from functools import partial
+
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.statistics import (
+        async_update_statistics_metadata,
+        get_metadata,
+    )
+    from homeassistant.exceptions import HomeAssistantError
+    from homeassistant.util.unit_conversion import VolumeFlowRateConverter
+
+    try:
+        metadatas = await get_instance(hass).async_add_executor_job(
+            partial(get_metadata, hass, statistic_ids={entity_id})
+        )
+        if (
+            entity_id not in metadatas
+            or metadatas[entity_id][1]["unit_of_measurement"] != LEGACY_FLOW_UNIT
+        ):
+            return
+        async_update_statistics_metadata(
+            hass,
+            entity_id,
+            new_unit_class=VolumeFlowRateConverter.UNIT_CLASS,
+            new_unit_of_measurement=UnitOfVolumeFlowRate.GALLONS_PER_MINUTE,
+        )
+    except HomeAssistantError as err:
+        LOGGER.warning(
+            "Could not relabel legacy flow statistics for %s: %s", entity_id, err
+        )
+    else:
+        LOGGER.info("Relabelled legacy flow statistics for %s to gal/min", entity_id)
+
+
 async def async_setup_entry(
     hass: HomeAssistant,
     config_entry: RinnaiConfigEntry,
@@ -328,6 +375,14 @@ async def async_setup_entry(
     from homeassistant.const import Platform
 
     config_entry.runtime_data.entity_adders[Platform.SENSOR] = async_add_entities
+
+    # Fix legacy statistics before the first gal/min state is recorded
+    registry = er.async_get(hass)
+    for device in config_entry.runtime_data.devices:
+        if flow_entity_id := registry.async_get_entity_id(
+            Platform.SENSOR, DOMAIN, f"{device.id}_water_flow_rate"
+        ):
+            await _async_relabel_legacy_flow_statistics(hass, flow_entity_id)
 
     entities: list[RinnaiSensor] = [
         RinnaiSensor(device, description)

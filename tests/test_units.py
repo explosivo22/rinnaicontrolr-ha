@@ -149,3 +149,95 @@ async def test_flow_rate_sensor_keeps_registered_unit_after_system_change(
     assert state.attributes["unit_of_measurement"] == (
         UnitOfVolumeFlowRate.GALLONS_PER_MINUTE
     )
+
+
+async def _statistics_unit(hass, statistic_id: str) -> str | None:
+    """Read the unit stored in the recorder metadata for a statistic."""
+    from functools import partial
+
+    from homeassistant.components.recorder import get_instance
+    from homeassistant.components.recorder.statistics import get_metadata
+
+    metadatas = await get_instance(hass).async_add_executor_job(
+        partial(get_metadata, hass, statistic_ids={statistic_id})
+    )
+    return metadatas[statistic_id][1]["unit_of_measurement"] if metadatas else None
+
+
+async def _seed_flow_statistics(hass, statistic_id: str, unit: str) -> None:
+    """Record one hourly statistic for the flow sensor in the given unit."""
+    from datetime import timedelta
+
+    from homeassistant.components.recorder.models import (
+        StatisticData,
+        StatisticMetaData,
+    )
+    from homeassistant.components.recorder.statistics import async_import_statistics
+    from homeassistant.util import dt as dt_util
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    start = dt_util.utcnow().replace(minute=0, second=0, microsecond=0) - timedelta(
+        hours=2
+    )
+    async_import_statistics(
+        hass,
+        StatisticMetaData(
+            has_mean=True,
+            has_sum=False,
+            mean_type=1,
+            name=None,
+            source="recorder",
+            statistic_id=statistic_id,
+            unit_class=None,
+            unit_of_measurement=unit,
+        ),
+        [StatisticData(start=start, mean=1.0, min=0.0, max=2.0)],
+    )
+    await async_wait_recording_done(hass)
+
+
+@pytest.mark.asyncio
+async def test_legacy_gpm_statistics_are_relabelled_to_gal_per_min(
+    recorder_mock, hass, enable_custom_integrations, monkeypatch
+):
+    """Statistics recorded as "gpm" are relabelled so they are not suppressed."""
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    hass.config.units = US_CUSTOMARY_SYSTEM
+    entry, _ = await _setup_entry(hass, monkeypatch)
+    entity_id = _entity_id(hass, "sensor", "water_flow_rate")
+    await hass.config_entries.async_unload(entry.entry_id)
+    await _seed_flow_statistics(hass, entity_id, "gpm")
+    assert await _statistics_unit(hass, entity_id) == "gpm"
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    await async_wait_recording_done(hass)
+
+    assert await _statistics_unit(hass, entity_id) == "gal/min"
+
+
+@pytest.mark.asyncio
+async def test_other_flow_statistics_units_are_left_alone(
+    recorder_mock, hass, enable_custom_integrations, monkeypatch
+):
+    """Only the legacy "gpm" label is rewritten; a user-chosen unit is kept."""
+    from pytest_homeassistant_custom_component.components.recorder.common import (
+        async_wait_recording_done,
+    )
+
+    hass.config.units = US_CUSTOMARY_SYSTEM
+    entry, _ = await _setup_entry(hass, monkeypatch)
+    entity_id = _entity_id(hass, "sensor", "water_flow_rate")
+    await hass.config_entries.async_unload(entry.entry_id)
+    await _seed_flow_statistics(hass, entity_id, "L/min")
+
+    await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    await async_wait_recording_done(hass)
+
+    assert await _statistics_unit(hass, entity_id) == "L/min"
