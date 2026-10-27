@@ -18,6 +18,8 @@ from homeassistant.const import (
     UnitOfElectricCurrent,
     UnitOfFrequency,
     UnitOfTemperature,
+    UnitOfVolume,
+    UnitOfVolumeFlowRate,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -110,6 +112,8 @@ class RinnaiSensorEntityDescription(SensorEntityDescription):
     is_diagnostic: bool = False
     # Whether to disable this entity by default
     disabled_by_default: bool = False
+    # Unit suggested at first registration when HA uses the metric system
+    metric_suggested_unit: str | None = None
 
 
 SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
@@ -133,8 +137,10 @@ SENSOR_DESCRIPTIONS: tuple[RinnaiSensorEntityDescription, ...] = (
         key="water_flow_rate",
         translation_key="water_flow_rate",
         icon="mdi:gauge",
+        device_class=SensorDeviceClass.VOLUME_FLOW_RATE,
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement="gpm",
+        native_unit_of_measurement=UnitOfVolumeFlowRate.GALLONS_PER_MINUTE,
+        metric_suggested_unit=UnitOfVolumeFlowRate.LITERS_PER_MINUTE,
         value_fn=lambda device: device.water_flow_rate,
         value_multiplier=0.1,
     ),
@@ -335,6 +341,16 @@ class RinnaiSensor(RinnaiEntity, SensorEntity):
     """Rinnai sensor entity."""
 
     entity_description: RinnaiSensorEntityDescription
+
+    @property
+    def suggested_unit_of_measurement(self) -> str | None:
+        """Suggest the metric unit on first registration when HA is metric."""
+        if (
+            self.entity_description.metric_suggested_unit
+            and self.hass.config.units.volume_unit == UnitOfVolume.LITERS
+        ):
+            return self.entity_description.metric_suggested_unit
+        return super().suggested_unit_of_measurement
 
     def __init__(
         self,

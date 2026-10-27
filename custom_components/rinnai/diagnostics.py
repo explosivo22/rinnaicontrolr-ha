@@ -108,6 +108,7 @@ async def async_get_config_entry_diagnostics(
         # Add maintenance data if available
         device_info["maintenance"] = {
             "water_flow_rate": coordinator.water_flow_rate,
+            "temperature_table": coordinator.temperature_table,
             "combustion_cycles": coordinator.combustion_cycles,
             "operation_hours": coordinator.operation_hours,
             "pump_hours": coordinator.pump_hours,
@@ -200,6 +201,7 @@ async def async_get_device_diagnostics(
         },
         "maintenance": {
             "water_flow_rate": coordinator.water_flow_rate,
+            "temperature_table": coordinator.temperature_table,
             "combustion_cycles": coordinator.combustion_cycles,
             "operation_hours": coordinator.operation_hours,
             "pump_hours": coordinator.pump_hours,

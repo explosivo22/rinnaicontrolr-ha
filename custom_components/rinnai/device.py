@@ -720,6 +720,14 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return float(rate) if rate is not None else None
 
     @property
+    def temperature_table(self) -> Any:
+        """Return the raw temperature table field (diagnostics only, meaning unconfirmed)."""
+        return self._get_value(
+            ("data", "getDevice", "info", "temperature_table"),
+            "temperature_table",
+        )
+
+    @property
     def combustion_cycles(self) -> float | None:
         """Return the combustion cycles count."""
         cycles = self._get_value(

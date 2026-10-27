@@ -76,6 +76,7 @@ class _FakeDevice:
                         "m02_outlet_temperature": 115,
                         "m08_inlet_temperature": 55,
                         "m01_water_flow_rate_raw": 25,
+                        "temperature_table": 2,
                         "m04_combustion_cycles": 1500,
                         "operation_hours": 2500,
                         "m19_pump_hours": 500,
@@ -324,6 +325,7 @@ async def test_coordinator_temperature_properties(hass, monkeypatch):
     assert coordinator.target_temperature == 120.0
     assert coordinator.outlet_temperature == 115.0
     assert coordinator.inlet_temperature == 55.0
+    assert coordinator.temperature_table == 2
 
 
 @pytest.mark.asyncio

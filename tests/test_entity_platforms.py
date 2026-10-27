@@ -204,7 +204,7 @@ async def test_water_flow_rate_sensor(monkeypatch):
     sensor = sensor_mod.RinnaiSensor(device, description)
 
     assert sensor.native_value == 2.5
-    assert sensor.entity_description.native_unit_of_measurement == "gpm"
+    assert sensor.entity_description.native_unit_of_measurement == "gal/min"
 
 
 @pytest.mark.asyncio

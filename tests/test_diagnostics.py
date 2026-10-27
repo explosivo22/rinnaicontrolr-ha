@@ -47,6 +47,7 @@ def _coordinator() -> SimpleNamespace:
         outlet_temperature=110,
         inlet_temperature=70,
         water_flow_rate=0,
+        temperature_table=2,
         combustion_cycles=1,
         operation_hours=2,
         pump_hours=3,
@@ -121,3 +122,13 @@ async def test_entry_diagnostics_redact_title() -> None:
 
     assert result["entry"]["title"] == REDACTED
     assert SERIAL not in str(result)
+
+
+async def test_diagnostics_include_temperature_table() -> None:
+    """The unparsed unit-table field is exposed to help identify regional units."""
+    entry_result = await async_get_config_entry_diagnostics(None, _entry())  # type: ignore[arg-type]
+    device = SimpleNamespace(identifiers={(DOMAIN, SERIAL)})
+    device_result = await async_get_device_diagnostics(None, _entry(), device)  # type: ignore[arg-type]
+
+    assert entry_result["devices"][0]["maintenance"]["temperature_table"] == 2
+    assert device_result["maintenance"]["temperature_table"] == 2
