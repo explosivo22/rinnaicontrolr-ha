@@ -12,6 +12,10 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 DOMAIN = "rinnai"
 
 
+class _UnknownError(Exception):
+    """Fake UnknownError exception."""
+
+
 class _Unauthenticated(Exception):
     pass
 
@@ -162,6 +166,7 @@ def _install_fake_aiorinnai(monkeypatch):
 
     mod_ai.Unauthenticated = _Unauthenticated  # type: ignore[attr-defined]
     mod_err.RequestError = _RequestError  # type: ignore[attr-defined]
+    mod_err.UnknownError = _UnknownError  # type: ignore[attr-defined]
     mod_err.UserNotFound = _UserNotFound  # type: ignore[attr-defined]
     mod_err.UserNotConfirmed = _UserNotConfirmed  # type: ignore[attr-defined]
     mod_err.PasswordChangeRequired = _PasswordChangeRequired  # type: ignore[attr-defined]
@@ -354,6 +359,72 @@ async def test_async_setup_entry_request_error_raises_not_ready(hass, monkeypatc
         options={
             "maint_interval_enabled": False,
         },
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    with pytest.raises(ConfigEntryNotReady):
+        await mod.async_setup_entry(hass, entry)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("error", [TimeoutError(), _UnknownError("aws")])
+async def test_async_setup_entry_transient_renew_error_raises_not_ready(
+    hass, monkeypatch, error
+):
+    """Token renewal timeouts / non-auth cloud errors must be retried (#177)."""
+    from homeassistant.exceptions import ConfigEntryNotReady
+
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    async def _raise(self, email, access, refresh):
+        raise error
+
+    monkeypatch.setattr(_FakeAPI, "async_renew_access_token", _raise)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+        },
+        options={"maint_interval_enabled": False},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    with pytest.raises(ConfigEntryNotReady):
+        await mod.async_setup_entry(hass, entry)
+
+
+@pytest.mark.asyncio
+async def test_async_setup_entry_relogin_timeout_raises_not_ready(hass, monkeypatch):
+    """A timeout during stored-password re-login is transient, not an auth failure."""
+    from homeassistant.exceptions import ConfigEntryNotReady
+
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    async def _raise_unauth(self, email, access, refresh):
+        raise _Unauthenticated()
+
+    async def _raise_timeout(self, email, password):
+        raise TimeoutError
+
+    monkeypatch.setattr(_FakeAPI, "async_renew_access_token", _raise_unauth)
+    monkeypatch.setattr(_FakeAPI, "async_login", _raise_timeout)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+            "stored_password": "pw",
+        },
+        options={"maint_interval_enabled": False},
         version=2,
     )
     entry.add_to_hass(hass)

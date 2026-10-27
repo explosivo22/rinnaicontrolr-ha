@@ -27,6 +27,10 @@ class _RequestError(Exception):
     pass
 
 
+class _UnknownError(Exception):
+    """Fake UnknownError exception."""
+
+
 class _FakeUser:
     """Fake user API."""
 
@@ -185,6 +189,7 @@ def _install_fake_aiorinnai(monkeypatch):
     mod_api.API = _FakeAPI
     mod_api.Unauthenticated = _Unauthenticated
     mod_err.RequestError = _RequestError
+    mod_err.UnknownError = _UnknownError
 
     monkeypatch.setitem(sys.modules, "aiorinnai", mod_aiorinnai)
     monkeypatch.setitem(sys.modules, "aiorinnai.api", mod_api)
@@ -440,6 +445,42 @@ async def test_coordinator_token_refresh_on_expiring_token(hass, monkeypatch):
 
     # Token should have been renewed
     assert api._renew_called is True
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("error", [TimeoutError(), _UnknownError("aws")])
+async def test_ensure_valid_token_transient_error_becomes_request_error(
+    hass, monkeypatch, error
+):
+    """Refresh timeouts/unknown cloud errors are normalized to RequestError."""
+    device_mod = _load_device_module(monkeypatch)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={
+            "email": "test@example.com",
+            "conf_access_token": "access",
+            "conf_refresh_token": "refresh",
+        },
+        options={"maint_interval_enabled": False},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+
+    api = _FakeAPI()
+    api.access_token = api._create_expiring_soon_token()
+
+    async def _raise(email, access, refresh):
+        raise error
+
+    api.async_renew_access_token = _raise
+
+    coordinator = device_mod.RinnaiDeviceDataUpdateCoordinator(
+        hass, "device-1", dict(entry.options), entry, api_client=api
+    )
+
+    with pytest.raises(_RequestError):
+        await coordinator._ensure_valid_token()
 
 
 @pytest.mark.asyncio

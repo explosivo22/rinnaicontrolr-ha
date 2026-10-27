@@ -190,7 +190,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
 
         from aiorinnai.api import Unauthenticated
-        from aiorinnai.errors import RequestError
+        from aiorinnai.errors import RequestError, UnknownError
 
         # Use public property documented by aiorinnai API
         access_token = self.api_client.access_token
@@ -224,6 +224,10 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         except RequestError as err:
             LOGGER.error("Failed to refresh token due to network error: %s", err)
             raise
+        except (UnknownError, TimeoutError) as err:
+            # Normalize to RequestError so callers' retry handling applies.
+            LOGGER.error("Failed to refresh token (transient): %r", err)
+            raise RequestError(f"Token refresh failed: {err!r}") from err
 
     async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from device based on connection mode."""
@@ -340,7 +344,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _update_cloud(self) -> dict[str, Any]:
         """Fetch data via cloud API with retry logic."""
         from aiorinnai.api import Unauthenticated
-        from aiorinnai.errors import RequestError
+        from aiorinnai.errors import RequestError, UnknownError
 
         if self.api_client is None:
             LOGGER.error(
@@ -392,7 +396,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 LOGGER.error("Authentication error: %s", error)
                 raise ConfigEntryAuthFailed from error
 
-            except (RequestError, TimeoutError) as error:
+            except (RequestError, UnknownError, TimeoutError) as error:
                 last_error = error
                 self._consecutive_errors += 1
                 self._last_error = error
