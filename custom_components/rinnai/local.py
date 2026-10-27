@@ -7,14 +7,24 @@ No authentication required - direct local network access.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 import re
-import time
 from typing import Any
 
 from .const import LOCAL_PORT, LOGGER
 
+# Timeout for establishing the TCP connection (seconds)
 DEFAULT_TIMEOUT = 10.0
+# The console sends an optional "monitor / help for help" banner on connect
+BANNER_TIMEOUT = 2.0
+BANNER_IDLE_TIMEOUT = 0.5
+# Wait up to RESPONSE_TIMEOUT for the first bytes of a reply, then treat the
+# reply as complete once no data arrives for RESPONSE_IDLE_TIMEOUT
+RESPONSE_TIMEOUT = 5.0
+RESPONSE_IDLE_TIMEOUT = 2.0
+# Hard cap on reading a single reply
+MAX_RESPONSE_SECONDS = 15.0
 
 
 class RinnaiLocalClient:
@@ -38,7 +48,8 @@ class RinnaiLocalClient:
             timeout: Connection timeout in seconds.
 
         Returns:
-            The response string, or None on error.
+            The response string, or None on error or when the controller
+            sends nothing back.
         """
         writer: asyncio.StreamWriter | None = None
         try:
@@ -47,36 +58,29 @@ class RinnaiLocalClient:
             )
             assert writer is not None  # Connection succeeded
 
-            # Read initial prompt
-            await asyncio.wait_for(reader.read(1024), timeout=2)
+            # Drain the optional banner; not every firmware sends one promptly
+            banner = await self._read_until_idle(
+                reader, BANNER_TIMEOUT, BANNER_IDLE_TIMEOUT
+            )
+            if not banner:
+                LOGGER.debug("No console banner received from %s", self.host)
 
-            # Send command
             writer.write(f"{command}\n".encode())
             await writer.drain()
 
-            # Read response with timeout
-            chunks: list[str] = []
-            read_timeout = 2.0
-            last_read = time.monotonic()
-
-            while True:
-                elapsed = time.monotonic() - last_read
-                if chunks and elapsed > read_timeout:
-                    break
-                if elapsed > read_timeout * 2:
-                    break
-
-                try:
-                    data = await asyncio.wait_for(reader.read(8192), timeout=1)
-                    if data:
-                        chunks.append(data.decode("utf-8"))
-                        last_read = time.monotonic()
-                    else:
-                        await asyncio.sleep(0.1)
-                except TimeoutError:
-                    break
-
-            return "".join(chunks)
+            raw = await self._read_until_idle(
+                reader, RESPONSE_TIMEOUT, RESPONSE_IDLE_TIMEOUT
+            )
+            response = raw.decode("utf-8", errors="replace")
+            if not response.strip():
+                LOGGER.warning(
+                    "No response to '%s' from Rinnai controller at %s within %.0fs",
+                    command.split(" ", 1)[0],
+                    self.host,
+                    RESPONSE_TIMEOUT,
+                )
+                return None
+            return response
 
         except TimeoutError:
             LOGGER.error("Timeout connecting to Rinnai controller at %s", self.host)
@@ -89,9 +93,45 @@ class RinnaiLocalClient:
         finally:
             if writer is not None:
                 writer.close()
-                await writer.wait_closed()
+                # The controller may reset the connection; that must not mask
+                # the result above
+                with contextlib.suppress(OSError):
+                    await writer.wait_closed()
 
         return None
+
+    @staticmethod
+    async def _read_until_idle(
+        reader: asyncio.StreamReader, first_timeout: float, idle_timeout: float
+    ) -> bytes:
+        """Read until the stream goes quiet.
+
+        Waits up to first_timeout for the first bytes, then keeps reading until
+        no data arrives for idle_timeout, the peer closes the connection, or
+        MAX_RESPONSE_SECONDS elapses.
+        """
+        loop = asyncio.get_running_loop()
+        deadline = loop.time() + MAX_RESPONSE_SECONDS
+        chunks: list[bytes] = []
+        wait = first_timeout
+        while (remaining := deadline - loop.time()) > 0:
+            try:
+                data = await asyncio.wait_for(
+                    reader.read(8192), timeout=min(wait, remaining)
+                )
+            except TimeoutError:
+                break
+            except ConnectionResetError:
+                # Some controllers reset instead of closing after replying;
+                # keep what was already received
+                if chunks:
+                    break
+                raise
+            if not data:  # Connection closed by the controller
+                break
+            chunks.append(data)
+            wait = idle_timeout
+        return b"".join(chunks)
 
     async def get_status(self) -> dict[str, Any] | None:
         """Get all device properties via the 'list' command.
@@ -105,7 +145,15 @@ class RinnaiLocalClient:
         if response is None:
             return None
 
-        return self._parse_list_response(response)
+        properties = self._parse_list_response(response)
+        if not properties:
+            LOGGER.warning(
+                "No properties found in 'list' response from Rinnai controller at %s",
+                self.host,
+            )
+            LOGGER.debug("Unparsed 'list' response was %d chars", len(response))
+            return None
+        return properties
 
     async def get_sysinfo(self) -> dict[str, Any] | None:
         """Get system information via the 'sysinfo' command.
@@ -119,16 +167,14 @@ class RinnaiLocalClient:
         if response is None:
             return None
 
-        try:
-            # Find JSON in response (skip any prompt lines)
-            for line in response.split("\n"):
-                line = line.strip()
-                if line.startswith("{"):
-                    return json.loads(line)
-        except json.JSONDecodeError as e:
-            LOGGER.error("Failed to parse sysinfo JSON: %s", e)
-
-        return None
+        sysinfo = self._extract_json_object(response)
+        if sysinfo is None:
+            LOGGER.warning(
+                "No sysinfo JSON found in response from Rinnai controller at %s",
+                self.host,
+            )
+            LOGGER.debug("Unparsed 'sysinfo' response was %d chars", len(response))
+        return sysinfo
 
     async def set_temperature(self, temperature: int) -> bool:
         """Set the target water temperature.
@@ -291,6 +337,25 @@ class RinnaiLocalClient:
             return False
         # Success response format: #? set 'property_name' to value
         return f"set '{property_name}'" in response
+
+    @staticmethod
+    def _extract_json_object(data: str) -> dict[str, Any] | None:
+        """Return the first JSON object embedded anywhere in data.
+
+        Tolerates prompt prefixes (e.g. "#? {...}") and pretty-printed JSON.
+        """
+        decoder = json.JSONDecoder()
+        start = data.find("{")
+        while start != -1:
+            try:
+                obj, _ = decoder.raw_decode(data, start)
+            except json.JSONDecodeError:
+                pass
+            else:
+                if isinstance(obj, dict):
+                    return obj
+            start = data.find("{", start + 1)
+        return None
 
     @staticmethod
     def _parse_list_response(data: str) -> dict[str, Any]:
