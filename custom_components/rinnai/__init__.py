@@ -118,10 +118,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
 
     _LOGGER.debug("Found %d Rinnai device(s): %s", len(device_ids), device_ids)
 
-    # Convert MappingProxyType to dict for options
-    options = (
-        dict(entry.options) if not isinstance(entry.options, dict) else entry.options
-    )
+    # Private snapshot of the options this setup ran with; the update listener
+    # compares against it to tell option changes from token-only data updates.
+    options = dict(entry.options)
 
     # Create coordinators for each device
     _LOGGER.debug("Creating coordinators for %d device(s)", len(device_ids))
@@ -146,16 +145,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         local_client=local_client,
         connection_mode=connection_mode,
         known_device_ids=set(device_ids),
-        options=options,
+        options=dict(options),
     )
 
     # Initial data fetch for all devices
     _LOGGER.debug("Performing initial data fetch for %d device(s)", len(coordinators))
     tasks = [coordinator.async_refresh() for coordinator in coordinators]
     await asyncio.gather(*tasks)
-
-    if not entry.options:
-        await _async_options_updated(hass, entry)
 
     _LOGGER.debug("Forwarding setup to platforms: %s", [p.value for p in PLATFORMS])
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -211,7 +207,7 @@ async def _setup_cloud_client(
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError
+    from aiorinnai.errors import RequestError, UnknownError
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Setting up cloud client for %s", entry.data.get(CONF_EMAIL))
@@ -248,6 +244,11 @@ async def _setup_cloud_client(
 
                 # Persist the new tokens
                 await _persist_tokens_if_changed(hass, entry, client)
+            except (RequestError, TimeoutError) as login_err:
+                _LOGGER.error("Automatic re-login failed (will retry): %s", login_err)
+                raise ConfigEntryNotReady(
+                    f"Unable to connect to Rinnai API: {login_err!r}"
+                ) from login_err
             except Exception as login_err:
                 _LOGGER.error("Automatic re-login failed: %s", login_err)
                 ir.async_create_issue(
@@ -274,9 +275,10 @@ async def _setup_cloud_client(
                 translation_key="reauth_required",
             )
             raise ConfigEntryAuthFailed from err
-    except RequestError as err:
-        _LOGGER.error("Request error during setup: %s", err)
-        raise ConfigEntryNotReady(f"Unable to connect to Rinnai API: {err}") from err
+    except (RequestError, UnknownError, TimeoutError) as err:
+        # Timeouts and non-auth cloud errors are transient: let HA retry setup.
+        _LOGGER.error("Request error during setup: %r", err)
+        raise ConfigEntryNotReady(f"Unable to connect to Rinnai API: {err!r}") from err
 
     if user_info is None:
         raise ConfigEntryNotReady("Could not retrieve user info from Rinnai API")
@@ -396,7 +398,14 @@ async def _persist_tokens_if_changed(
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: RinnaiConfigEntry) -> None:
-    """Handle options update by reloading the config entry."""
+    """Reload the config entry when its options changed.
+
+    Entry updates that only touch ``data`` (e.g. persisting refreshed tokens)
+    must not reload, or every entity goes unavailable on each token refresh.
+    """
+    runtime_data = getattr(entry, "runtime_data", None)
+    if runtime_data is not None and dict(entry.options) == runtime_data.options:
+        return
     await hass.config_entries.async_reload(entry.entry_id)
 
 
@@ -696,7 +705,7 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
     """
     from aiorinnai import API
     from aiorinnai.api import Unauthenticated
-    from aiorinnai.errors import RequestError
+    from aiorinnai.errors import RequestError, UnknownError
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
     _LOGGER.debug("Migrating from version %s", config_entry.version)
@@ -755,10 +764,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                         "Migration requires re-authentication. "
                         "Please reconfigure the integration with your Rinnai credentials."
                     ) from err
-                except RequestError as err:
-                    _LOGGER.error("Request error during migration: %s", err)
+                except (RequestError, UnknownError, TimeoutError) as err:
+                    _LOGGER.error("Request error during migration: %r", err)
                     raise ConfigEntryNotReady(
-                        f"Unable to connect to Rinnai API during migration: {err}"
+                        f"Unable to connect to Rinnai API during migration: {err!r}"
                     ) from err
             else:
                 # We have email but no valid tokens - need re-authentication

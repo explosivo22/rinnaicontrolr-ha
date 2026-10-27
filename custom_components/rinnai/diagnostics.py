@@ -4,18 +4,19 @@ from __future__ import annotations
 
 from typing import Any
 
-from homeassistant.components.diagnostics import async_redact_data
+from homeassistant.components.diagnostics import REDACTED, async_redact_data
 from homeassistant.const import CONF_EMAIL
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceEntry
 
 from . import RinnaiConfigEntry
-from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN
+from .const import CONF_ACCESS_TOKEN, CONF_REFRESH_TOKEN, CONF_STORED_PASSWORD
 
 # Keys to redact from diagnostics output for privacy
 TO_REDACT = {
     CONF_ACCESS_TOKEN,
     CONF_REFRESH_TOKEN,
+    CONF_STORED_PASSWORD,
     CONF_EMAIL,
     "email",
     "user_uuid",
@@ -82,7 +83,7 @@ async def async_get_config_entry_diagnostics(
     devices_data: list[dict[str, Any]] = []
     for coordinator in runtime_data.devices:
         device_info: dict[str, Any] = {
-            "device_id": coordinator.id,
+            "device_id": REDACTED,
             "device_name": coordinator.device_name,
             "model": coordinator.model,
             "firmware_version": coordinator.firmware_version,
@@ -107,6 +108,7 @@ async def async_get_config_entry_diagnostics(
         # Add maintenance data if available
         device_info["maintenance"] = {
             "water_flow_rate": coordinator.water_flow_rate,
+            "temperature_table": coordinator.temperature_table,
             "combustion_cycles": coordinator.combustion_cycles,
             "operation_hours": coordinator.operation_hours,
             "pump_hours": coordinator.pump_hours,
@@ -122,14 +124,14 @@ async def async_get_config_entry_diagnostics(
             "entry_id": entry.entry_id,
             "version": entry.version,
             "domain": entry.domain,
-            "title": entry.title,
+            "title": REDACTED,  # email (cloud) or serial (local)
             "data": async_redact_data(dict(entry.data), TO_REDACT),
             "options": dict(entry.options),
         },
         "runtime": {
             "connection_mode": runtime_data.connection_mode,
             "device_count": len(runtime_data.devices),
-            "known_device_ids": list(runtime_data.known_device_ids),
+            "known_device_ids": [REDACTED] * len(runtime_data.known_device_ids),
         },
         "devices": devices_data,
     }
@@ -158,7 +160,7 @@ async def async_get_device_diagnostics(
     if coordinator is None:
         return {
             "error": "Device coordinator not found",
-            "device_id": str(device.identifiers),
+            "device_id": REDACTED,
         }
 
     # Get raw device data (redacted)
@@ -174,7 +176,7 @@ async def async_get_device_diagnostics(
 
     return {
         "device": {
-            "device_id": coordinator.id,
+            "device_id": REDACTED,
             "device_name": coordinator.device_name,
             "manufacturer": coordinator.manufacturer,
             "model": coordinator.model,
@@ -199,6 +201,7 @@ async def async_get_device_diagnostics(
         },
         "maintenance": {
             "water_flow_rate": coordinator.water_flow_rate,
+            "temperature_table": coordinator.temperature_table,
             "combustion_cycles": coordinator.combustion_cycles,
             "operation_hours": coordinator.operation_hours,
             "pump_hours": coordinator.pump_hours,

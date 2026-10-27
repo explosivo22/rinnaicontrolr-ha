@@ -200,6 +200,7 @@ def _install_fake_aiorinnai(monkeypatch):
     mod_ai.API = _FakeAPI  # type: ignore[attr-defined]
     mod_ai.Unauthenticated = _Unauthenticated  # type: ignore[attr-defined]
     mod_err.RequestError = _RequestError  # type: ignore[attr-defined]
+    mod_err.UnknownError = type("UnknownError", (Exception,), {})  # type: ignore[attr-defined]
     mod_err.UserNotFound = _UserNotFound  # type: ignore[attr-defined]
     mod_err.UserNotConfirmed = _UserNotConfirmed  # type: ignore[attr-defined]
     mod_err.PasswordChangeRequired = _PasswordChangeRequired  # type: ignore[attr-defined]

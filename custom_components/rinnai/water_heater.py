@@ -180,37 +180,28 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         """Return whether away mode is on."""
         return self._device.vacation_mode_on
 
-    @property
-    def outlet_temperature(self) -> float | None:
-        """Return outlet temperature, converted to system units if needed."""
-        temp = self._device.outlet_temperature
+    def _to_system_temperature(self, temp: float | None) -> float | None:
+        """Convert a Fahrenheit device reading to the Home Assistant unit system."""
         if temp is None:
             return None
-        # Convert if system uses metric
-        if self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS:
-            return round(
-                TemperatureConverter.convert(
-                    temp, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS
-                ),
-                1,
-            )
-        return round(temp, 1)
+        return round(
+            TemperatureConverter.convert(
+                temp,
+                UnitOfTemperature.FAHRENHEIT,
+                self.hass.config.units.temperature_unit,
+            ),
+            1,
+        )
+
+    @property
+    def outlet_temperature(self) -> float | None:
+        """Return outlet temperature in the system unit."""
+        return self._to_system_temperature(self._device.outlet_temperature)
 
     @property
     def inlet_temperature(self) -> float | None:
-        """Return inlet temperature, converted to system units if needed."""
-        temp = self._device.inlet_temperature
-        if temp is None:
-            return None
-        # Convert if system uses metric
-        if self.hass.config.units.temperature_unit == UnitOfTemperature.CELSIUS:
-            return round(
-                TemperatureConverter.convert(
-                    temp, UnitOfTemperature.FAHRENHEIT, UnitOfTemperature.CELSIUS
-                ),
-                1,
-            )
-        return round(temp, 1)
+        """Return inlet temperature in the system unit."""
+        return self._to_system_temperature(self._device.inlet_temperature)
 
     @property
     def current_temperature(self) -> float | None:

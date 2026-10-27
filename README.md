@@ -67,7 +67,7 @@ Support for [Rinnai Control-R Water Heater monitoring and control device](https:
     |--------|-------------|
     | Outlet Temperature | Current hot water outlet temperature |
     | Inlet Temperature | Cold water inlet temperature |
-    | Water Flow Rate | Current water flow in GPM |
+    | Water Flow Rate | Current water flow (gal/min; L/min by default on new metric installs) |
     | Combustion Cycles | Total burner ignition cycles |
     | Operation Hours | Total burner operation hours |
     | Pump Hours | Recirculation pump run hours |
