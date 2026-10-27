@@ -118,10 +118,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
 
     _LOGGER.debug("Found %d Rinnai device(s): %s", len(device_ids), device_ids)
 
-    # Convert MappingProxyType to dict for options
-    options = (
-        dict(entry.options) if not isinstance(entry.options, dict) else entry.options
-    )
+    # Private snapshot of the options this setup ran with; the update listener
+    # compares against it to tell option changes from token-only data updates.
+    options = dict(entry.options)
 
     # Create coordinators for each device
     _LOGGER.debug("Creating coordinators for %d device(s)", len(device_ids))
@@ -146,16 +145,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: RinnaiConfigEntry) -> bo
         local_client=local_client,
         connection_mode=connection_mode,
         known_device_ids=set(device_ids),
-        options=options,
+        options=dict(options),
     )
 
     # Initial data fetch for all devices
     _LOGGER.debug("Performing initial data fetch for %d device(s)", len(coordinators))
     tasks = [coordinator.async_refresh() for coordinator in coordinators]
     await asyncio.gather(*tasks)
-
-    if not entry.options:
-        await _async_options_updated(hass, entry)
 
     _LOGGER.debug("Forwarding setup to platforms: %s", [p.value for p in PLATFORMS])
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -402,7 +398,14 @@ async def _persist_tokens_if_changed(
 
 
 async def _async_options_updated(hass: HomeAssistant, entry: RinnaiConfigEntry) -> None:
-    """Handle options update by reloading the config entry."""
+    """Reload the config entry when its options changed.
+
+    Entry updates that only touch ``data`` (e.g. persisting refreshed tokens)
+    must not reload, or every entity goes unavailable on each token refresh.
+    """
+    runtime_data = getattr(entry, "runtime_data", None)
+    if runtime_data is not None and dict(entry.options) == runtime_data.options:
+        return
     await hass.config_entries.async_reload(entry.entry_id)
 
 

@@ -714,3 +714,63 @@ async def test_async_setup_entry_local_mode_unreachable_still_raises(hass, monke
 
     with pytest.raises(ConfigEntryNotReady):
         await mod.async_setup_entry(hass, entry)
+
+
+@pytest.mark.asyncio
+async def test_update_listener_skips_reload_on_token_only_update(hass, monkeypatch):
+    """Token persistence updates entry.data; it must not reload the entry."""
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    reloads: list[str] = []
+
+    async def _fake_reload(entry_id):
+        reloads.append(entry_id)
+
+    monkeypatch.setattr(hass.config_entries, "async_reload", _fake_reload)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"email": "test@example.com", "conf_access_token": "a"},
+        options={"maint_interval_enabled": False},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+    entry.runtime_data = mod.RinnaiRuntimeData(options=dict(entry.options))
+
+    hass.config_entries.async_update_entry(
+        entry, data={**entry.data, "conf_access_token": "b"}
+    )
+    await mod._async_options_updated(hass, entry)
+
+    assert reloads == []
+
+
+@pytest.mark.asyncio
+async def test_update_listener_reloads_when_options_change(hass, monkeypatch):
+    """A real options change still reloads the entry."""
+    _install_fake_aiorinnai(monkeypatch)
+    mod = _load_integration_module(monkeypatch)
+
+    reloads: list[str] = []
+
+    async def _fake_reload(entry_id):
+        reloads.append(entry_id)
+
+    monkeypatch.setattr(hass.config_entries, "async_reload", _fake_reload)
+
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        data={"email": "test@example.com"},
+        options={"maint_interval_enabled": False},
+        version=2,
+    )
+    entry.add_to_hass(hass)
+    entry.runtime_data = mod.RinnaiRuntimeData(options=dict(entry.options))
+
+    hass.config_entries.async_update_entry(
+        entry, options={"maint_interval_enabled": True}
+    )
+    await mod._async_options_updated(hass, entry)
+
+    assert reloads == [entry.entry_id]
