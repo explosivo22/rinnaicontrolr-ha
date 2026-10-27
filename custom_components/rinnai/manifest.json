@@ -1,13 +1,13 @@
 {
     "domain": "rinnai",
     "name": "Rinnai Control-R Water Heater",
-    "codeowners": ["@explosivo22"],
     "after_dependencies": ["recorder"],
-  "config_flow": true,
+    "codeowners": ["@explosivo22"],
+    "config_flow": true,
     "documentation": "https://github.com/explosivo22/rinnaicontrolr-ha/",
     "iot_class": "cloud_polling",
     "issue_tracker": "https://github.com/explosivo22/rinnaicontrolr-ha/issues",
     "quality_scale": "platinum",
-    "requirements": ["aiorinnai==0.5.1", "PyJWT>=2.0.0"],
+    "requirements": ["aiorinnai==0.5.1"],
     "version": "2.4.0"
 }
