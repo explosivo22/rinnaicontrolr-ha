@@ -141,7 +141,14 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         | WaterHeaterEntityFeature.OPERATION_MODE
         | WaterHeaterEntityFeature.TARGET_TEMPERATURE
     )
-    _attr_temperature_unit = UnitOfTemperature.FAHRENHEIT
+    _attr_native_temperature_unit = UnitOfTemperature.FAHRENHEIT
+    # TODO(HA>=2026.11): remove the un-prefixed aliases (_attr_temperature_unit,
+    # target_temperature, current_temperature) once 2026.11 is the minimum
+    # supported Home Assistant version. Older versions only read those names;
+    # newer ones prefer native_* when a class provides both, so no deprecation
+    # warning is logged. They stop working in 2027.11. See
+    # https://developers.home-assistant.io/blog/2026/10/08/water-heater-native-temperature
+    _attr_temperature_unit = _attr_native_temperature_unit
     _attr_target_temperature_step = float(TEMP_STEP)
     _attr_translation_key = "water_heater"
 
@@ -171,9 +178,15 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return "mdi:water-boiler"
 
     @property
-    def target_temperature(self) -> float | None:
-        """Return the temperature we try to reach."""
+    def native_target_temperature(self) -> float | None:
+        """Return the temperature we try to reach, in Fahrenheit."""
         return self._device.target_temperature
+
+    # TODO(HA>=2026.11): remove, see note on _attr_native_temperature_unit.
+    @property
+    def target_temperature(self) -> float | None:
+        """Alias of native_target_temperature for Home Assistant < 2026.11."""
+        return self.native_target_temperature
 
     @property
     def is_away_mode_on(self) -> bool | None:
@@ -204,9 +217,15 @@ class RinnaiWaterHeater(RinnaiEntity, WaterHeaterEntity):
         return self._to_system_temperature(self._device.inlet_temperature)
 
     @property
-    def current_temperature(self) -> float | None:
-        """Return the current temperature."""
+    def native_current_temperature(self) -> float | None:
+        """Return the current temperature, in Fahrenheit."""
         return self._device.current_temperature
+
+    # TODO(HA>=2026.11): remove, see note on _attr_native_temperature_unit.
+    @property
+    def current_temperature(self) -> float | None:
+        """Alias of native_current_temperature for Home Assistant < 2026.11."""
+        return self.native_current_temperature
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
