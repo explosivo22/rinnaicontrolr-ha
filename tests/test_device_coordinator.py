@@ -83,6 +83,7 @@ class _FakeDevice:
                         "m09_fan_current": 150,
                         "m05_fan_frequency": 60,
                         "m20_pump_cycles": 3000,
+                        "m07_water_flow_control_position": 0.92,
                         "error_code": "11",
                     },
                     "activity": {
@@ -359,6 +360,9 @@ async def test_coordinator_sensor_properties(hass, monkeypatch):
     assert coordinator.pump_cycles == 3000.0
     assert coordinator.fan_current == 150.0
     assert coordinator.fan_frequency == 60.0
+    # Cloud API reports this as a 0-1 fraction; coordinator should scale it
+    # to a 0-100 percentage to match its declared unit of measurement.
+    assert coordinator.water_flow_control_position == 92.0
 
 
 @pytest.mark.asyncio
@@ -642,7 +646,7 @@ class _FakeLocalClient:
             "m03_combustion_hours_raw": 2500,
             "m04_combustion_cycles": 1500,
             "m05_fan_frequency": 60,
-            "m07_water_flow_control_position": 50,
+            "m07_water_flow_control_position": 0.5,
             "m08_inlet_temperature": 55,
             "m09_fan_current": 100,
             "m11_heat_exchanger_outlet_temperature": 120,
@@ -691,6 +695,9 @@ async def test_local_update_success_first_try(hass, monkeypatch):
     assert local_client.call_count == 1
     assert data["domestic_temperature"] == 120
     assert coordinator._consecutive_errors == 0
+    # Local firmware reports this field as a 0-1 fraction too (confirmed via
+    # a live device's diagnostics dump), so it's scaled the same as cloud.
+    assert coordinator.water_flow_control_position == 50.0
 
 
 @pytest.mark.asyncio

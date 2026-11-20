@@ -544,13 +544,17 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return default
         return self._local_data.get(key, default)
 
+    def _is_local_source(self) -> bool:
+        """Return True if the current data was (or will be) read from the local API."""
+        return self._connection_mode == CONNECTION_MODE_LOCAL or (
+            self._connection_mode == CONNECTION_MODE_HYBRID and not self._using_fallback
+        )
+
     def _get_value(
         self, cloud_keys: tuple[str, ...], local_key: str, default: Any = None
     ) -> Any:
         """Get value from appropriate data source based on connection mode."""
-        if self._connection_mode == CONNECTION_MODE_LOCAL or (
-            self._connection_mode == CONNECTION_MODE_HYBRID and not self._using_fallback
-        ):
+        if self._is_local_source():
             return self._get_local_value(local_key, default)
         else:
             return self._get_cloud_value(*cloud_keys, default=default)
@@ -786,12 +790,24 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
     @property
     def water_flow_control_position(self) -> float | None:
-        """Return the water flow control position (percentage)."""
+        """Return the water flow control position as a percentage (0-100).
+
+        Both the cloud API and the local API report this value as a 0-1
+        fraction (e.g. 0.92 for 92% open) rather than an already-scaled
+        percentage, which previously caused this sensor to read ~1
+        regardless of its true position. Confirmed against a live local-mode
+        device (integration diagnostics showing connection mode "hybrid",
+        not using the cloud fallback, with a raw m07_water_flow_control_position
+        of 1) exhibiting the exact same symptom as the cloud API, so both
+        sources are scaled the same way.
+        """
         position = self._get_value(
             ("data", "getDevice", "info", "m07_water_flow_control_position"),
             "m07_water_flow_control_position",
         )
-        return float(position) if position is not None else None
+        if position is None:
+            return None
+        return float(position) * 100
 
     @property
     def heat_exchanger_outlet_temperature(self) -> float | None:
