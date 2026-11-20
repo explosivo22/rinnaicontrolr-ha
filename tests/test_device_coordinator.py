@@ -646,7 +646,7 @@ class _FakeLocalClient:
             "m03_combustion_hours_raw": 2500,
             "m04_combustion_cycles": 1500,
             "m05_fan_frequency": 60,
-            "m07_water_flow_control_position": 50,
+            "m07_water_flow_control_position": 0.5,
             "m08_inlet_temperature": 55,
             "m09_fan_current": 100,
             "m11_heat_exchanger_outlet_temperature": 120,
@@ -695,8 +695,8 @@ async def test_local_update_success_first_try(hass, monkeypatch):
     assert local_client.call_count == 1
     assert data["domestic_temperature"] == 120
     assert coordinator._consecutive_errors == 0
-    # Local firmware already reports this field 0-100; it should not be
-    # rescaled the way the cloud API's 0-1 fraction is.
+    # Local firmware reports this field as a 0-1 fraction too (confirmed via
+    # a live device's diagnostics dump), so it's scaled the same as cloud.
     assert coordinator.water_flow_control_position == 50.0
 
 

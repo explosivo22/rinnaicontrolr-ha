@@ -792,11 +792,14 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     def water_flow_control_position(self) -> float | None:
         """Return the water flow control position as a percentage (0-100).
 
-        The cloud API reports this value as a 0-1 fraction (e.g. 0.98 for
-        98% open) rather than an already-scaled percentage, which previously
-        caused this sensor to read ~1 regardless of its true position. Local
-        mode is left unscaled, since the local firmware returns this field
-        already expressed 0-100.
+        Both the cloud API and the local API report this value as a 0-1
+        fraction (e.g. 0.92 for 92% open) rather than an already-scaled
+        percentage, which previously caused this sensor to read ~1
+        regardless of its true position. Confirmed against a live local-mode
+        device (integration diagnostics showing connection mode "hybrid",
+        not using the cloud fallback, with a raw m07_water_flow_control_position
+        of 1) exhibiting the exact same symptom as the cloud API, so both
+        sources are scaled the same way.
         """
         position = self._get_value(
             ("data", "getDevice", "info", "m07_water_flow_control_position"),
@@ -804,10 +807,7 @@ class RinnaiDeviceDataUpdateCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         if position is None:
             return None
-        value = float(position)
-        if not self._is_local_source():
-            value *= 100
-        return value
+        return float(position) * 100
 
     @property
     def heat_exchanger_outlet_temperature(self) -> float | None:
